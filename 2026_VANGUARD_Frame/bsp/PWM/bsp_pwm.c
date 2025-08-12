@@ -1,10 +1,20 @@
+/**
+******************************************************************************
+ * @file    bsp_pwm.c
+ * @brief
+ * @author
+ ******************************************************************************
+ * Copyright (c) 2023 Team
+ * All rights reserved.
+ ******************************************************************************
+ */
 #include <stdlib.h>
 #include <string.h>
 #include "bsp_pwm.h"
 
 // 配合中断以及初始化
 static uint8_t idx;
-static PWM_instance_t *pwm_instances[PWM_DEVICE_CNT] = {NULL}; // 所有的pwm instance保存于此,用于callback时判断中断来源
+static PWM_t *pwm_instances[PWM_DEVICE_CNT] = {NULL}; // 所有的pwm instance保存于此,用于callback时判断中断来源
 static uint32_t PWM_Select_Tclk(TIM_HandleTypeDef *htim );
 
 /**
@@ -25,13 +35,13 @@ void HAL_TIM_PWM_PulseFinishedCallback(TIM_HandleTypeDef *htim)
     }
 }
 
-PWM_instance_t *PWM_Register(PWM_init_config_t *config)
+PWM_t *PWM_Register(PWM_init_config_t *config)
 {
     if (idx >= PWM_DEVICE_CNT) // 超过最大实例数,考虑增加或查看是否有内存泄漏
         while (1)
             ;
-    PWM_instance_t *pwm = (PWM_instance_t *)malloc(sizeof(PWM_instance_t));
-    memset(pwm, 0, sizeof(PWM_instance_t));
+    PWM_t *pwm = (PWM_t *)malloc(sizeof(PWM_t));
+    memset(pwm, 0, sizeof(PWM_t));
 
     pwm->htim = config->htim;
     pwm->channel = config->channel;
@@ -49,13 +59,13 @@ PWM_instance_t *PWM_Register(PWM_init_config_t *config)
 }
 
 /* 只是对HAL的函数进行了形式上的封装 */
-void PWM_Start(PWM_instance_t *pwm)
+void PWM_Start(PWM_t *pwm)
 {
     HAL_TIM_PWM_Start(pwm->htim, pwm->channel);
 }
 
 /* 只是对HAL的函数进行了形式上的封装 */
-void PWM_Stop(PWM_instance_t *pwm)
+void PWM_Stop(PWM_t *pwm)
 {
     HAL_TIM_PWM_Stop(pwm->htim, pwm->channel);
 }
@@ -66,7 +76,7 @@ void PWM_Stop(PWM_instance_t *pwm)
  * @param pwm pwm实例
  * @param period 周期 单位 s
  */
-void PWM_Set_Period(PWM_instance_t *pwm, float period)
+void PWM_Set_Period(PWM_t *pwm, float period)
 {
     __HAL_TIM_SetAutoreload(pwm->htim, period*((pwm->tclk)/(pwm->htim->Init.Prescaler+1)));
 }
@@ -76,13 +86,13 @@ void PWM_Set_Period(PWM_instance_t *pwm, float period)
     * @param pwm pwm实例
     * @param dutyratio 占空比 0~1
 */
-void PWM_Set_DutyRatio(PWM_instance_t *pwm, float dutyratio)
+void PWM_Set_DutyRatio(PWM_t *pwm, float dutyratio)
 {
     __HAL_TIM_SetCompare(pwm->htim, pwm->channel, dutyratio * (pwm->htim->Instance->ARR));
 }
 
 /* 只是对HAL的函数进行了形式上的封装 */
-void PWM_Start_DMA(PWM_instance_t *pwm, uint32_t *pData, uint32_t Size)
+void PWM_Start_DMA(PWM_t *pwm, uint32_t *pData, uint32_t Size)
 {
     HAL_TIM_PWM_Start_DMA(pwm->htim, pwm->channel, pData, Size);
 }

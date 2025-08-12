@@ -31,7 +31,7 @@ typedef struct pwm_instance_temp
     float dutyratio;                      // 占空比
     void (*callback)(struct pwm_instance_temp *); // DMA传输完成回调函数
     void *id;                                // 实例ID
-} PWM_instance_t;
+} PWM_t;
 
 typedef struct
 {
@@ -39,7 +39,7 @@ typedef struct
     uint32_t channel;                        // 通道
     float period;                         // 周期
     float dutyratio;                      // 占空比
-    void (*callback)(PWM_instance_t*); // DMA传输完成回调函数
+    void (*callback)(PWM_t*); // DMA传输完成回调函数
     void *id;                                // 实例ID
 } PWM_init_config_t;
 
@@ -47,23 +47,23 @@ typedef struct
  * @brief 注册一个pwm实例
  *
  * @param config 初始化配置
- * @return PWM_instance_t*
+ * @return PWM_t*
  */
-PWM_instance_t *PWM_Register(PWM_init_config_t *config);
+PWM_t *PWM_Register(PWM_init_config_t *config);
 
 /**
  * @brief 启动pwm
  *
  * @param pwm pwm实例
  */
-void PWM_Start(PWM_instance_t *pwm);
+void PWM_Start(PWM_t *pwm);
 
 /**
  * @brief 停止pwm
  *
  * @param pwm pwm实例
  */
-void PWM_Stop(PWM_instance_t *pwm);
+void PWM_Stop(PWM_t *pwm);
 
 /**
  * @brief 设置pwm占空比
@@ -71,7 +71,7 @@ void PWM_Stop(PWM_instance_t *pwm);
  * @param pwm pwm实例
  * @param dutyratio 占空比 0~1
  */
-void PWM_Set_DutyRatio(PWM_instance_t *pwm, float dutyratio);
+void PWM_Set_DutyRatio(PWM_t *pwm, float dutyratio);
 
 /**
  * @brief 设置pwm周期
@@ -79,7 +79,7 @@ void PWM_Set_DutyRatio(PWM_instance_t *pwm, float dutyratio);
  * @param pwm pwm实例
  * @param period 周期 单位 s
  */
-void PWM_Set_Period(PWM_instance_t *pwm, float period);
+void PWM_Set_Period(PWM_t *pwm, float period);
 
 /**
  * @brief 启动pwm dma传输
@@ -90,6 +90,6 @@ void PWM_Set_Period(PWM_instance_t *pwm, float period);
  * @note 如果使用此函数,则需要在CubeMX中配置DMA传输位数为对应位数
  *       例如:使用16位数据,则需要配置DMA传输位数为16位(half word),配置错误会导致指针越界或数据错误
  */
-void PWM_Start_DMA(PWM_instance_t *pwm, uint32_t *pData, uint32_t Size);
+void PWM_Start_DMA(PWM_t *pwm, uint32_t *pData, uint32_t Size);
 
 #endif // BSP_PWM_H
