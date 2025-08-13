@@ -35,7 +35,7 @@ void HAL_TIM_PWM_PulseFinishedCallback(TIM_HandleTypeDef *htim)
     }
 }
 
-PWM_t *PWM_Register(PWM_init_config_t *config)
+PWM_t *PWM_Register(pwm_init_config_t *config)
 {
     if (idx >= PWM_DEVICE_CNT) // 超过最大实例数,考虑增加或查看是否有内存泄漏
         while (1)

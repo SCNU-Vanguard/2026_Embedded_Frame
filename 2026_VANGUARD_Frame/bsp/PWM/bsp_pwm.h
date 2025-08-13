@@ -41,7 +41,7 @@ typedef struct
     float dutyratio;                      // 占空比
     void (*callback)(PWM_t*); // DMA传输完成回调函数
     void *id;                                // 实例ID
-} PWM_init_config_t;
+} pwm_init_config_t;
 
 /**
  * @brief 注册一个pwm实例
@@ -49,7 +49,7 @@ typedef struct
  * @param config 初始化配置
  * @return PWM_t*
  */
-PWM_t *PWM_Register(PWM_init_config_t *config);
+PWM_t *PWM_Register(pwm_init_config_t *config);
 
 /**
  * @brief 启动pwm

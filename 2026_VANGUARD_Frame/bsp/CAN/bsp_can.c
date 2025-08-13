@@ -17,7 +17,7 @@
 /* can instance ptrs storage, used for recv callback */
 // 在CAN产生接收中断会遍历数组,选出hfdcan和rxid与发生中断的实例相同的那个,调用其回调函数
 // @todo: 后续为每个CAN总线单独添加一个can_instance指针数组,提高回调查找的性能
-static CAN_t *can_instance[CAN_MX_REGISTER_CNT] = {NULL};
+static CAN_t *can_instances[CAN_MX_REGISTER_CNT] = {NULL};
 static uint8_t idx; // 全局CAN实例索引,每次有新的模块注册会自增
 
 /* ----------------two static function called by CAN_Register()-------------------- */
@@ -96,7 +96,7 @@ CAN_t *CAN_Register(CAN_init_config_t *config)
     }
     for (size_t i = 0; i < idx; i++)
     { // 重复注册 | id重复
-        if (can_instance[i]->rx_id == config->rx_id && can_instance[i]->can_handle == config->can_handle)
+        if (can_instances[i]->rx_id == config->rx_id && can_instances[i]->can_handle == config->can_handle)
         {
             while (1)
 					;
@@ -123,7 +123,7 @@ CAN_t *CAN_Register(CAN_init_config_t *config)
     instance->id = config->id;
 
     CAN_Add_Filter(instance);         // 添加CAN过滤器规则
-    can_instance[idx++] = instance; // 将实例保存到can_instance中
+    can_instances[idx++] = instance; // 将实例保存到can_instance中
 
     return instance; // 返回can实例指针
 }
@@ -207,13 +207,13 @@ static void CANFIFOxCallback(FDCAN_HandleTypeDef *_hfdcan, uint32_t fifox)
         HAL_FDCAN_GetRxMessage(_hfdcan, fifox, &rxconf, can_rx_buff); // 从FIFO中获取数据
         for (size_t i = 0; i < idx; ++i)
         { // 两者相等说明这是要找的实例
-            if (_hfdcan == can_instance[i]->can_handle && rxconf.Identifier == can_instance[i]->rx_id)
+            if (_hfdcan == can_instances[i]->can_handle && rxconf.Identifier == can_instances[i]->rx_id)
             {
-                if (can_instance[i]->can_module_callback != NULL) // 回调函数不为空就调用
+                if (can_instances[i]->can_module_callback != NULL) // 回调函数不为空就调用
                 {
-                    can_instance[i]->rx_len = rxconf.DataLength >> 16;                      // 保存接收到的数据长度
-                    memcpy(can_instance[i]->rx_buff, can_rx_buff, can_instance[i]->rx_len); // 消息拷贝到对应实例
-                    can_instance[i]->can_module_callback(can_instance[i]);     // 触发回调进行数据解析和处理
+                    can_instances[i]->rx_len = rxconf.DataLength >> 16;                      // 保存接收到的数据长度
+                    memcpy(can_instances[i]->rx_buff, can_rx_buff, can_instances[i]->rx_len); // 消息拷贝到对应实例
+                    can_instances[i]->can_module_callback(can_instances[i]);     // 触发回调进行数据解析和处理
                 }
                 return;
             }

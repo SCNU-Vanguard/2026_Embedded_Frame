@@ -15,7 +15,7 @@
 /* usart service instance, modules' info would be recoreded here using USART_Register() */
 /* usart服务实例,所有注册了usart的模块信息会被保存在这里 */
 static uint8_t idx;
-static usart_t *usart_instances[DEVICE_USART_CNT] = { NULL };
+static USART_t *usart_instances[DEVICE_USART_CNT] = { NULL };
 
 /**
  * @brief 启动串口服务,会在每个实例注册之后自动启用接收,当前实现为DMA接收,后续可能添加IT和BLOCKING接收
@@ -30,7 +30,7 @@ static usart_t *usart_instances[DEVICE_USART_CNT] = { NULL };
  *
  * @param _instance
  */
-void USART_Service_Init(usart_t *_instance)
+void USART_Service_Init(USART_t *_instance)
 {
 	HAL_UARTEx_ReceiveToIdle_DMA(_instance->usart_handle,
 								 _instance->recv_buff,
@@ -46,7 +46,7 @@ void USART_Service_Init(usart_t *_instance)
  *
  * @param init_config 传入串口初始化结构体
  */
-usart_t* USART_Register(usart_init_config_t *init_config)
+USART_t* USART_Register(usart_init_config_t *init_config)
 {
 	if (idx >= DEVICE_USART_CNT) // 超过最大实例数
 	{
@@ -67,8 +67,8 @@ usart_t* USART_Register(usart_init_config_t *init_config)
 		}
 	}
 
-	usart_t *instance = (usart_t*) malloc(sizeof(usart_t));
-	memset(instance, 0, sizeof(usart_t));
+	USART_t *instance = (USART_t*) malloc(sizeof(USART_t));
+	memset(instance, 0, sizeof(USART_t));
 
 	instance->usart_handle = init_config->usart_handle;
 	instance->recv_buff_size = init_config->recv_buff_size;
@@ -92,7 +92,7 @@ usart_t* USART_Register(usart_init_config_t *init_config)
  * @param send_size how many bytes to send
  */
 /* @todo 当前仅进行了形式上的封装,后续要进一步考虑是否将module的行为与bsp完全分离 */
-void USART_Send(usart_t *_instance,
+void USART_Send(USART_t *_instance,
 				uint8_t *send_buf,
 				uint16_t send_size,
 				usart_transfer_e mode)
@@ -122,7 +122,7 @@ void USART_Send(usart_t *_instance,
  * @return uint8_t ready 1, busy 0
  */
 /* 串口发送时,gstate会被设为BUSY_TX */
-uint8_t USART_Is_Ready(usart_t *_instance)
+uint8_t USART_Is_Ready(USART_t *_instance)
 {
 	if (_instance->usart_handle->gState | HAL_UART_STATE_BUSY_TX)
 	{
@@ -134,7 +134,7 @@ uint8_t USART_Is_Ready(usart_t *_instance)
 	}
 }
 
-uint8_t USART_Error_Lost(usart_t *_instance)
+uint8_t USART_Error_Lost(USART_t *_instance)
 {
 	uint8_t error_cnt;
 
