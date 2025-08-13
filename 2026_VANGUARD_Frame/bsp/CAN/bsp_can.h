@@ -1,5 +1,16 @@
-#ifndef BSP_CAN_H
-#define BSP_CAN_H
+/**
+ * @file bsp_can.h
+ * @author guatai (2508588132@qq.com)
+ * @brief 
+ * @version 0.1
+ * @date 2025-08-12
+ * 
+ * @copyright Copyright (c) 2023
+ * 
+ */
+
+#ifndef _BSP_CAN_H
+#define _BSP_CAN_H
 
 #include <stdint.h>
 #include "main.h"
@@ -15,7 +26,7 @@
 typedef struct _
 {
     FDCAN_HandleTypeDef *can_handle; // can句柄
-    FDCAN_TxHeaderTypeDef txconf;    // CAN报文发送配置
+    FDCAN_TxHeaderTypeDef tx_header;    // CAN报文发送配置
     uint32_t tx_id;                // 发送id
     uint32_t tx_mailbox;           // CAN消息填入的邮箱号
     uint8_t tx_buff[8];            // 发送缓存,发送消息长度可以通过CANSetDLC()设定,最大为8
@@ -66,4 +77,4 @@ uint8_t CAN_Transmit(CAN_t *_instance,float timeout);
 
 /* 单次发送函数，用于只发不收的CAN通信（比如激活命令） */
 uint8_t CAN_Transmit_Once(FDCAN_HandleTypeDef* can_handle, uint32_t StdId, uint8_t* tx_buff, float timeout);
-#endif
+#endif /* BSP_CAN_H_ */

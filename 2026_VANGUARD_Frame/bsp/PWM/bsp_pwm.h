@@ -9,8 +9,8 @@
  * 
  */
 
-#ifndef BSP_PWM_H
-#define BSP_PWM_H
+#ifndef _BSP_PWM_H
+#define _BSP_PWM_H
 
 #include <stdint.h>
 #include "main.h"
@@ -92,4 +92,4 @@ void PWM_Set_Period(PWM_t *pwm, float period);
  */
 void PWM_Start_DMA(PWM_t *pwm, uint32_t *pData, uint32_t Size);
 
-#endif // BSP_PWM_H
+#endif /* BSP_PWM_H_ */

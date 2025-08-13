@@ -1,3 +1,16 @@
+/**
+ * @file bsp_usart.h
+ * @author guatai (2508588132@qq.com)
+ * @brief 
+ * @version 0.1
+ * @date 2025-08-12
+ * 
+ * @copyright Copyright (c) 2023
+ * 
+ */
+#ifndef _BSP_USART_H
+#define _BSP_USART_H
+
 #include <stdint.h>
 #include "main.h"
 #include "usart.h"
@@ -47,3 +60,5 @@ void USART_Send(usart_t *_instance, uint8_t *send_buf, uint16_t send_size,usart_
 uint8_t USART_Error_Lost(usart_t *_instance);
 
 uint8_t USART_Is_Ready(usart_t *_instance);
+
+#endif /* BSP_USART_H_ */

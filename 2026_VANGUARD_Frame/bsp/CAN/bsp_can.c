@@ -1,3 +1,13 @@
+/**
+******************************************************************************
+ * @file    bsp_can.c
+ * @brief
+ * @author
+ ******************************************************************************
+ * Copyright (c) 2023 Team
+ * All rights reserved.
+ ******************************************************************************
+ */
 #include <stdlib.h>
 #include <string.h>
 #include "bsp_can.h"
@@ -27,7 +37,7 @@ static uint8_t idx; // 全局CAN实例索引,每次有新的模块注册会自�
 static void CAN_Add_Filter(CAN_t *_instance)
 {
     FDCAN_FilterTypeDef can_filter_conf;
-    static uint8_t can1_filter_idx = 0, can2_filter_idx = 14, can3_filter_idx = 28; // 0-13给can1用,14-27给can2用,28-41给can3用
+    static uint8_t can1_filter_idx = 0, can2_filter_idx = 42, can3_filter_idx = 84; // 0-13给can1用,14-27给can2用,28-41给can3用
 
     can_filter_conf.IdType = FDCAN_STANDARD_ID;                       //标准ID
 	can_filter_conf.FilterIndex = (_instance->can_handle == &hfdcan1) ? (can1_filter_idx++) : ((_instance->can_handle == &hfdcan2) ? (can2_filter_idx++) : (can3_filter_idx++));                                  //滤波器索引                   
@@ -35,7 +45,10 @@ static void CAN_Add_Filter(CAN_t *_instance)
 	can_filter_conf.FilterConfig = (_instance->rx_id & 1) ? FDCAN_FILTER_TO_RXFIFO0 : FDCAN_FILTER_TO_RXFIFO1;           //过滤器0关联到FIFO0  
 	can_filter_conf.FilterID1 = 0x000;                               //32位ID接收ID1
 	can_filter_conf.FilterID2 = _instance->rx_id;                    //接收ID2
-	HAL_FDCAN_ConfigFilter(_instance->can_handle,&can_filter_conf);
+    if (HAL_FDCAN_ConfigFilter(_instance->can_handle,&can_filter_conf) != HAL_OK)
+    {
+        Error_Handler();
+    }
 }
 
 /**
@@ -57,7 +70,7 @@ static void CAN_Service_Init()
     HAL_FDCAN_ActivateNotification(&hfdcan3, FDCAN_IT_RX_FIFO1_NEW_MESSAGE,0);
 
     HAL_FDCAN_ConfigGlobalFilter(&hfdcan1, FDCAN_REJECT, FDCAN_REJECT, FDCAN_FILTER_REMOTE, FDCAN_FILTER_REMOTE);
-	HAL_FDCAN_ConfigFifoWatermark(&hfdcan1, FDCAN_CFG_RX_FIFO0, 1);
+    HAL_FDCAN_ConfigFifoWatermark(&hfdcan1, FDCAN_CFG_RX_FIFO0, 1);
 	HAL_FDCAN_ConfigFifoWatermark(&hfdcan1, FDCAN_CFG_RX_FIFO1, 1);
     HAL_FDCAN_ConfigGlobalFilter(&hfdcan2, FDCAN_REJECT, FDCAN_REJECT, FDCAN_FILTER_REMOTE, FDCAN_FILTER_REMOTE);
 	HAL_FDCAN_ConfigFifoWatermark(&hfdcan2, FDCAN_CFG_RX_FIFO0, 1);
@@ -86,22 +99,22 @@ CAN_t *CAN_Register(CAN_init_config_t *config)
         if (can_instance[i]->rx_id == config->rx_id && can_instance[i]->can_handle == config->can_handle)
         {
             while (1)
-							;
+					;
         }
     }
 
     CAN_t *instance = (CAN_t *)malloc(sizeof(CAN_t)); // 分配空间
     memset(instance, 0, sizeof(CAN_t));                                                                     // 分配的空间未必是0,所以要先清空
     // 进行发送报文的配置
-    instance->txconf.Identifier = config->tx_id; // 发送id
-    instance->txconf.IdType = FDCAN_STANDARD_ID;															// 标准ID
-    instance->txconf.TxFrameType = FDCAN_DATA_FRAME;														// 数据帧 
-    instance->txconf.DataLength = FDCAN_DLC_BYTES_8;														// 发送数据长度
-    instance->txconf.ErrorStateIndicator = FDCAN_ESI_ACTIVE;										        // 设置错误状态指示
-    instance->txconf.BitRateSwitch = FDCAN_BRS_OFF;															// 不开启可变波特率 
-    instance->txconf.FDFormat = FDCAN_CLASSIC_CAN;															// 普通CAN格式 
-    instance->txconf.TxEventFifoControl = FDCAN_NO_TX_EVENTS;										        // 用于发送事件FIFO控制, 不存储
-    instance->txconf.MessageMarker = 0x00; 	
+    instance->tx_header.Identifier = config->tx_id; // 发送id
+    instance->tx_header.IdType = FDCAN_STANDARD_ID;															// 标准ID
+    instance->tx_header.TxFrameType = FDCAN_DATA_FRAME;														// 数据帧
+    instance->tx_header.DataLength = FDCAN_DLC_BYTES_8;														// 发送数据长度
+    instance->tx_header.ErrorStateIndicator = FDCAN_ESI_ACTIVE;										        // 设置错误状态指示
+    instance->tx_header.BitRateSwitch = FDCAN_BRS_OFF;															// 不开启可变波特率
+    instance->tx_header.FDFormat = FDCAN_CLASSIC_CAN;															// 普通CAN格式
+    instance->tx_header.TxEventFifoControl = FDCAN_NO_TX_EVENTS;										        // 用于发送事件FIFO控制, 不存储
+    instance->tx_header.MessageMarker = 0x00;
     // 设置回调函数和接收发送id
     instance->can_handle = config->can_handle;
     instance->tx_id = config->tx_id; // 好像没用,可以删掉
@@ -141,7 +154,7 @@ uint8_t CAN_Transmit(CAN_t *_instance, float timeout)
     }
     // wait_time = DWT_GetTimeline_ms() - dwt_start;
     //tx_mailbox会保存实际填入了这一帧消息的邮箱,但是知道是哪个邮箱发的似乎也没啥用
-    if (HAL_FDCAN_AddMessageToTxFifoQ(_instance->can_handle, &_instance->txconf, _instance->tx_buff))
+    if (HAL_FDCAN_AddMessageToTxFifoQ(_instance->can_handle, &_instance->tx_header, _instance->tx_buff))
     {
         // busy_count++;
         return 0;
@@ -158,10 +171,10 @@ uint8_t CAN_Transmit_Once(FDCAN_HandleTypeDef* can_handle, uint32_t StdId, uint8
     }
 
     static CAN_t tempTX_instance = {0};
-    tempTX_instance.txconf.DataLength = FDCAN_DLC_BYTES_8;
+    tempTX_instance.tx_header.DataLength = FDCAN_DLC_BYTES_8;
 
     tempTX_instance.can_handle = can_handle;
-    tempTX_instance.txconf.Identifier = StdId;
+    tempTX_instance.tx_header.Identifier = StdId;
     memcpy(tempTX_instance.tx_buff,tx_buff,sizeof(tempTX_instance.tx_buff));
 
     CAN_Transmit(&tempTX_instance, timeout);
@@ -173,7 +186,7 @@ void CAN_Set_DLC(CAN_t *_instance, uint8_t length)
     // 发送长度错误!检查调用参数是否出错,或出现野指针/越界访问
     if (length > 8 || length == 0) // 安全检查
         while (1)
-    _instance->txconf.DataLength = length;
+    _instance->tx_header.DataLength = length;
 }
 
 /* -----------------------belows are callback definitions--------------------------*/
