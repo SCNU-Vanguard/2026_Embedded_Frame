@@ -340,7 +340,7 @@
               <MiscControls></MiscControls>
               <Define>USE_PWR_LDO_SUPPLY,USE_HAL_DRIVER,STM32H723xx</Define>
               <Undefine></Undefine>
-              <IncludePath>../Core/Inc;../Drivers/STM32H7xx_HAL_Driver/Inc;../Drivers/STM32H7xx_HAL_Driver/Inc/Legacy;../Drivers/CMSIS/Device/ST/STM32H7xx/Include;../Drivers/CMSIS/Include;../Middlewares/Third_Party/FreeRTOS/Source/include;../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2;../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM4F;../Middlewares/ST/ARM/DSP/Inc;../bsp/DWT;../bsp/USART;../bsp/CAN;../bsp/I2C;../bsp/SPI;../bsp/FLASH;../bsp/TIM;../bsp/PWM;../bsp/ADC</IncludePath>
+              <IncludePath>../Core/Inc;../Drivers/STM32H7xx_HAL_Driver/Inc;../Drivers/STM32H7xx_HAL_Driver/Inc/Legacy;../Drivers/CMSIS/Device/ST/STM32H7xx/Include;../Drivers/CMSIS/Include;../Middlewares/Third_Party/FreeRTOS/Source/include;../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2;../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM4F;../Middlewares/ST/ARM/DSP/Inc;../bsp/DWT;../bsp/USART;../bsp/CAN;../bsp/I2C;../bsp/SPI;../bsp/FLASH;../bsp/TIM;../bsp/PWM;../bsp/ADC;..\bsp\GPIO;..\module\buzzer;..\module\imu;..\module\led;..\module\vofa;..\module\led\WS2812;..\module\motor;..\module\remote;..\module\defense_center;..\module\message_center</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -1813,6 +1813,31 @@
               <FileName>bsp_usart.h</FileName>
               <FileType>5</FileType>
               <FilePath>..\bsp\USART\bsp_usart.h</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>module</GroupName>
+          <Files>
+            <File>
+              <FileName>defense_center.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\module\defense_center\defense_center.c</FilePath>
+            </File>
+            <File>
+              <FileName>defense_center.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\module\defense_center\defense_center.h</FilePath>
+            </File>
+            <File>
+              <FileName>message_center.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\module\message_center\message_center.c</FilePath>
+            </File>
+            <File>
+              <FileName>message_center.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\module\message_center\message_center.h</FilePath>
             </File>
           </Files>
         </Group>

@@ -37,7 +37,7 @@ static uint8_t idx; // 全局CAN实例索引,每次有新的模块注册会自�
 static void CAN_Add_Filter(CAN_t *_instance)
 {
     FDCAN_FilterTypeDef can_filter_conf;
-    static uint8_t can1_filter_idx = 0, can2_filter_idx = 42, can3_filter_idx = 84; // 0-13给can1用,14-27给can2用,28-41给can3用
+    static uint8_t can1_filter_idx = 0, can2_filter_idx = 42, can3_filter_idx = 84; // 0-41给can1用,42-83给can2用,84-127给can3用
 
     can_filter_conf.IdType = FDCAN_STANDARD_ID;                       //标准ID
 	can_filter_conf.FilterIndex = (_instance->can_handle == &hfdcan1) ? (can1_filter_idx++) : ((_instance->can_handle == &hfdcan2) ? (can2_filter_idx++) : (can3_filter_idx++));                                  //滤波器索引                   
