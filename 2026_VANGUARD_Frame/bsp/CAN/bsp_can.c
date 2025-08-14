@@ -82,7 +82,7 @@ static void CAN_Service_Init()
 
 /* ----------------------- two extern callable function -----------------------*/
 
-CAN_t *CAN_Register(CAN_init_config_t *config)
+CAN_t *CAN_Register(can_init_config_t *config)
 {
     if (!idx)
     {

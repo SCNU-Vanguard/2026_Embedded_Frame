@@ -340,7 +340,7 @@
               <MiscControls></MiscControls>
               <Define>USE_PWR_LDO_SUPPLY,USE_HAL_DRIVER,STM32H723xx</Define>
               <Undefine></Undefine>
-              <IncludePath>../Core/Inc;../Drivers/STM32H7xx_HAL_Driver/Inc;../Drivers/STM32H7xx_HAL_Driver/Inc/Legacy;../Drivers/CMSIS/Device/ST/STM32H7xx/Include;../Drivers/CMSIS/Include;../Middlewares/Third_Party/FreeRTOS/Source/include;../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2;../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM4F;../Middlewares/ST/ARM/DSP/Inc;../bsp/DWT;../bsp/USART;../bsp/CAN;../bsp/I2C;../bsp/SPI;../bsp/FLASH;../bsp/TIM;../bsp/PWM;../bsp/ADC;..\bsp\GPIO;..\module\buzzer;..\module\imu;..\module\led;..\module\vofa;..\module\led\WS2812;..\module\motor;..\module\remote;..\module\defense_center;..\module\message_center</IncludePath>
+              <IncludePath>../Core/Inc;../Drivers/STM32H7xx_HAL_Driver/Inc;../Drivers/STM32H7xx_HAL_Driver/Inc/Legacy;../Drivers/CMSIS/Device/ST/STM32H7xx/Include;../Drivers/CMSIS/Include;../Middlewares/Third_Party/FreeRTOS/Source/include;../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2;../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM4F;../Middlewares/ST/ARM/DSP/Inc;../bsp/DWT;../bsp/USART;../bsp/CAN;../bsp/I2C;../bsp/SPI;../bsp/FLASH;../bsp/TIM;../bsp/PWM;../bsp/ADC;..\bsp\GPIO;..\module\buzzer;..\module\imu;..\module\led;..\module\vofa;..\module\led\WS2812;..\module\motor;..\module\remote;..\module\defense_center;..\module\message_center;..\algorithm;..\algorithm\controller;..\algorithm\controller\PID;..\module\motor\DJI_motor;..\module\motor\DM_motor</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -1888,6 +1888,66 @@
               <FileName>buzzer.h</FileName>
               <FileType>5</FileType>
               <FilePath>..\module\buzzer\buzzer.h</FilePath>
+            </File>
+            <File>
+              <FileName>bmi088.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\module\imu\bmi088.c</FilePath>
+            </File>
+            <File>
+              <FileName>bmi088.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\module\imu\bmi088.h</FilePath>
+            </File>
+            <File>
+              <FileName>bmi088_reg.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\module\imu\bmi088_reg.h</FilePath>
+            </File>
+            <File>
+              <FileName>remote_control.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\module\remote\remote_control.c</FilePath>
+            </File>
+            <File>
+              <FileName>remote_control.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\module\remote\remote_control.h</FilePath>
+            </File>
+            <File>
+              <FileName>drv_motor.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\module\motor\drv_motor.c</FilePath>
+            </File>
+            <File>
+              <FileName>drv_motor.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\module\motor\drv_motor.h</FilePath>
+            </File>
+            <File>
+              <FileName>DJI_motor.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\module\motor\DJI_motor\DJI_motor.c</FilePath>
+            </File>
+            <File>
+              <FileName>DJI_motor.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\module\motor\DJI_motor\DJI_motor.h</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>algorithm</GroupName>
+          <Files>
+            <File>
+              <FileName>pid.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\algorithm\controller\PID\pid.c</FilePath>
+            </File>
+            <File>
+              <FileName>pid.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\algorithm\controller\PID\pid.h</FilePath>
             </File>
           </Files>
         </Group>

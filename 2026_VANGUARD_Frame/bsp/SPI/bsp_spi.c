@@ -163,6 +163,7 @@ void SPI_Set_Mode( SPI_t *spi_ins, spi_tx_rx_mode_e spi_mode )
 	{
 		while( 1 )
 		{
+			;
 		}
 	} // error mode! 请查看是否正确设置模式，或出现指针越界导致模式被异常修改的情况
 

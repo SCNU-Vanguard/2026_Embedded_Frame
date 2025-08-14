@@ -1,25 +1,44 @@
-#ifndef __BMI088_H__ // 防止重复包含
-#define __BMI088_H__
+/**
+* @file bmi088.h
+ * @author guatai (2508588132@qq.com)
+ * @brief
+ * @version 0.1
+ * @date 2025-08-12
+ *
+ * @copyright Copyright (c) 2023
+ *
+ */
 
+#ifndef _BMI088_H__ // 防止重复包含
+#define _BMI088_H__
+
+#include <stdint.h>
+#include "bsp_pwm.h"
 #include "bsp_spi.h"
 #include "bsp_gpio.h"
-#include "controller.h"
-#include "bsp_pwm.h"
-#include "stdint.h"
+
+#include "pid.h"
 
 #define IMU_READY_FLAG (1 << 0)
+
+// 陀螺仪校准数据，开启陀螺仪校准后可从INS中获取
+#define BMI088_PRE_CALI_GYRO_X_OFFSET -0.000909539289f
+#define BMI088_PRE_CALI_GYRO_Y_OFFSET 0.00354450056f
+#define BMI088_PRE_CALI_GYRO_Z_OFFSET 0.000225723968f
+// 陀螺仪默认环境温度
+#define BMI088_AMBIENT_TEMPERATURE 25.0f
 
 // bmi088工作模式枚举
 typedef enum {                      //@note 阻塞是指解算是阻塞的，F4系列没有硬件DSP
     BMI088_BLOCK_PERIODIC_MODE = 0, // 阻塞模式,周期性读取
     BMI088_BLOCK_TRIGGER_MODE,      // 阻塞模式,触发读取(中断) //! 该模式会出现一些错误数据
-} BMI088_Work_Mode_e;
+} bmi088_work_mode_e;
 
 // bmi088标定方式枚举,若使用预设标定参数,注意修改预设参数
 typedef enum {
     BMI088_CALIBRATE_ONLINE_MODE = 0, // 初始化时进行标定
     BMI088_LOAD_PRE_CALI_MODE,        // 使用预设标定参数,
-} BMI088_Calibrate_Mode_e;
+} bmi088_calibrate_mode_e;
 
 /* BMI088数据*/
 typedef struct
@@ -27,23 +46,23 @@ typedef struct
     float gyro[3];     // 陀螺仪数据,xyz
     float acc[3];      // 加速度计数据,xyz
     float temperature; // 温度
-} BMI088_Data_t;
+} bmi088_data_t;
 
 /* BMI088实例结构体定义 */
 typedef struct
 {
     // 传输模式和工作模式控制
-    BMI088_Work_Mode_e work_mode;
-    BMI088_Calibrate_Mode_e cali_mode;
+    bmi088_work_mode_e work_mode;
+    bmi088_calibrate_mode_e cali_mode;
     // SPI接口
-    SPIInstance *spi_gyro; // 注意,SPIInstnace内部也有一个GPIOInstance,用于控制片选CS
-    SPIInstance *spi_acc;  // 注意,SPIInstnace内部也有一个GPIOInstance,用于控制片选CS
+    SPI_t *spi_gyro; // 注意,SPIInstnace内部也有一个GPIOInstance,用于控制片选CS
+    SPI_t *spi_acc;  // 注意,SPIInstnace内部也有一个GPIOInstance,用于控制片选CS
     // EXTI GPIO,如果BMI088工作在中断模式,则需要配置中断引脚(有数据产生时触发解算)
-    GPIOInstance *gyro_int;
-    GPIOInstance *acc_int;
+    GPIO_t *gyro_int;
+    GPIO_t *acc_int;
     // 温度控制
-    PIDInstance *heat_pid;     // 恒温PID
-    PWMInstance *heat_pwm;     // 加热PWM
+    PID_t *heat_pid;     // 恒温PID
+    PWM_t *heat_pwm;     // 加热PWM
     float ambient_temperature; // 陀螺仪环境温度
     // RAW数据
     uint8_t gyro_raw[6];
@@ -57,7 +76,7 @@ typedef struct
     // 标定数据
     float gyro_offset[3]; // 陀螺仪零偏
     float acc_offset[3];  // 加速度计零偏
-    // 传感器灵敏度,用于计算实际值(regNdef.h中定义)
+    // 传感器灵敏度,用于计算实际值(reg.h中定义)
     float BMI088_ACCEL_SEN;
     float BMI088_GYRO_SEN;
     // 用于计算两次采样的时间间隔
@@ -74,37 +93,41 @@ typedef struct
         uint8_t imu_ready : 1; // 1:IMU数据准备好,0:IMU数据未准备好(gyro+acc)
         // 后续可添加其他标志位,不够用可以扩充16or32,太多可以删
     } update_flag;
-} BMI088Instance;
+} bmi088_instance_t;
 
 /* BMI088初始化配置 */
 typedef struct
 {
-    BMI088_Work_Mode_e work_mode;
-    BMI088_Calibrate_Mode_e cali_mode;
-    SPI_Init_Config_s spi_gyro_config;
-    SPI_Init_Config_s spi_acc_config;
-    GPIO_Init_Config_s gyro_int_config;
-    GPIO_Init_Config_s acc_int_config;
-    PID_Init_Config_s heat_pid_config;
-    PWM_Init_Config_s heat_pwm_config;
-} BMI088_Init_Config_s;
+    bmi088_work_mode_e work_mode;
+    bmi088_calibrate_mode_e cali_mode;
+
+    spi_init_config_t spi_gyro_config;
+    spi_init_config_t spi_acc_config;
+
+    gpio_init_config_t gyro_int_config;
+    gpio_init_config_t acc_int_config;
+
+    pid_init_config_t heat_pid_config;
+
+    pwm_init_config_t heat_pwm_config;
+} bmi088_init_config_t;
 
 /**
  * @brief 初始化BMI088,返回BMI088实例指针
  * @note  一般一个开发板只有一个BMI088,所以这里就叫BMI088Init而不是Register
  *
  * @param config bmi088初始化配置
- * @return BMI088Instance* 实例指针
+ * @return bmi088_instance_t* 实例指针
  */
-BMI088Instance *BMI088Register(BMI088_Init_Config_s *config);
+bmi088_instance_t *BMI088_Register(bmi088_init_config_t *config);
 
 /**
  * @brief 读取BMI088数据
  * @param bmi088 BMI088实例指针
- * @return BMI088_Data_t 读取到的数据
+ * @return bmi088_data_t 读取到的数据
  */
-uint8_t BMI088Acquire(BMI088Instance *bmi088, BMI088_Data_t *data_store);
-uint8_t BMI088Acquire_IT_Status(BMI088Instance *bmi088);
-void BMI088_temp_control(BMI088Instance *bmi088);
+uint8_t BMI088_Acquire(bmi088_instance_t *bmi088, bmi088_data_t *data_store);
+uint8_t BMI088_Acquire_IT_Status(bmi088_instance_t *bmi088);
+void BMI088_Temp_Control(bmi088_instance_t *bmi088);
 
 #endif // !__BMI088_H__

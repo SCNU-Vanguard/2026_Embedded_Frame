@@ -8,6 +8,7 @@
  * @copyright Copyright (c) 2023
  *
  */
+
 #ifndef _WS2812_H__
 #define _WS2812_H__
 

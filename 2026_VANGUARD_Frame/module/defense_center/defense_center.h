@@ -41,5 +41,7 @@ typedef struct
     void *owner_id;
 }supervisor_init_config_t;
 
+supervisor_t* Supervisor_Register(supervisor_init_config_t *config);
+void Supervisor_Reload(supervisor_t *instance);
 
 #endif /* DEFENSE_CENTER_H */

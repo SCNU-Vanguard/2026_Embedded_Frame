@@ -46,7 +46,7 @@ typedef struct
     uint32_t rx_id;                             // 接收id
     void (*can_module_callback)(CAN_t *); // 处理接收数据的回调函数
     void *id;                                   // 拥有can实例的模块地址,用于区分不同的模块(如果有需要的话),如果不需要可以不传入
-} CAN_init_config_t;
+} can_init_config_t;
 
 /**
  * @brief Register a module to CAN service,remember to call this before using a CAN device
@@ -54,7 +54,7 @@ typedef struct
  * @param config init config
  * @return CAN_t* can instance owned by module
  */
-CAN_t *CAN_Register(CAN_init_config_t *config);
+CAN_t *CAN_Register(can_init_config_t *config);
 
 /**
  * @brief 修改CAN发送报文的数据帧长度;注意最大长度为8,在没有进行修改的时候,默认长度为8
