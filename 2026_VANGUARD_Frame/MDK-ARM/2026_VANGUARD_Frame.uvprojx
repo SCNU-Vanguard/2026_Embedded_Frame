@@ -1934,6 +1934,16 @@
               <FileType>5</FileType>
               <FilePath>..\module\motor\DJI_motor\DJI_motor.h</FilePath>
             </File>
+            <File>
+              <FileName>DM_motor.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\module\motor\DM_motor\DM_motor.c</FilePath>
+            </File>
+            <File>
+              <FileName>DM_motor.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\module\motor\DM_motor\DM_motor.h</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>

@@ -61,6 +61,7 @@ typedef struct
 typedef struct
 {
 	motor_type_e motor_type;        // 电机类型
+	motor_reference_e motor_reference;
 
 	motor_control_setting_t motor_settings; // 电机控制设置
 	motor_controller_t motor_controller;    // 电机控制器
