@@ -9,8 +9,8 @@
  * 
  */
 
-#ifndef _BSP_SPI_H
-#define _BSP_SPI_H
+#ifndef __BSP_SPI_H__
+#define __BSP_SPI_H__
 
 #include <stdint.h>
 #include "main.h"
@@ -112,4 +112,4 @@ void SPI_Transmit_Receive(SPI_t *spi_ins, uint8_t *ptr_data_rx, uint8_t *ptr_dat
  */
 void SPI_Set_Mode(SPI_t *spi_ins, spi_tx_rx_mode_e spi_mode);
 
-#endif /* BSP_SPI_H */
+#endif /* __BSP_SPI_H__ */

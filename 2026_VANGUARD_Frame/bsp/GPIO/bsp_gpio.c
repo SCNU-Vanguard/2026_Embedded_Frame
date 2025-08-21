@@ -24,32 +24,32 @@ static GPIO_t *gpio_instances[GPIO_MX_DEVICE_NUM] = {NULL};
  */
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 {
-    // 如有必要,可以根据pinstate和HAL_GPIO_ReadPin来判断是上升沿还是下降沿/rise&fall等
-    GPIO_t *gpio;
-    for (size_t i = 0; i < idx; i++)
-    {
-        gpio = gpio_instances[i];
-        if (gpio->GPIO_Pin == GPIO_Pin && gpio->gpio_model_callback != NULL)
-        {
-            gpio->gpio_model_callback(gpio);
-            return;
-        }
-    }
+	// 如有必要,可以根据pinstate和HAL_GPIO_ReadPin来判断是上升沿还是下降沿/rise&fall等
+	GPIO_t *gpio;
+	for (size_t i = 0 ; i < idx ; i++)
+	{
+		gpio = gpio_instances[i];
+		if (gpio->GPIO_Pin == GPIO_Pin && gpio->gpio_model_callback != NULL)
+		{
+			gpio->gpio_model_callback(gpio);
+			return;
+		}
+	}
 }
 
 GPIO_t *GPIO_Register(gpio_init_config_t *GPIO_config)
 {
-    GPIO_t *ins = (GPIO_t *)malloc(sizeof(GPIO_t));
-    memset(ins, 0, sizeof(GPIO_t));
+	GPIO_t *ins = (GPIO_t *) malloc(sizeof(GPIO_t));
+	memset(ins, 0, sizeof(GPIO_t));
 
-    ins->GPIOx = GPIO_config->GPIOx;
-    ins->GPIO_Pin = GPIO_config->GPIO_Pin;
-    ins->pin_state = GPIO_config->pin_state;
-    ins->exti_mode = GPIO_config->exti_mode;
-    ins->id = GPIO_config->id;
-    ins->gpio_model_callback = GPIO_config->gpio_model_callback;
-    gpio_instances[idx++] = ins;
-    return ins;
+	ins->GPIOx               = GPIO_config->GPIOx;
+	ins->GPIO_Pin            = GPIO_config->GPIO_Pin;
+	ins->pin_state           = GPIO_config->pin_state;
+	ins->exti_mode           = GPIO_config->exti_mode;
+	ins->id                  = GPIO_config->id;
+	ins->gpio_model_callback = GPIO_config->gpio_model_callback;
+	gpio_instances[idx++]    = ins;
+	return ins;
 }
 
 // ----------------- GPIO API -----------------
@@ -57,20 +57,20 @@ GPIO_t *GPIO_Register(gpio_init_config_t *GPIO_config)
 
 void GPIOToggle(GPIO_t *_instance)
 {
-    HAL_GPIO_TogglePin(_instance->GPIOx, _instance->GPIO_Pin);
+	HAL_GPIO_TogglePin(_instance->GPIOx, _instance->GPIO_Pin);
 }
 
 void GPIO_Set(GPIO_t *_instance)
 {
-    HAL_GPIO_WritePin(_instance->GPIOx, _instance->GPIO_Pin, GPIO_PIN_SET);
+	HAL_GPIO_WritePin(_instance->GPIOx, _instance->GPIO_Pin, GPIO_PIN_SET);
 }
 
 void GPIO_Reset(GPIO_t *_instance)
 {
-    HAL_GPIO_WritePin(_instance->GPIOx, _instance->GPIO_Pin, GPIO_PIN_RESET);
+	HAL_GPIO_WritePin(_instance->GPIOx, _instance->GPIO_Pin, GPIO_PIN_RESET);
 }
 
 GPIO_PinState GPIO_Read(GPIO_t *_instance)
 {
-    return HAL_GPIO_ReadPin(_instance->GPIOx, _instance->GPIO_Pin);
+	return HAL_GPIO_ReadPin(_instance->GPIOx, _instance->GPIO_Pin);
 }

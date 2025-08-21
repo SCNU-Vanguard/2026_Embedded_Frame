@@ -9,8 +9,8 @@
  * 
  */
 
-#ifndef _BSP_PWM_H
-#define _BSP_PWM_H
+#ifndef __BSP_PWM_H__
+#define __BSP_PWM_H__
 
 #include <stdint.h>
 #include "main.h"
@@ -24,23 +24,23 @@
 /* pwm实例结构体 */
 typedef struct pwm_instance_temp
 {
-    TIM_HandleTypeDef *htim;                 // TIM句柄
-    uint32_t channel;                        // 通道
-    uint32_t tclk;                           // 时钟频率
-    float period;                         // 周期
-    float dutyratio;                      // 占空比
-    void (*callback)(struct pwm_instance_temp *); // DMA传输完成回调函数
-    void *id;                                // 实例ID
+	TIM_HandleTypeDef *htim;                 // TIM句柄
+	uint32_t channel;                        // 通道
+	uint32_t tclk;                           // 时钟频率
+	float period;                         // 周期
+	float dutyratio;                      // 占空比
+	void (*callback)(struct pwm_instance_temp *); // DMA传输完成回调函数
+	void *id;                                // 实例ID
 } PWM_t;
 
 typedef struct
 {
-    TIM_HandleTypeDef *htim;                 // TIM句柄
-    uint32_t channel;                        // 通道
-    float period;                         // 周期
-    float dutyratio;                      // 占空比
-    void (*callback)(PWM_t*); // DMA传输完成回调函数
-    void *id;                                // 实例ID
+	TIM_HandleTypeDef *htim;                 // TIM句柄
+	uint32_t channel;                        // 通道
+	float period;                         // 周期
+	float dutyratio;                      // 占空比
+	void (*callback)(PWM_t *); // DMA传输完成回调函数
+	void *id;                                // 实例ID
 } pwm_init_config_t;
 
 /**
@@ -92,4 +92,4 @@ void PWM_Set_Period(PWM_t *pwm, float period);
  */
 void PWM_Start_DMA(PWM_t *pwm, uint32_t *pData, uint32_t Size);
 
-#endif /* BSP_PWM_H_ */
+#endif /* __BSP_PWM_H__ */

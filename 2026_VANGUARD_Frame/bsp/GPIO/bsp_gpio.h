@@ -9,8 +9,8 @@
  * 
  */
 
-#ifndef _BSP_GPIO_H
-#define _BSP_GPIO_H
+#ifndef __BSP_GPIO_H__
+#define __BSP_GPIO_H__
 
 #include <stdint.h>
 #include "gpio.h"
@@ -23,10 +23,10 @@
  */
 typedef enum
 {
-    GPIO_EXTI_MODE_RISING,
-    GPIO_EXTI_MODE_FALLING,
-    GPIO_EXTI_MODE_RISING_FALLING,
-    GPIO_EXTI_MODE_NONE,
+	GPIO_EXTI_MODE_RISING,
+	GPIO_EXTI_MODE_FALLING,
+	GPIO_EXTI_MODE_RISING_FALLING,
+	GPIO_EXTI_MODE_NONE,
 } GPIO_EXTI_MODE_e;
 
 /**
@@ -35,15 +35,14 @@ typedef enum
  */
 typedef struct tmpgpio
 {
-    GPIO_TypeDef *GPIOx;        // GPIOA,GPIOB,GPIOC...
-    GPIO_PinState pin_state;    // 引脚状态,Set,Reset;not frequently used
-    GPIO_EXTI_MODE_e exti_mode; // 外部中断模式 not frequently used
-    uint16_t GPIO_Pin;          // 引脚号,
-    // 这些引脚是stm32f4xx_hal_gpio.h中定义的宏!!! 一定要注意
-    // 随便取个名字当临时声明
-    void (*gpio_model_callback)(struct tmpgpio *); // exti中断回调函数
-    void *id;                                      // 区分不同的GPIO实例
-
+	GPIO_TypeDef *GPIOx;        // GPIOA,GPIOB,GPIOC...
+	GPIO_PinState pin_state;    // 引脚状态,Set,Reset;not frequently used
+	GPIO_EXTI_MODE_e exti_mode; // 外部中断模式 not frequently used
+	uint16_t GPIO_Pin;          // 引脚号,
+	// 这些引脚是stm32f4xx_hal_gpio.h中定义的宏!!! 一定要注意
+	// 随便取个名字当临时声明
+	void (*gpio_model_callback)(struct tmpgpio *); // exti中断回调函数
+	void *id;                                      // 区分不同的GPIO实例
 } GPIO_t;
 
 /**
@@ -52,15 +51,14 @@ typedef struct tmpgpio
  */
 typedef struct
 {
-    GPIO_TypeDef *GPIOx;        // GPIOA,GPIOB,GPIOC...
-    GPIO_PinState pin_state;    // 引脚状态,Set,Reset not frequently used
-    GPIO_EXTI_MODE_e exti_mode; // 外部中断模式 not frequently used
-    uint16_t GPIO_Pin;          // 引脚号,@note 这里的引脚号是GPIO_PIN_0,GPIO_PIN_1...
-    // 这些引脚是stm32f4xx_hal_gpio.h中定义的宏!!! 一定要注意
+	GPIO_TypeDef *GPIOx;        // GPIOA,GPIOB,GPIOC...
+	GPIO_PinState pin_state;    // 引脚状态,Set,Reset not frequently used
+	GPIO_EXTI_MODE_e exti_mode; // 外部中断模式 not frequently used
+	uint16_t GPIO_Pin;          // 引脚号,@note 这里的引脚号是GPIO_PIN_0,GPIO_PIN_1...
+	// 这些引脚是stm32f4xx_hal_gpio.h中定义的宏!!! 一定要注意
 
-    void (*gpio_model_callback)(GPIO_t *); // exti中断回调函数
-    void *id;                                    // 区分不同的GPIO实例
-
+	void (*gpio_model_callback)(GPIO_t *); // exti中断回调函数
+	void *id;                                    // 区分不同的GPIO实例
 } gpio_init_config_t;
 
 /**
@@ -100,4 +98,4 @@ void GPIO_Reset(GPIO_t *_instance);
  */
 GPIO_PinState GPIO_Read(GPIO_t *_instance);
 
-#endif //BSP_GPIO_H
+#endif /* __BSP_GPIO_H__ */

@@ -9,8 +9,8 @@
  * 
  */
 
-#ifndef _BSP_USART_H
-#define _BSP_USART_H
+#ifndef __BSP_USART_H__
+#define __BSP_USART_H__
 
 #include <stdint.h>
 #include "main.h"
@@ -20,12 +20,12 @@
 #define USART_RXBUFF_LIMIT 256 // 如果协议需要更大的buff,请修改这里
 
 // 模块回调函数,用于解析协议
-typedef void (*usart_module_callback)();
+typedef void (*usart_module_callback)( );
 
 /* 发送模式枚举 */
 typedef enum
 {
-	USART_TRANSFER_NONE=0,
+	USART_TRANSFER_NONE = 0,
 	USART_TRANSFER_BLOCKING,
 	USART_TRANSFER_IT,
 	USART_TRANSFER_DMA,
@@ -56,10 +56,10 @@ USART_t *USART_Register(usart_init_config_t *init_config);
 
 void USART_Service_Init(USART_t *_instance);
 
-void USART_Send(USART_t *_instance, uint8_t *send_buf, uint16_t send_size,usart_transfer_e mode);
+void USART_Send(USART_t *_instance, uint8_t *send_buf, uint16_t send_size, usart_transfer_e mode);
 
 uint8_t USART_Error_Lost(USART_t *_instance);
 
 uint8_t USART_Is_Ready(USART_t *_instance);
 
-#endif /* BSP_USART_H_ */
+#endif /* __BSP_USART_H__ */

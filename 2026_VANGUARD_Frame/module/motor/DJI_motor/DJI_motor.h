@@ -9,8 +9,8 @@
  *
  */
 
-#ifndef _DJI_MOTOR_H
-#define _DJI_MOTOR_H
+#ifndef __DJI_MOTOR_H__
+#define __DJI_MOTOR_H__
 
 #include "drv_motor.h"
 
@@ -23,24 +23,36 @@
 #define CURRENT_SMOOTH_COEF 0.9f     // 必须大于0.9
 #define ECD_ANGLE_COEF_DJI 0.043945f // (360/8192),将编码器值转化为角度制
 
+typedef enum
+{
+	ORIGIN = 0,
+	RAD    = 1,
+	DEGREE = 2,
+} DJI_motor_feedback_data_e;
+
 /* DJI电机CAN反馈信息*/
 typedef struct
 {
-    uint16_t last_ecd;        // 上一次读取的编码器值
-    uint16_t ecd;             // 0-8191,刻度总共有8192格
-    uint16_t offset_ecd;
-    int16_t speed;	    // 转子转速RPM
-    float angle_single_round; // 单圈角度
-    float speed_aps;          // 角速度,单位为:度/秒
-    float last_speed_aps;
-    int16_t real_current;     // 实际电流
-    uint8_t temperature;      // 温度 Celsius
+	uint16_t last_ecd;        // 上一次读取的编码器值
+	uint16_t ecd;             // 0-8191,刻度总共有8192格
+	uint16_t offset_ecd;
+	int16_t speed;	    // 转子转速RPM
+	float angle_single_round; // 单圈角度
+	float speed_aps;          // 角速度,单位为:度/秒
+	int16_t real_current;     // 实际电流
+	uint8_t temperature;      // 温度 Celsius
 
-    float total_ecd;	// 总编码器值,注意方向
-    float total_angle;   	// 总角度,注意方向
-    float total_rad;	// 总弧度,注意方向
-    int32_t total_round; 	// 总圈数,注意方向
+	float total_ecd;	// 总编码器值,注意方向
+	float total_angle;   	// 总角度,注意方向
+	float total_rad;	// 总弧度,注意方向
+	int32_t total_round; 	// 总圈数,注意方向
 } DJI_motor_callback_t;
+
+/* DJI电机CAN接收信息*/
+typedef struct
+{
+	int16_t current;        //电流
+} DJI_motor_fillmessage_t;
 
 /**
  * @brief DJI intelligent motor typedef
@@ -48,36 +60,29 @@ typedef struct
  */
 typedef struct
 {
-    motor_type_e motor_type;        // 电机类型
+	motor_type_e motor_type;        // 电机类型
 
-    motor_control_setting_t motor_settings; // 电机设置
-    motor_controller_t motor_controller;    // 电机控制器
+	motor_control_setting_t motor_settings; // 电机控制设置
+	motor_controller_t motor_controller;    // 电机控制器
 
-    CAN_t *motor_can_instance; // 电机CAN实例
+	CAN_t *motor_can_instance; // 电机CAN实例
 
-    motor_working_type_e stop_flag; // 启停标志
-    motor_error_detection_type_e motor_error_detection; // 异常检测
-    DJI_motor_callback_t measure;            // 电机测量值
+	motor_working_type_e motor_state_flag; // 启停标志
+	motor_error_detection_type_e motor_error_detection; // 异常检测
 
-    supervisor_t* supervisor;
+	DJI_motor_callback_t measure;            // 电机反馈值
+	DJI_motor_fillmessage_t target;  // 电机设定值
+	DJI_motor_feedback_data_e motor_feedback;
 
-    uint32_t feed_cnt;
-    float dt;
+	supervisor_t *supervisor;
 
-    // 分组发送设置
-    uint8_t sender_group;
-    uint8_t message_num;
+	uint32_t feed_cnt;
+	float dt;
+
+	// 分组发送设置
+	uint8_t sender_group;
+	uint8_t message_num;
 } DJI_motor_instance_t;
-
-//typedef struct
-//{
-//    uint8_t list_id;
-//    motor_e motor_type;
-//    motor_controller_init_t controller_param_init_config;
-//    motor_control_setting_t controller_setting_init_config;
-//    DJI_motor_feedback_data_e motor_feedback_init_config;
-//    can_init_config_t can_init_config;
-//} DJI_motor_init_config_t;
 
 /**
  * @brief 调用此函数注册一个DJI智能电机,需要传递较多的初始化参数,请在application初始化的时候调用此函数
@@ -141,4 +146,4 @@ void DJI_Motor_Enable(DJI_motor_instance_t *motor);
  */
 void DJI_Motor_Change_Outerloop(DJI_motor_instance_t *motor, closeloop_type_e outer_loop);
 
-#endif /* DJI_MOTOR_H */
+#endif /* __DJI_MOTOR_H__ */

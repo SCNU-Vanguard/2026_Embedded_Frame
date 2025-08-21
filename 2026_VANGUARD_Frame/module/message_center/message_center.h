@@ -9,8 +9,8 @@
  * 
  */
 
-#ifndef _MESSAGE_CENTER_H
-#define _MESSAGE_CENTER_H
+#ifndef __MESSAGE_CENTER_H__
+#define __MESSAGE_CENTER_H__
 
 #include <stdint.h>
 
@@ -20,15 +20,15 @@
 
 typedef struct mqtt_sub
 {
-    /* 用数组模拟FIFO队列 */
-    void *queue[QUEUE_SIZE];
-    uint8_t data_len;
-    uint8_t front_idx;
-    uint8_t back_idx;
-    uint8_t temp_size; // 当前队列长度
+	/* 用数组模拟FIFO队列 */
+	void *queue[QUEUE_SIZE];
+	uint8_t data_len;
+	uint8_t front_idx;
+	uint8_t back_idx;
+	uint8_t temp_size; // 当前队列长度
 
-    /* 指向下一个订阅了相同的话题的订阅者的指针 */
-    struct mqtt_sub *next_subs_queue; // 使得发布者可以通过链表访问所有订阅了相同话题的订阅者
+	/* 指向下一个订阅了相同的话题的订阅者的指针 */
+	struct mqtt_sub *next_subs_queue; // 使得发布者可以通过链表访问所有订阅了相同话题的订阅者
 } subscriber_t;
 
 /**
@@ -37,14 +37,14 @@ typedef struct mqtt_sub
  */
 typedef struct mqtt_pub
 {
-    /* 话题名称 */
-    char topic_name[MAX_TOPIC_NAME_LEN + 1]; // 1个字节用于存放字符串结束符 '\0'
-    uint8_t data_len;                        // 该话题的数据长度
-    /* 指向第一个订阅了该话题的订阅者,通过链表访问所有订阅者 */
-    subscriber_t *first_subs;
-    /* 指向下一个Publisher的指针 */
-    struct mqtt_pub *next_topic_node;
-    uint8_t pub_registered_flag; // 用于标记该发布者是否已经注册
+	/* 话题名称 */
+	char topic_name[MAX_TOPIC_NAME_LEN + 1]; // 1个字节用于存放字符串结束符 '\0'
+	uint8_t data_len;                        // 该话题的数据长度
+	/* 指向第一个订阅了该话题的订阅者,通过链表访问所有订阅者 */
+	subscriber_t *first_subs;
+	/* 指向下一个Publisher的指针 */
+	struct mqtt_pub *next_topic_node;
+	uint8_t pub_registered_flag; // 用于标记该发布者是否已经注册
 } publisher_t;
 
 /**
@@ -82,4 +82,4 @@ uint8_t Subscriber_Get_Message(subscriber_t *sub, void *data_ptr);
  */
 uint8_t Publisher_Push_Message(publisher_t *pub, void *data_ptr);
 
-#endif /* MESSAGE_CENTER_H_ */
+#endif /* __MESSAGE_CENTER_H__ */

@@ -15,7 +15,7 @@
 /* usart service instance, modules' info would be recoreded here using USART_Register() */
 /* usart服务实例,所有注册了usart的模块信息会被保存在这里 */
 static uint8_t idx;
-static USART_t *usart_instances[DEVICE_USART_CNT] = { NULL };
+static USART_t *usart_instances[DEVICE_USART_CNT] = {NULL};
 
 /**
  * @brief 启动串口服务,会在每个实例注册之后自动启用接收,当前实现为DMA接收,后续可能添加IT和BLOCKING接收
@@ -33,8 +33,8 @@ static USART_t *usart_instances[DEVICE_USART_CNT] = { NULL };
 void USART_Service_Init(USART_t *_instance)
 {
 	HAL_UARTEx_ReceiveToIdle_DMA(_instance->usart_handle,
-								 _instance->recv_buff,
-								 _instance->recv_buff_size);
+	                             _instance->recv_buff,
+	                             _instance->recv_buff_size);
 	// 关闭dma half transfer中断防止两次进入HAL_UARTEx_RxEventCallback()
 	// 这是HAL库的一个设计失误,发生DMA传输完成/半完成以及串口IDLE中断都会触发HAL_UARTEx_RxEventCallback()
 	// 我们只希望处理第一种和第三种情况,因此直接关闭DMA半传输中断
@@ -46,7 +46,7 @@ void USART_Service_Init(USART_t *_instance)
  *
  * @param init_config 传入串口初始化结构体
  */
-USART_t* USART_Register(usart_init_config_t *init_config)
+USART_t *USART_Register(usart_init_config_t *init_config)
 {
 	if (idx >= DEVICE_USART_CNT) // 超过最大实例数
 	{
@@ -56,7 +56,7 @@ USART_t* USART_Register(usart_init_config_t *init_config)
 		}
 	}
 
-	for (uint8_t i = 0; i < idx; i++) // 检查是否已经注册过
+	for (uint8_t i = 0 ; i < idx ; i++) // 检查是否已经注册过
 	{
 		if (usart_instances[i]->usart_handle == init_config->usart_handle)
 		{
@@ -67,14 +67,14 @@ USART_t* USART_Register(usart_init_config_t *init_config)
 		}
 	}
 
-	USART_t *instance = (USART_t*) malloc(sizeof(USART_t));
+	USART_t *instance = (USART_t *) malloc(sizeof(USART_t));
 	memset(instance, 0, sizeof(USART_t));
 
-	instance->usart_handle = init_config->usart_handle;
-	instance->recv_buff_size = init_config->recv_buff_size;
+	instance->usart_handle    = init_config->usart_handle;
+	instance->recv_buff_size  = init_config->recv_buff_size;
 	instance->module_callback = init_config->module_callback;
-	instance->beat = 0;
-	instance->lost_flag = 0;
+	instance->beat            = 0;
+	instance->lost_flag       = 0;
 
 	usart_instances[idx++] = instance;
 	USART_Service_Init(instance);
@@ -93,9 +93,9 @@ USART_t* USART_Register(usart_init_config_t *init_config)
  */
 /* @todo 当前仅进行了形式上的封装,后续要进一步考虑是否将module的行为与bsp完全分离 */
 void USART_Send(USART_t *_instance,
-				uint8_t *send_buf,
-				uint16_t send_size,
-				usart_transfer_e mode)
+                uint8_t *send_buf,
+                uint16_t send_size,
+                usart_transfer_e mode)
 {
 	switch (mode)
 	{
@@ -109,9 +109,8 @@ void USART_Send(USART_t *_instance,
 			HAL_UART_Transmit_DMA(_instance->usart_handle, send_buf, send_size);
 			break;
 		default:
-			while (1)
-				; // illegal mode! check your code context! 检查定义instance的代码上下文,可能出现指针越界
-//			break;
+			while (1); // illegal mode! check your code context! 检查定义instance的代码上下文,可能出现指针越界
+			//			break;
 	}
 }
 
@@ -142,7 +141,7 @@ uint8_t USART_Error_Lost(USART_t *_instance)
 
 	if (_instance == NULL)
 	{
-		for (size_t i = 0; i < idx; ++i)
+		for (size_t i = 0 ; i < idx ; ++i)
 		{
 			usart_instances[i]->beat++;
 
@@ -188,7 +187,7 @@ uint8_t USART_Error_Lost(USART_t *_instance)
  */
 void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t Size)
 {
-	for (uint8_t i = 0; i < idx; ++i)
+	for (uint8_t i = 0 ; i < idx ; ++i)
 	{ // find the instance which is being handled
 		if (huart == usart_instances[i]->usart_handle)
 		{ // call the callback function if it is not NULL
@@ -196,12 +195,12 @@ void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t Size)
 			if (usart_instances[i]->module_callback != NULL)
 			{
 				usart_instances[i]->current_size = Size;
-				usart_instances[i]->module_callback();
+				usart_instances[i]->module_callback( );
 				memset(usart_instances[i]->recv_buff, 0, Size); // 接收结束后清空buffer,对于变长数据是必要的
 			}
 			HAL_UARTEx_ReceiveToIdle_DMA(usart_instances[i]->usart_handle,
-										 usart_instances[i]->recv_buff,
-										 usart_instances[i]->recv_buff_size);
+			                             usart_instances[i]->recv_buff,
+			                             usart_instances[i]->recv_buff_size);
 			__HAL_DMA_DISABLE_IT(usart_instances[i]->usart_handle->hdmarx, DMA_IT_HT);
 			return; // break the loop
 		}
@@ -217,7 +216,7 @@ void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t Size)
  */
 void HAL_UART_ErrorCallback(UART_HandleTypeDef *huart)
 {
-	for (uint8_t i = 0; i < idx; ++i)
+	for (uint8_t i = 0 ; i < idx ; ++i)
 	{
 		if (huart == usart_instances[i]->usart_handle)
 		{
@@ -242,8 +241,8 @@ void HAL_UART_ErrorCallback(UART_HandleTypeDef *huart)
 			HAL_UART_DeInit(usart_instances[i]->usart_handle);  // 关闭串口
 			HAL_UART_Init(usart_instances[i]->usart_handle);    // 重新初始化串口
 			HAL_UARTEx_ReceiveToIdle_DMA(usart_instances[i]->usart_handle,
-										 usart_instances[i]->recv_buff,
-										 usart_instances[i]->recv_buff_size);
+			                             usart_instances[i]->recv_buff,
+			                             usart_instances[i]->recv_buff_size);
 			__HAL_DMA_DISABLE_IT(usart_instances[i]->usart_handle->hdmarx, DMA_IT_HT);
 			return;
 		}

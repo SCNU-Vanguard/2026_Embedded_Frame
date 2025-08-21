@@ -1,5 +1,3 @@
-
-
 #include <stdlib.h>
 #include <string.h>
 #include "bmi088_reg.h"
@@ -13,6 +11,8 @@
 #include "cmsis_os.h"
 #include "cmsis_os2.h"
 
+#include "user_lib.h"
+
 // ---------------------------以下私有函数,用于读写BMI088寄存器封装,blocking--------------------------------//
 /**
  * @brief 读取BMI088寄存器Accel. BMI088要求在不释放CS的情况下连续读取
@@ -24,15 +24,14 @@
  */
 static void BMI088_Accel_Read(bmi088_instance_t *bmi088, uint8_t reg, uint8_t *dataptr, uint8_t len)
 {
-    if (len > 6)
-        while (1)
-            ;
-    // 一次读取最多6个字节,加上两个dummy data    第一个字节的第一个位是读写位,1为读,0为写,1-7bit是寄存器地址
-    static uint8_t tx[8]; // 读取,第一个字节为0x80|reg ,第二个是dummy data,后面的没用都是dummy write
-    static uint8_t rx[8]; // 前两个字节是dummy data,第三个开始是真正的数据
-    tx[0] = 0x80 | reg;   // 静态变量每次进来还是上次的值,所以要每次都要给tx[0]赋值0x80
-    SPI_Transmit_Receive(bmi088->spi_acc, rx, tx, len + 2);
-    memcpy(dataptr, rx + 2, len); // @todo : memcpy有额外开销,后续可以考虑优化,在SPI中加入接口或模式,使得在一次传输结束后不释放CS,直接接着传输
+	if (len > 6)
+		while (1);
+	// 一次读取最多6个字节,加上两个dummy data    第一个字节的第一个位是读写位,1为读,0为写,1-7bit是寄存器地址
+	static uint8_t tx[8]; // 读取,第一个字节为0x80|reg ,第二个是dummy data,后面的没用都是dummy write
+	static uint8_t rx[8]; // 前两个字节是dummy data,第三个开始是真正的数据
+	tx[0] = 0x80 | reg;   // 静态变量每次进来还是上次的值,所以要每次都要给tx[0]赋值0x80
+	SPI_Transmit_Receive(bmi088->spi_acc, rx, tx, len + 2);
+	memcpy(dataptr, rx + 2, len); // @todo : memcpy有额外开销,后续可以考虑优化,在SPI中加入接口或模式,使得在一次传输结束后不释放CS,直接接着传输
 }
 
 /**
@@ -45,15 +44,14 @@ static void BMI088_Accel_Read(bmi088_instance_t *bmi088, uint8_t reg, uint8_t *d
  */
 static void BMI088_Gyro_Read(bmi088_instance_t *bmi088, uint8_t reg, uint8_t *dataptr, uint8_t len)
 {
-    if (len > 6)
-        while (1)
-            ;
-    // 一次读取最多6个字节,加上一个dummy data  ,第一个字节的第一个位是读写位,1为读,0为写,1-7bit是寄存器地址
-    static uint8_t tx[7] = {0x80}; // 读取,第一个字节为0x80 | reg ,之后是dummy data
-    static uint8_t rx[7];          // 第一个是dummy data,第三个开始是真正的数据
-    tx[0] = 0x80 | reg;
-    SPI_Transmit_Receive(bmi088->spi_gyro, rx, tx, len + 1);
-    memcpy(dataptr, rx + 1, len); // @todo : memcpy有额外开销,后续可以考虑优化,在SPI中加入接口或模式,使得在一次传输结束后不释放CS,直接接着传输
+	if (len > 6)
+		while (1);
+	// 一次读取最多6个字节,加上一个dummy data  ,第一个字节的第一个位是读写位,1为读,0为写,1-7bit是寄存器地址
+	static uint8_t tx[7] = {0x80}; // 读取,第一个字节为0x80 | reg ,之后是dummy data
+	static uint8_t rx[7];          // 第一个是dummy data,第三个开始是真正的数据
+	tx[0] = 0x80 | reg;
+	SPI_Transmit_Receive(bmi088->spi_gyro, rx, tx, len + 1);
+	memcpy(dataptr, rx + 1, len); // @todo : memcpy有额外开销,后续可以考虑优化,在SPI中加入接口或模式,使得在一次传输结束后不释放CS,直接接着传输
 }
 
 /**
@@ -66,8 +64,8 @@ static void BMI088_Gyro_Read(bmi088_instance_t *bmi088, uint8_t reg, uint8_t *da
  */
 static void BMI088_Accel_Write_SingleReg(bmi088_instance_t *bmi088, uint8_t reg, uint8_t data)
 {
-    uint8_t tx[2] = {reg, data};
-    SPI_Transmit(bmi088->spi_acc, tx, 2);
+	uint8_t tx[2] = {reg, data};
+	SPI_Transmit(bmi088->spi_acc, tx, 2);
 }
 
 /**
@@ -80,9 +78,10 @@ static void BMI088_Accel_Write_SingleReg(bmi088_instance_t *bmi088, uint8_t reg,
  */
 static void BMI088_Gyro_Write_SingleReg(bmi088_instance_t *bmi088, uint8_t reg, uint8_t data)
 {
-    uint8_t tx[2] = {reg, data};
-    SPI_Transmit(bmi088->spi_gyro, tx, 2);
+	uint8_t tx[2] = {reg, data};
+	SPI_Transmit(bmi088->spi_gyro, tx, 2);
 }
+
 // -------------------------以上为私有函数,封装了BMI088寄存器读写函数,blocking--------------------------------//
 
 // -------------------------以下为私有函数,用于初始化BMI088acc和gyro的硬件和配置--------------------------------//
@@ -91,22 +90,22 @@ static void BMI088_Gyro_Write_SingleReg(bmi088_instance_t *bmi088, uint8_t reg, 
 #define BMI088ERROR 2
 // BMI088初始化配置数组for accel,第一列为reg地址,第二列为写入的配置值,第三列为错误码(如果出错)
 static uint8_t bmi088_accel_init_table[BMI088_WRITE_ACCEL_REG_NUM][3] =
-    {
-        {BMI088_ACC_PWR_CTRL, BMI088_ACC_ENABLE_ACC_ON, BMI088_ACC_PWR_CTRL_ERROR},
-        {BMI088_ACC_PWR_CONF, BMI088_ACC_PWR_ACTIVE_MODE, BMI088_ACC_PWR_CONF_ERROR},
-        {BMI088_ACC_CONF, BMI088_ACC_NORMAL | BMI088_ACC_1600_HZ | BMI088_ACC_CONF_MUST_Set, BMI088_ACC_CONF_ERROR},
-        {BMI088_ACC_RANGE, BMI088_ACC_RANGE_6G, BMI088_ACC_RANGE_ERROR},
-        {BMI088_INT1_IO_CTRL, BMI088_ACC_INT1_IO_ENABLE | BMI088_ACC_INT1_GPIO_PP | BMI088_ACC_INT1_GPIO_LOW, BMI088_INT1_IO_CTRL_ERROR},
-        {BMI088_INT_MAP_DATA, BMI088_ACC_INT1_DRDY_INTERRUPT, BMI088_INT_MAP_DATA_ERROR}};
+{
+	{BMI088_ACC_PWR_CTRL, BMI088_ACC_ENABLE_ACC_ON, BMI088_ACC_PWR_CTRL_ERROR},
+	{BMI088_ACC_PWR_CONF, BMI088_ACC_PWR_ACTIVE_MODE, BMI088_ACC_PWR_CONF_ERROR},
+	{BMI088_ACC_CONF, BMI088_ACC_NORMAL | BMI088_ACC_1600_HZ | BMI088_ACC_CONF_MUST_Set, BMI088_ACC_CONF_ERROR},
+	{BMI088_ACC_RANGE, BMI088_ACC_RANGE_6G, BMI088_ACC_RANGE_ERROR},
+	{BMI088_INT1_IO_CTRL, BMI088_ACC_INT1_IO_ENABLE | BMI088_ACC_INT1_GPIO_PP | BMI088_ACC_INT1_GPIO_LOW, BMI088_INT1_IO_CTRL_ERROR},
+	{BMI088_INT_MAP_DATA, BMI088_ACC_INT1_DRDY_INTERRUPT, BMI088_INT_MAP_DATA_ERROR}};
 // BMI088初始化配置数组for gyro,第一列为reg地址,第二列为写入的配置值,第三列为错误码(如果出错)
 static uint8_t bmi088_gyro_init_table[BMI088_WRITE_GYRO_REG_NUM][3] =
-    {
-        {BMI088_GYRO_RANGE, BMI088_GYRO_2000, BMI088_GYRO_RANGE_ERROR},
-        {BMI088_GYRO_BANDWIDTH, BMI088_GYRO_2000_230_HZ | BMI088_GYRO_BANDWIDTH_MUST_Set, BMI088_GYRO_BANDWIDTH_ERROR},
-        {BMI088_GYRO_LPM1, BMI088_GYRO_NORMAL_MODE, BMI088_GYRO_LPM1_ERROR},
-        {BMI088_GYRO_CTRL, BMI088_DRDY_ON, BMI088_GYRO_CTRL_ERROR},
-        {BMI088_GYRO_INT3_INT4_IO_CONF, BMI088_GYRO_INT3_GPIO_PP | BMI088_GYRO_INT3_GPIO_LOW, BMI088_GYRO_INT3_INT4_IO_CONF_ERROR},
-        {BMI088_GYRO_INT3_INT4_IO_MAP, BMI088_GYRO_DRDY_IO_INT3, BMI088_GYRO_INT3_INT4_IO_MAP_ERROR}};
+{
+	{BMI088_GYRO_RANGE, BMI088_GYRO_2000, BMI088_GYRO_RANGE_ERROR},
+	{BMI088_GYRO_BANDWIDTH, BMI088_GYRO_2000_230_HZ | BMI088_GYRO_BANDWIDTH_MUST_Set, BMI088_GYRO_BANDWIDTH_ERROR},
+	{BMI088_GYRO_LPM1, BMI088_GYRO_NORMAL_MODE, BMI088_GYRO_LPM1_ERROR},
+	{BMI088_GYRO_CTRL, BMI088_DRDY_ON, BMI088_GYRO_CTRL_ERROR},
+	{BMI088_GYRO_INT3_INT4_IO_CONF, BMI088_GYRO_INT3_GPIO_PP | BMI088_GYRO_INT3_GPIO_LOW, BMI088_GYRO_INT3_INT4_IO_CONF_ERROR},
+	{BMI088_GYRO_INT3_INT4_IO_MAP, BMI088_GYRO_DRDY_IO_INT3, BMI088_GYRO_INT3_INT4_IO_MAP_ERROR}};
 // @attention : 以上两个数组配合各自的初始化函数使用. 若要修改请参照BMI088 datasheet
 
 /**
@@ -117,53 +116,55 @@ static uint8_t bmi088_gyro_init_table[BMI088_WRITE_GYRO_REG_NUM][3] =
  */
 static uint8_t BMI088_Accel_Init(bmi088_instance_t *bmi088)
 {
-    uint8_t WhoAmI_check = 0;
+	uint8_t WhoAmI_check = 0;
 
-    // 加速度计以I2C模式启动,需要一次上升沿来切换到SPI模式,因此进行一次fake write
-    BMI088_Accel_Read(bmi088, BMI088_ACC_CHIP_ID, &WhoAmI_check, 1);
-    DWT_Delay(0.001f);
+	// 加速度计以I2C模式启动,需要一次上升沿来切换到SPI模式,因此进行一次fake write
+	BMI088_Accel_Read(bmi088, BMI088_ACC_CHIP_ID, &WhoAmI_check, 1);
+	DWT_Delay(0.001f);
 
-    BMI088_Accel_Write_SingleReg(bmi088, BMI088_ACC_SOFTRESET, BMI088_ACC_SOFTRESET_VALUE); // 软复位
-    DWT_Delay(BMI088_COM_WAIT_SENSOR_TIME / 1000);
+	BMI088_Accel_Write_SingleReg(bmi088, BMI088_ACC_SOFTRESET, BMI088_ACC_SOFTRESET_VALUE); // 软复位
+	DWT_Delay(BMI088_COM_WAIT_SENSOR_TIME / 1000);
 
-    // 检查ID,如果不是0x1E(bmi088 whoami寄存器值),则返回错误
-    BMI088_Accel_Read(bmi088, BMI088_ACC_CHIP_ID, &WhoAmI_check, 1);
-    if (WhoAmI_check != BMI088_ACC_CHIP_ID_VALUE)
-        return BMI088_NO_SENSOR;
-    DWT_Delay(0.001f);
-    // 初始化寄存器,提高可读性
-    uint8_t reg = 0, data = 0;
-    BMI088_ERORR_CODE_e error = 0;
-    // 使用sizeof而不是magic number,这样如果修改了数组大小,不用修改这里的代码;或者使用宏定义
-    for (uint8_t i = 0; i < sizeof(bmi088_accel_init_table) / sizeof(bmi088_accel_init_table[0]); i++) {
-        reg  = bmi088_accel_init_table[i][BMI088REG];
-        data = bmi088_accel_init_table[i][BMI088DATA];
-        BMI088_Accel_Write_SingleReg(bmi088, reg, data); // 写入寄存器
-        DWT_Delay(0.01f);
-        BMI088_Accel_Read(bmi088, reg, &data, 1); // 写完之后立刻读回检查
-        DWT_Delay(0.01f);
-        if (data != bmi088_accel_init_table[i][BMI088DATA])
-            error |= bmi088_accel_init_table[i][BMI088ERROR];
-        //{i--;} 可以设置retry次数,如果retry次数用完了,则返回error
-    }
-    // 设置灵敏度
-    switch (bmi088_accel_init_table[3][1]) {
-        case BMI088_ACC_RANGE_3G:
-            bmi088->BMI088_ACCEL_SEN = BMI088_ACCEL_3G_SEN;
-            break;
-        case BMI088_ACC_RANGE_6G:
-            bmi088->BMI088_ACCEL_SEN = BMI088_ACCEL_6G_SEN;
-            break;
-        case BMI088_ACC_RANGE_12G:
-            bmi088->BMI088_ACCEL_SEN = BMI088_ACCEL_12G_SEN;
-            break;
-        case BMI088_ACC_RANGE_24G:
-            bmi088->BMI088_ACCEL_SEN = BMI088_ACCEL_24G_SEN;
-            break;
-        default:
-            break;
-    }
-    return (uint8_t)error;
+	// 检查ID,如果不是0x1E(bmi088 whoami寄存器值),则返回错误
+	BMI088_Accel_Read(bmi088, BMI088_ACC_CHIP_ID, &WhoAmI_check, 1);
+	if (WhoAmI_check != BMI088_ACC_CHIP_ID_VALUE)
+		return BMI088_NO_SENSOR;
+	DWT_Delay(0.001f);
+	// 初始化寄存器,提高可读性
+	uint8_t reg               = 0, data = 0;
+	BMI088_ERORR_CODE_e error = 0;
+	// 使用sizeof而不是magic number,这样如果修改了数组大小,不用修改这里的代码;或者使用宏定义
+	for (uint8_t i = 0 ; i < sizeof(bmi088_accel_init_table) / sizeof(bmi088_accel_init_table[0]) ; i++)
+	{
+		reg  = bmi088_accel_init_table[i][BMI088REG];
+		data = bmi088_accel_init_table[i][BMI088DATA];
+		BMI088_Accel_Write_SingleReg(bmi088, reg, data); // 写入寄存器
+		DWT_Delay(0.01f);
+		BMI088_Accel_Read(bmi088, reg, &data, 1); // 写完之后立刻读回检查
+		DWT_Delay(0.01f);
+		if (data != bmi088_accel_init_table[i][BMI088DATA])
+			error |= bmi088_accel_init_table[i][BMI088ERROR];
+		//{i--;} 可以设置retry次数,如果retry次数用完了,则返回error
+	}
+	// 设置灵敏度
+	switch (bmi088_accel_init_table[3][1])
+	{
+		case BMI088_ACC_RANGE_3G:
+			bmi088->BMI088_ACCEL_SEN = BMI088_ACCEL_3G_SEN;
+			break;
+		case BMI088_ACC_RANGE_6G:
+			bmi088->BMI088_ACCEL_SEN = BMI088_ACCEL_6G_SEN;
+			break;
+		case BMI088_ACC_RANGE_12G:
+			bmi088->BMI088_ACCEL_SEN = BMI088_ACCEL_12G_SEN;
+			break;
+		case BMI088_ACC_RANGE_24G:
+			bmi088->BMI088_ACCEL_SEN = BMI088_ACCEL_24G_SEN;
+			break;
+		default:
+			break;
+	}
+	return (uint8_t) error;
 }
 
 /**
@@ -174,55 +175,58 @@ static uint8_t BMI088_Accel_Init(bmi088_instance_t *bmi088)
  */
 static uint8_t BMI088_Gyro_Init(bmi088_instance_t *bmi088)
 {
-    // 后续添加reset和通信检查?
-    // code to go here ...
-    BMI088_Gyro_Write_SingleReg(bmi088, BMI088_GYRO_SOFTRESET, BMI088_GYRO_SOFTRESET_VALUE); // 软复位
-    DWT_Delay(0.08f);
+	// 后续添加reset和通信检查?
+	// code to go here ...
+	BMI088_Gyro_Write_SingleReg(bmi088, BMI088_GYRO_SOFTRESET, BMI088_GYRO_SOFTRESET_VALUE); // 软复位
+	DWT_Delay(0.08f);
 
-    // 检查ID,如果不是0x0F(bmi088 whoami寄存器值),则返回错误
-    uint8_t WhoAmI_check = 0;
-    BMI088_Gyro_Read(bmi088, BMI088_GYRO_CHIP_ID, &WhoAmI_check, 1);
-    if (WhoAmI_check != BMI088_GYRO_CHIP_ID_VALUE)
-        return BMI088_NO_SENSOR;
-    DWT_Delay(0.001f);
+	// 检查ID,如果不是0x0F(bmi088 whoami寄存器值),则返回错误
+	uint8_t WhoAmI_check = 0;
+	BMI088_Gyro_Read(bmi088, BMI088_GYRO_CHIP_ID, &WhoAmI_check, 1);
+	if (WhoAmI_check != BMI088_GYRO_CHIP_ID_VALUE)
+		return BMI088_NO_SENSOR;
+	DWT_Delay(0.001f);
 
-    // 初始化寄存器,提高可读性
-    uint8_t reg = 0, data = 0;
-    BMI088_ERORR_CODE_e error = 0;
-    // 使用sizeof而不是magic number,这样如果修改了数组大小,不用修改这里的代码;或者使用宏定义
-    for (uint8_t i = 0; i < sizeof(bmi088_gyro_init_table) / sizeof(bmi088_gyro_init_table[0]); i++) {
-        reg  = bmi088_gyro_init_table[i][BMI088REG];
-        data = bmi088_gyro_init_table[i][BMI088DATA];
-        BMI088_Gyro_Write_SingleReg(bmi088, reg, data); // 写入寄存器
-        DWT_Delay(0.001f);
-        BMI088_Gyro_Read(bmi088, reg, &data, 1); // 写完之后立刻读回对应寄存器检查是否写入成功
-        DWT_Delay(0.001f);
-        if (data != bmi088_gyro_init_table[i][BMI088DATA])
-            error |= bmi088_gyro_init_table[i][BMI088ERROR];
-        //{i--;} 可以设置retry次数,尝试重新写入.如果retry次数用完了,则返回error
-    }
-    // 设置灵敏度
-    switch (bmi088_gyro_init_table[0][1]) {
-        case BMI088_GYRO_2000:
-            bmi088->BMI088_GYRO_SEN = BMI088_GYRO_2000_SEN;
-            break;
-        case BMI088_GYRO_1000:
-            bmi088->BMI088_GYRO_SEN = BMI088_GYRO_1000_SEN;
-            break;
-        case BMI088_GYRO_500:
-            bmi088->BMI088_GYRO_SEN = BMI088_GYRO_500_SEN;
-            break;
-        case BMI088_GYRO_250:
-            bmi088->BMI088_GYRO_SEN = BMI088_GYRO_250_SEN;
-            break;
-        case BMI088_GYRO_125:
-            bmi088->BMI088_GYRO_SEN = BMI088_GYRO_125_SEN;
-            break;
-        default:
-            break;
-    }
-    return (uint8_t)error;
+	// 初始化寄存器,提高可读性
+	uint8_t reg               = 0, data = 0;
+	BMI088_ERORR_CODE_e error = 0;
+	// 使用sizeof而不是magic number,这样如果修改了数组大小,不用修改这里的代码;或者使用宏定义
+	for (uint8_t i = 0 ; i < sizeof(bmi088_gyro_init_table) / sizeof(bmi088_gyro_init_table[0]) ; i++)
+	{
+		reg  = bmi088_gyro_init_table[i][BMI088REG];
+		data = bmi088_gyro_init_table[i][BMI088DATA];
+		BMI088_Gyro_Write_SingleReg(bmi088, reg, data); // 写入寄存器
+		DWT_Delay(0.001f);
+		BMI088_Gyro_Read(bmi088, reg, &data, 1); // 写完之后立刻读回对应寄存器检查是否写入成功
+		DWT_Delay(0.001f);
+		if (data != bmi088_gyro_init_table[i][BMI088DATA])
+			error |= bmi088_gyro_init_table[i][BMI088ERROR];
+		//{i--;} 可以设置retry次数,尝试重新写入.如果retry次数用完了,则返回error
+	}
+	// 设置灵敏度
+	switch (bmi088_gyro_init_table[0][1])
+	{
+		case BMI088_GYRO_2000:
+			bmi088->BMI088_GYRO_SEN = BMI088_GYRO_2000_SEN;
+			break;
+		case BMI088_GYRO_1000:
+			bmi088->BMI088_GYRO_SEN = BMI088_GYRO_1000_SEN;
+			break;
+		case BMI088_GYRO_500:
+			bmi088->BMI088_GYRO_SEN = BMI088_GYRO_500_SEN;
+			break;
+		case BMI088_GYRO_250:
+			bmi088->BMI088_GYRO_SEN = BMI088_GYRO_250_SEN;
+			break;
+		case BMI088_GYRO_125:
+			bmi088->BMI088_GYRO_SEN = BMI088_GYRO_125_SEN;
+			break;
+		default:
+			break;
+	}
+	return (uint8_t) error;
 }
+
 // -------------------------以上为私有函数,用于初始化BMI088acc和gyro的硬件和配置--------------------------------//
 
 /**
@@ -232,127 +236,146 @@ static uint8_t BMI088_Gyro_Init(bmi088_instance_t *bmi088)
  */
 void BMI088_Temp_Control(bmi088_instance_t *bmi088)
 {
-    static uint8_t temp_constant_time = 0;
-    static uint8_t first_temperate    = 0; // 第一次达到设定温度
-    static float target_temp          = 0;
-    target_temp                       = bmi088->ambient_temperature + 10; // 推荐比环境温度高10度
-    if (target_temp > 45.0f) target_temp = 45.0f;                         // 限制在45度以内
+	static uint8_t temp_constant_time = 0;
+	static uint8_t first_temperate    = 0; // 第一次达到设定温度
+	static float target_temp          = 0;
+	target_temp                       = bmi088->ambient_temperature + 10; // 推荐比环境温度高10度
+	if (target_temp > 45.0f)
+		target_temp = 45.0f;                         // 限制在45度以内
 
-    if (first_temperate) {
-        PID_Calculate(bmi088->heat_pid, bmi088->temperature, target_temp);
-        // 限制在正数范围
-        if (bmi088->heat_pid->Output < 0.0f) {
-            bmi088->heat_pid->Output = 0.0f;
-        }
-        if(bmi088->heat_pid->Iout<0){
-            bmi088->heat_pid->Iout = 0;
-        }
-        PWM_Set_DutyRatio(bmi088->heat_pwm, bmi088->heat_pid->Output);
-    } else {
-        // 在没有达到设置的温度-4，一直最大功率加热
-        PWM_Set_DutyRatio(bmi088->heat_pwm, 0.95f);
-        if (bmi088->temperature > target_temp - 4) {
-            temp_constant_time++;
-            if (temp_constant_time > 200) {
-                // 达到设置温度，设置积分项，加速收敛
-                first_temperate        = 1;
-                bmi088->heat_pid->Iout = 0.05f;
-            }
-        }
-    }
+	if (first_temperate)
+	{
+		PID_Position(bmi088->heat_pid, target_temp, bmi088->temperature);
+		// 限制在正数范围
+		if (bmi088->heat_pid->output < 0.0f)
+		{
+			bmi088->heat_pid->output = 0.0f;
+		}
+		if (bmi088->heat_pid->i_out < 0)
+		{
+			bmi088->heat_pid->i_out = 0;
+		}
+		PWM_Set_DutyRatio(bmi088->heat_pwm, bmi088->heat_pid->output);
+	}
+	else
+	{
+		// 在没有达到设置的温度-4，一直最大功率加热
+		PWM_Set_DutyRatio(bmi088->heat_pwm, 0.95f);
+		if (bmi088->temperature > target_temp - 4)
+		{
+			temp_constant_time++;
+			if (temp_constant_time > 200)
+			{
+				// 达到设置温度，设置积分项，加速收敛
+				first_temperate         = 1;
+				bmi088->heat_pid->i_out = 0.05f;
+			}
+		}
+	}
 }
 
 // -------------------------以下为私有函数,private用于IT模式下的中断处理---------------------------------//
 
 static void BMI088_Accel_SPI_Finish_Callback(SPI_t *spi)
 {
-    static bmi088_instance_t *bmi088;
-    static uint16_t callback_time = 0;
-    bmi088                        = (bmi088_instance_t *)(spi->id);
-    // 如果是加速度计的中断,则启动加速度计数据读取,并转换为实际值
-    if (bmi088->update_flag.acc == 1) {
-        for (uint8_t i = 0; i < 3; i++)
-            bmi088->acc[i] = bmi088->BMI088_ACCEL_SEN * (float)(int16_t)(((bmi088->acc_raw[2 * i + 1]) << 8) | bmi088->acc_raw[2 * i]);
-        bmi088->update_flag.acc = 0;
-    }
+	static bmi088_instance_t *bmi088;
+	static uint16_t callback_time = 0;
+	bmi088                        = (bmi088_instance_t *) (spi->id);
+	// 如果是加速度计的中断,则启动加速度计数据读取,并转换为实际值
+	if (bmi088->update_flag.acc == 1)
+	{
+		for (uint8_t i   = 0 ; i < 3 ; i++)
+			bmi088->acc[i] = bmi088->BMI088_ACCEL_SEN * (float) (int16_t) (((bmi088->acc_raw[2 * i + 1]) << 8) | bmi088->acc_raw[2 * i]);
+		bmi088->update_flag.acc = 0;
+	}
 
-    if (callback_time >= 500) {
-        BMI088_Accel_Read(bmi088, BMI088_TEMP_M, bmi088->temp_raw, 2);
-        int16_t temperate_raw_temp;
-        temperate_raw_temp = (int16_t)((bmi088->temp_raw[0] << 3) | (bmi088->temp_raw[1] >> 5));
-        if (temperate_raw_temp > 1023) temperate_raw_temp -= 2048;
+	if (callback_time >= 500)
+	{
+		BMI088_Accel_Read(bmi088, BMI088_TEMP_M, bmi088->temp_raw, 2);
+		int16_t temperate_raw_temp;
+		temperate_raw_temp = (int16_t) ((bmi088->temp_raw[0] << 3) | (bmi088->temp_raw[1] >> 5));
+		if (temperate_raw_temp > 1023)
+			temperate_raw_temp -= 2048;
 
-        bmi088->temperature = temperate_raw_temp * BMI088_TEMP_FACTOR + BMI088_TEMP_OFFSET;
-        // 设置环境温度
-        if (bmi088->ambient_temperature < 0) {
-            bmi088->ambient_temperature = bmi088->temperature;
-        }
-        BMI088_Temp_Control(bmi088);
-        callback_time = 0;
-    }
-    callback_time++;
+		bmi088->temperature = temperate_raw_temp * BMI088_TEMP_FACTOR + BMI088_TEMP_OFFSET;
+		// 设置环境温度
+		if (bmi088->ambient_temperature < 0)
+		{
+			bmi088->ambient_temperature = bmi088->temperature;
+		}
+		BMI088_Temp_Control(bmi088);
+		callback_time = 0;
+	}
+	callback_time++;
 }
 
 osThreadId_t instaskHandle; // 本来是全局变量直接extern
 
 static void BMI088_Gyro_SPI_Finish_Callback(SPI_t *spi)
 {
-    static bmi088_instance_t *bmi088 = NULL;
-    bmi088                        = (bmi088_instance_t *)(spi->id);
-    // 将陀螺仪数据转换为实际值
-    for (uint8_t i = 0; i < 3; i++)
-        bmi088->gyro[i] = bmi088->BMI088_GYRO_SEN * (float)(int16_t)(((bmi088->gyro_raw[2 * i + 1]) << 8) | bmi088->gyro_raw[2 * i]);
-    bmi088->update_flag.gyro = 0;
-    // 由于SPI速率为10.5Mbit/s，超出了BMI088的10Mbit/s限制，所以有些陀螺仪数据会出错
-    // 有尝试调低速率，但是这样加速度计中断在开机几秒后便无法触发，原因未知
-    ///@todo 找到原因降低速率，使数据恢复正常，可能原因是初始化需要较低的速率，之后可以拉满
-    // 下面的函数用于过滤错误数据,无法完全过滤
-    // begin
-    for (uint8_t i = 0; i < 3; i++) {
-        if (fabsf(bmi088->last_gyro[i] - bmi088->gyro[i]) > 10.0f)
-            return;
-    }
-    for (uint8_t i = 0; i < 3; i++) {
-        bmi088->last_gyro[i] = bmi088->gyro[i];
-    }
-    // end
-    bmi088->update_flag.imu_ready = 1;
-    osThreadFlagsSet(instaskHandle, IMU_READY_FLAG); // 通知主线程IMU数据准备完毕（以陀螺仪中断为准 1000Hz）
+	static bmi088_instance_t *bmi088 = NULL;
+	bmi088                           = (bmi088_instance_t *) (spi->id);
+	// 将陀螺仪数据转换为实际值
+	for (uint8_t i    = 0 ; i < 3 ; i++)
+		bmi088->gyro[i] = bmi088->BMI088_GYRO_SEN * (float) (int16_t) (((bmi088->gyro_raw[2 * i + 1]) << 8) | bmi088->gyro_raw[2 * i]);
+	bmi088->update_flag.gyro = 0;
+	// 由于SPI速率为10.5Mbit/s，超出了BMI088的10Mbit/s限制，所以有些陀螺仪数据会出错
+	// 有尝试调低速率，但是这样加速度计中断在开机几秒后便无法触发，原因未知
+	///@todo 找到原因降低速率，使数据恢复正常，可能原因是初始化需要较低的速率，之后可以拉满
+	// 下面的函数用于过滤错误数据,无法完全过滤
+	// begin
+	for (uint8_t i = 0 ; i < 3 ; i++)
+	{
+		if (fabsf(bmi088->last_gyro[i] - bmi088->gyro[i]) > 10.0f)
+			return;
+	}
+	for (uint8_t i = 0 ; i < 3 ; i++)
+	{
+		bmi088->last_gyro[i] = bmi088->gyro[i];
+	}
+	// end
+	bmi088->update_flag.imu_ready = 1;
+	osThreadFlagsSet(instaskHandle, IMU_READY_FLAG); // 通知主线程IMU数据准备完毕（以陀螺仪中断为准 1000Hz）
 }
 
 static void BMI088_Accel_INT_Callback(GPIO_t *gpio)
 {
-    static bmi088_instance_t *bmi088;
-    bmi088 = (bmi088_instance_t *)(gpio->id);
-    // 启动加速度计数据读取,并转换为实际值
-    BMI088_Accel_Read(bmi088, BMI088_ACCEL_XOUT_L, bmi088->acc_raw, 6);
-    bmi088->update_flag.acc = 1;
-    // 读取完毕会调用BMI088AccSPIFinishCallback
+	static bmi088_instance_t *bmi088;
+	bmi088 = (bmi088_instance_t *) (gpio->id);
+	// 启动加速度计数据读取,并转换为实际值
+	BMI088_Accel_Read(bmi088, BMI088_ACCEL_XOUT_L, bmi088->acc_raw, 6);
+	bmi088->update_flag.acc = 1;
+	// 读取完毕会调用BMI088AccSPIFinishCallback
 }
 
 static void BMI088_Gyro_INT_Callback(GPIO_t *gpio)
 {
-    static bmi088_instance_t *bmi088 = NULL;
-    bmi088                        = (bmi088_instance_t *)(gpio->id);
-    // 启动陀螺仪数据读取,并转换为实际值
-    BMI088_Gyro_Read(bmi088, BMI088_GYRO_X_L, bmi088->gyro_raw, 6);
-    bmi088->update_flag.gyro = 1;
-    // 读取完毕会调用BMI088GyroSPIFinishCallback
+	static bmi088_instance_t *bmi088 = NULL;
+	bmi088                           = (bmi088_instance_t *) (gpio->id);
+	// 启动陀螺仪数据读取,并转换为实际值
+	BMI088_Gyro_Read(bmi088, BMI088_GYRO_X_L, bmi088->gyro_raw, 6);
+	bmi088->update_flag.gyro = 1;
+	// 读取完毕会调用BMI088GyroSPIFinishCallback
 }
+
 // -------------------------以上为私有函数,private用于IT模式下的中断处理---------------------------------//
 
 // -------------------------以下为私有函数,用于改变BMI088的配置--------------------------------//
 static void BMI088_Set_Mode(bmi088_instance_t *bmi088Instance, bmi088_work_mode_e mode)
 {
-    bmi088Instance->work_mode = mode;
-    if (mode == BMI088_BLOCK_PERIODIC_MODE) {
-        SPI_Set_Mode(bmi088Instance->spi_acc, SPI_BLOCK_MODE);
-        SPI_Set_Mode(bmi088Instance->spi_gyro, SPI_BLOCK_MODE);
-    } else if (mode == BMI088_BLOCK_TRIGGER_MODE) {
-        SPI_Set_Mode(bmi088Instance->spi_acc, SPI_DMA_MODE);
-        SPI_Set_Mode(bmi088Instance->spi_gyro, SPI_DMA_MODE);
-    }
+	bmi088Instance->work_mode = mode;
+	if (mode == BMI088_BLOCK_PERIODIC_MODE)
+	{
+		SPI_Set_Mode(bmi088Instance->spi_acc, SPI_BLOCK_MODE);
+		SPI_Set_Mode(bmi088Instance->spi_gyro, SPI_BLOCK_MODE);
+	}
+	else if (mode == BMI088_BLOCK_TRIGGER_MODE)
+	{
+		SPI_Set_Mode(bmi088Instance->spi_acc, SPI_DMA_MODE);
+		SPI_Set_Mode(bmi088Instance->spi_gyro, SPI_DMA_MODE);
+	}
 }
+
 // -------------------------以上为私有函数,用于改变BMI088的配置--------------------------------//
 
 // -------------------------以下为公有函数,用于注册BMI088,标定和数据读取--------------------------------//
@@ -364,44 +387,48 @@ static void BMI088_Set_Mode(bmi088_instance_t *bmi088Instance, bmi088_work_mode_
  */
 uint8_t BMI088_Acquire(bmi088_instance_t *bmi088, bmi088_data_t *data_store)
 {
-    // 如果是blocking模式,则主动触发一次读取并返回数据
-    if (bmi088->work_mode == BMI088_BLOCK_PERIODIC_MODE) {
-        static uint8_t buf[6] = {0}; // 最多读取6个byte(gyro/acc,temp是2)
-        // 读取accel的x轴数据首地址,bmi088内部自增读取地址 // 3* sizeof(int16_t)
-        BMI088_Accel_Read(bmi088, BMI088_ACCEL_XOUT_L, buf, 6);
-        for (uint8_t i = 0; i < 3; i++)
-            data_store->acc[i] = bmi088->BMI088_ACCEL_SEN * (float)(int16_t)(((buf[2 * i + 1]) << 8) | buf[2 * i]);
-        BMI088_Gyro_Read(bmi088, BMI088_GYRO_X_L, buf, 6); // 连续读取3个(3*2=6)轴的角速度
-        for (uint8_t i = 0; i < 3; i++)
-            data_store->gyro[i] = bmi088->BMI088_GYRO_SEN * (float)(int16_t)(((buf[2 * i + 1]) << 8) | buf[2 * i]);
-        BMI088_Accel_Read(bmi088, BMI088_TEMP_M, buf, 2); // 读温度,温度传感器在accel上
-        data_store->temperature = (float)(int16_t)((buf[0] << 3) | (buf[1] >> 5)) * BMI088_TEMP_FACTOR + BMI088_TEMP_OFFSET;
-        // 更新BMI088自身结构体数据
-        for (uint8_t i = 0; i < 3; i++) {
-            bmi088->acc[i]  = data_store->acc[i];
-            bmi088->gyro[i] = data_store->gyro[i];
-        }
-        bmi088->temperature = data_store->temperature;
-        return 1;
-    }
-    // 如果是IT模式,则检查标志位.当传感器数据准备好会触发外部中断,中断服务函数会将标志位置1
-    if (bmi088->work_mode == BMI088_BLOCK_TRIGGER_MODE && bmi088->update_flag.imu_ready == 1) {
-        data_store->acc[0]            = bmi088->acc[0];
-        data_store->acc[1]            = bmi088->acc[1];
-        data_store->acc[2]            = bmi088->acc[2];
-        data_store->gyro[0]           = bmi088->gyro[0];
-        data_store->gyro[1]           = bmi088->gyro[1];
-        data_store->gyro[2]           = bmi088->gyro[2];
-        data_store->temperature       = bmi088->temperature;
-        bmi088->update_flag.imu_ready = 0;
-        return 1;
-    }
-    // 如果数据还没准备好,则返回空数据
-    if (bmi088->update_flag.imu_ready == 0) {
-        data_store = NULL;
-        return 0;
-    }
-    return 255;
+	// 如果是blocking模式,则主动触发一次读取并返回数据
+	if (bmi088->work_mode == BMI088_BLOCK_PERIODIC_MODE)
+	{
+		static uint8_t buf[6] = {0}; // 最多读取6个byte(gyro/acc,temp是2)
+		// 读取accel的x轴数据首地址,bmi088内部自增读取地址 // 3* sizeof(int16_t)
+		BMI088_Accel_Read(bmi088, BMI088_ACCEL_XOUT_L, buf, 6);
+		for (uint8_t i       = 0 ; i < 3 ; i++)
+			data_store->acc[i] = bmi088->BMI088_ACCEL_SEN * (float) (int16_t) (((buf[2 * i + 1]) << 8) | buf[2 * i]);
+		BMI088_Gyro_Read(bmi088, BMI088_GYRO_X_L, buf, 6); // 连续读取3个(3*2=6)轴的角速度
+		for (uint8_t i        = 0 ; i < 3 ; i++)
+			data_store->gyro[i] = bmi088->BMI088_GYRO_SEN * (float) (int16_t) (((buf[2 * i + 1]) << 8) | buf[2 * i]);
+		BMI088_Accel_Read(bmi088, BMI088_TEMP_M, buf, 2); // 读温度,温度传感器在accel上
+		data_store->temperature = (float) (int16_t) ((buf[0] << 3) | (buf[1] >> 5)) * BMI088_TEMP_FACTOR + BMI088_TEMP_OFFSET;
+		// 更新BMI088自身结构体数据
+		for (uint8_t i = 0 ; i < 3 ; i++)
+		{
+			bmi088->acc[i]  = data_store->acc[i];
+			bmi088->gyro[i] = data_store->gyro[i];
+		}
+		bmi088->temperature = data_store->temperature;
+		return 1;
+	}
+	// 如果是IT模式,则检查标志位.当传感器数据准备好会触发外部中断,中断服务函数会将标志位置1
+	if (bmi088->work_mode == BMI088_BLOCK_TRIGGER_MODE && bmi088->update_flag.imu_ready == 1)
+	{
+		data_store->acc[0]            = bmi088->acc[0];
+		data_store->acc[1]            = bmi088->acc[1];
+		data_store->acc[2]            = bmi088->acc[2];
+		data_store->gyro[0]           = bmi088->gyro[0];
+		data_store->gyro[1]           = bmi088->gyro[1];
+		data_store->gyro[2]           = bmi088->gyro[2];
+		data_store->temperature       = bmi088->temperature;
+		bmi088->update_flag.imu_ready = 0;
+		return 1;
+	}
+	// 如果数据还没准备好,则返回空数据
+	if (bmi088->update_flag.imu_ready == 0)
+	{
+		data_store = NULL;
+		return 0;
+	}
+	return 255;
 }
 
 /**
@@ -411,12 +438,14 @@ uint8_t BMI088_Acquire(bmi088_instance_t *bmi088, bmi088_data_t *data_store)
  */
 uint8_t BMI088_Acquire_IT_Status(bmi088_instance_t *bmi088)
 {
-    // 只有中断才能读取标志位
-    if (bmi088->work_mode == BMI088_BLOCK_TRIGGER_MODE && bmi088->update_flag.imu_ready == 1) {
-        bmi088->update_flag.imu_ready = 0;
-        return 1;
-    } else
-        return 0;
+	// 只有中断才能读取标志位
+	if (bmi088->work_mode == BMI088_BLOCK_TRIGGER_MODE && bmi088->update_flag.imu_ready == 1)
+	{
+		bmi088->update_flag.imu_ready = 0;
+		return 1;
+	}
+	else
+		return 0;
 }
 
 // #pragma message ("REMEMBER TO CHANGE CALI PARAMETERS IF YOU CHOOSE NOT TO CALIBRATE ONLINE(parameters in robot_def.h)")
@@ -426,84 +455,213 @@ uint8_t BMI088_Acquire_IT_Status(bmi088_instance_t *bmi088)
  * @attention 不管工作模式是blocking还是IT,标定时都是blocking模式,所以不用担心中断关闭后无法标定(RobotInit关闭了全局中断)
  * @param _bmi088 待标定的BMI088实例
  */
+float gyro_diff[3], g_norm_diff;
+
 void BMI088_Calibrate_IMU(bmi088_instance_t *_bmi088)
 {
-    if (_bmi088->cali_mode == BMI088_CALIBRATE_ONLINE_MODE) // 性感bmi088在线标定
-    {
-        static uint16_t cali_time_count = 0;
-        while (cali_time_count < GYRO_CALIBRATE_TIME) {
-            if (cali_time_count % 1000 == 0) {
-                Buzzer_One_Note(1047, 0.2f);
-            }
-            bmi088_data_t bmi088_data = {0};
-            BMI088_Acquire(_bmi088, &bmi088_data);
-            bmi088_data.gyro[0] += _bmi088->gyro_offset[0];
-            bmi088_data.gyro[1] += _bmi088->gyro_offset[1];
-            bmi088_data.gyro[2] += _bmi088->gyro_offset[2];
-            _bmi088->gyro_offset[0] -= 0.0003f * bmi088_data.gyro[0];
-            _bmi088->gyro_offset[1] -= 0.0003f * bmi088_data.gyro[1];
-            _bmi088->gyro_offset[2] -= 0.0003f * bmi088_data.gyro[2];
-            cali_time_count++;
-            DWT_Delay(0.001f);
-        }
-    }
-    // 导入数据
-    else if (_bmi088->cali_mode == BMI088_LOAD_PRE_CALI_MODE) {
-        _bmi088->gyro_offset[0] = BMI088_PRE_CALI_GYRO_X_OFFSET;
-        _bmi088->gyro_offset[1] = BMI088_PRE_CALI_GYRO_Y_OFFSET;
-        _bmi088->gyro_offset[2] = BMI088_PRE_CALI_GYRO_Z_OFFSET;
-    }
+	if (_bmi088->cali_mode == BMI088_CALIBRATE_ONLINE_MODE) // 性感bmi088在线标定
+	{
+		static float start_time       = 0.0f;
+		static uint16_t cail_time     = 6000;
+		static uint16_t acc_cali_time = 6000;
+		int16_t bmi088_raw_temp;
+		float gyro_max[3], gyro_min[3];
+		float g_norm_temp, g_norm_max, g_norm_min;
+		static uint16_t cali_time_count = 0;
+
+		start_time = DWT_GetTimeline_s( );
+		do
+		{
+			if (DWT_GetTimeline_s( ) - start_time > 12.01f)
+			{
+				_bmi088->gyro_offset[0] = BMI088_PRE_CALI_GYRO_X_OFFSET;
+				_bmi088->gyro_offset[1] = BMI088_PRE_CALI_GYRO_Y_OFFSET;
+				_bmi088->gyro_offset[2] = BMI088_PRE_CALI_GYRO_Z_OFFSET;
+				_bmi088->g_norm         = G_NORM;
+				_bmi088->temperature    = 40.0f; // 40度
+				break;
+			}
+
+			DWT_Delay(0.0005f);
+			_bmi088->g_norm = 0;
+
+			for (uint8_t i = 0 ; i < 3 ; i++)
+			{
+				_bmi088->gyro_offset[i] = 0.0f;
+			}
+
+			for (uint16_t i = 0 ; i < cail_time ; i++)
+			{
+				bmi088_data_t bmi088_data = {0};
+				BMI088_Acquire(_bmi088, &bmi088_data);
+
+				g_norm_temp = NormOf3d(bmi088_data.acc);
+				_bmi088->g_norm += g_norm_temp;
+
+				for (uint8_t j = 0 ; j < 3 ; j++)
+				{
+					_bmi088->gyro_offset[j] += bmi088_data.gyro[j]; // 逐渐减小偏移量
+				}
+
+				if (i == 0)
+				{
+					g_norm_max = g_norm_temp;
+					g_norm_min = g_norm_temp;
+
+					for (uint8_t j = 0 ; j < 3 ; j++)
+					{
+						gyro_max[j] = bmi088_data.gyro[j];
+						gyro_min[j] = bmi088_data.gyro[j];
+					}
+				}
+				else
+				{
+					if (g_norm_temp > g_norm_max)
+					{
+						g_norm_max = g_norm_temp;
+					}
+					if (g_norm_temp < g_norm_min)
+					{
+						g_norm_min = g_norm_temp;
+					}
+
+					for (uint8_t j = 0 ; j < 3 ; j++)
+					{
+						if (bmi088_data.gyro[j] > gyro_max[j])
+						{
+							gyro_max[j] = bmi088_data.gyro[j];
+						}
+						if (bmi088_data.gyro[j] < gyro_min[j])
+						{
+							gyro_min[j] = bmi088_data.gyro[j];
+						}
+					}
+				}
+
+				g_norm_diff = g_norm_max - g_norm_min;
+				for (uint8_t j = 0 ; j < 3 ; j++)
+				{
+					gyro_diff[j] += (gyro_max[j] + gyro_min[j]) / 2.0f;
+				}
+				if (g_norm_diff > 0.5f || gyro_diff[0] > 0.15f || gyro_diff[1] > 0.15f || gyro_diff[2] > 0.15f)
+				{
+					break;
+				}
+				DWT_Delay(0.0005f);
+				if (cali_time_count % 1000 == 0)
+				{
+					Buzzer_One_Note(1047, 0.2f);
+				}
+				cali_time_count++;
+			}
+			_bmi088->g_norm /= (float) cail_time; // 计算平均值
+			for (uint8_t i = 0 ; i < 3 ; i++)
+			{
+				_bmi088->gyro_offset[i] /= cail_time; // 计算偏移量
+			}
+		} while (g_norm_diff > 0.5f || fabsf(_bmi088->g_norm - 9.8f) > 0.5f || gyro_diff[0] > 0.15f || gyro_diff[1] > 0.15f || gyro_diff[2] > 0.15f || fabsf(_bmi088->gyro_offset[0]) > 0.01f || fabsf(_bmi088->gyro_offset[1]) > 0.01f || fabsf(_bmi088->gyro_offset[2]) > 0.01f);
+
+		_bmi088->accel_scale = 9.81f / _bmi088->g_norm; // 计算加速度计的缩放系数
+
+		for (uint16_t i = 0 ; i < acc_cali_time ; i++)
+		{
+			bmi088_data_t bmi088_data = {0};
+			BMI088_Acquire(_bmi088, &bmi088_data);
+			for (uint8_t j = 0 ; j < 3 ; j++)
+			{
+				_bmi088->acc_offset[j] += bmi088_data.acc[j]; // 逐渐减小偏移量
+			}
+
+			DWT_Delay(0.0005f);
+
+			if (cali_time_count % 1000 == 0)
+			{
+				Buzzer_One_Note(1047, 0.2f);
+			}
+			cali_time_count++;
+		}
+
+		// while (cali_time_count < GYRO_CALIBRATE_TIME)
+		// {
+		// 	if (cali_time_count % 1000 == 0)
+		// 	{
+		// 		Buzzer_One_Note(1047, 0.2f);
+		// 	}
+		// 	bmi088_data_t bmi088_data = {0};
+		// 	BMI088_Acquire(_bmi088, &bmi088_data);
+		// 	bmi088_data.gyro[0] += _bmi088->gyro_offset[0];
+		// 	bmi088_data.gyro[1] += _bmi088->gyro_offset[1];
+		// 	bmi088_data.gyro[2] += _bmi088->gyro_offset[2];
+		// 	_bmi088->gyro_offset[0] -= 0.0003f * bmi088_data.gyro[0];
+		// 	_bmi088->gyro_offset[1] -= 0.0003f * bmi088_data.gyro[1];
+		// 	_bmi088->gyro_offset[2] -= 0.0003f * bmi088_data.gyro[2];
+		// 	cali_time_count++;
+		// 	DWT_Delay(0.001f);
+		// }
+	}
+	// 导入数据
+	else if (_bmi088->cali_mode == BMI088_LOAD_PRE_CALI_MODE)
+	{
+		_bmi088->gyro_offset[0] = BMI088_PRE_CALI_GYRO_X_OFFSET;
+		_bmi088->gyro_offset[1] = BMI088_PRE_CALI_GYRO_Y_OFFSET;
+		_bmi088->gyro_offset[2] = BMI088_PRE_CALI_GYRO_Z_OFFSET;
+	}
 }
 
 bmi088_instance_t *BMI088_Register(bmi088_init_config_t *config)
 {
-    // 申请内存
-    bmi088_instance_t *bmi088_instance = (bmi088_instance_t *)malloc(sizeof(bmi088_instance_t));
-    // 从右向左赋值,让bsp instance保存指向bmi088_instance的指针(父指针),便于在底层中断中访问bmi088_instance
-    config->acc_int_config.id =
-        config->gyro_int_config.id =
-            config->spi_acc_config.id =
-                config->spi_gyro_config.id =
-                    config->heat_pwm_config.id = bmi088_instance;
+	// 申请内存
+	bmi088_instance_t *bmi088_instance = (bmi088_instance_t *) malloc(sizeof(bmi088_instance_t));
+	memset(bmi088_instance, 0, sizeof(bmi088_instance_t)); // 清零
+	// 从右向左赋值,让bsp instance保存指向bmi088_instance的指针(父指针),便于在底层中断中访问bmi088_instance
+	config->acc_int_config.id      =
+			config->gyro_int_config.id =
+			config->spi_acc_config.id  =
+			config->spi_gyro_config.id =
+			config->heat_pwm_config.id = bmi088_instance;
 
-    // 根据参数选择工作模式
-    if (config->work_mode == BMI088_BLOCK_PERIODIC_MODE) {
-        config->spi_acc_config.spi_work_mode  = SPI_BLOCK_MODE;
-        config->spi_gyro_config.spi_work_mode = SPI_BLOCK_MODE;
-        // callbacks are all NULL
-    } else if (config->work_mode == BMI088_BLOCK_TRIGGER_MODE) {
-        config->spi_gyro_config.spi_work_mode = SPI_DMA_MODE; // 如果DMA资源不够,可以用SPI_IT_MODE
-        config->spi_gyro_config.spi_work_mode = SPI_DMA_MODE;
-        // 设置回调函数
-        config->spi_acc_config.callback             = BMI088_Accel_SPI_Finish_Callback;
-        config->spi_gyro_config.callback            = BMI088_Gyro_SPI_Finish_Callback;
-        config->acc_int_config.gpio_model_callback  = BMI088_Accel_INT_Callback;
-        config->gyro_int_config.gpio_model_callback = BMI088_Gyro_INT_Callback;
-        bmi088_instance->acc_int                    = GPIO_Register(&config->acc_int_config); // 只有在非阻塞模式下才需要注册中断
-        bmi088_instance->gyro_int                   = GPIO_Register(&config->gyro_int_config);
-    }
-    // 注册实例
-    bmi088_instance->spi_acc  = SPI_Register(&config->spi_acc_config);
-    bmi088_instance->spi_gyro = SPI_Register(&config->spi_gyro_config);
-    bmi088_instance->heat_pwm = PWM_Register(&config->heat_pwm_config);
+	// 根据参数选择工作模式
+	if (config->work_mode == BMI088_BLOCK_PERIODIC_MODE)
+	{
+		config->spi_acc_config.spi_work_mode  = SPI_BLOCK_MODE;
+		config->spi_gyro_config.spi_work_mode = SPI_BLOCK_MODE;
+		// callbacks are all NULL
+	}
+	else if (config->work_mode == BMI088_BLOCK_TRIGGER_MODE)
+	{
+		config->spi_gyro_config.spi_work_mode = SPI_DMA_MODE; // 如果DMA资源不够,可以用SPI_IT_MODE
+		config->spi_gyro_config.spi_work_mode = SPI_DMA_MODE;
+		// 设置回调函数
+		config->spi_acc_config.callback             = BMI088_Accel_SPI_Finish_Callback;
+		config->spi_gyro_config.callback            = BMI088_Gyro_SPI_Finish_Callback;
+		config->acc_int_config.gpio_model_callback  = BMI088_Accel_INT_Callback;
+		config->gyro_int_config.gpio_model_callback = BMI088_Gyro_INT_Callback;
+		bmi088_instance->acc_int                    = GPIO_Register(&config->acc_int_config); // 只有在非阻塞模式下才需要注册中断
+		bmi088_instance->gyro_int                   = GPIO_Register(&config->gyro_int_config);
+	}
+	// 注册实例
+	bmi088_instance->spi_acc  = SPI_Register(&config->spi_acc_config);
+	bmi088_instance->spi_gyro = SPI_Register(&config->spi_gyro_config);
+	bmi088_instance->heat_pwm = PWM_Register(&config->heat_pwm_config);
 
-    bmi088_instance->heat_pid = PID_Register(&config->heat_pid_config);
+	bmi088_instance->heat_pid = PID_Init(&config->heat_pid_config);
 
-    bmi088_instance->ambient_temperature = -273; // 环境温度初值
-    DWT_GetDeltaT(&bmi088_instance->bias_dwt_cnt);
-    // 初始化时使用阻塞模式
-    BMI088_Set_Mode(bmi088_instance, BMI088_BLOCK_PERIODIC_MODE);
-    // 初始化acc和gyro
-    BMI088_ERORR_CODE_e error = BMI088_NO_ERROR;
-    do {
-        error = BMI088_NO_ERROR;
-        error |= BMI088_Accel_Init(bmi088_instance);
-        error |= BMI088_Gyro_Init(bmi088_instance);
-        // 可以增加try out times,超出次数则返回错误
-    } while (error != 0);
-    bmi088_instance->cali_mode = config->cali_mode;
-    BMI088_Calibrate_IMU(bmi088_instance);               // 标定acc和gyro
-    BMI088_Set_Mode(bmi088_instance, config->work_mode); // 恢复工作模式
+	bmi088_instance->ambient_temperature = -273; // 环境温度初值
+	DWT_GetDeltaT(&bmi088_instance->bias_dwt_cnt);
+	// 初始化时使用阻塞模式
+	BMI088_Set_Mode(bmi088_instance, BMI088_BLOCK_PERIODIC_MODE);
+	// 初始化acc和gyro
+	BMI088_ERORR_CODE_e error = BMI088_NO_ERROR;
+	do
+	{
+		error = BMI088_NO_ERROR;
+		error |= BMI088_Accel_Init(bmi088_instance);
+		error |= BMI088_Gyro_Init(bmi088_instance);
+		// 可以增加try out times,超出次数则返回错误
+	} while (error != 0);
+	bmi088_instance->cali_mode = config->cali_mode;
+	BMI088_Calibrate_IMU(bmi088_instance);               // 标定acc和gyro
+	BMI088_Set_Mode(bmi088_instance, config->work_mode); // 恢复工作模式
 
-    return bmi088_instance;
+	return bmi088_instance;
 }

@@ -6,8 +6,8 @@
  * 	v1.0		冯俊玮		2024/9/10		向上位机vofa+发送数据
  *  v1.1		GUATAI	    2025/8/12		邪恶bsp归一化
  */
-#ifndef _VOFA_H
-#define _VOFA_H
+#ifndef __VOFA_H__
+#define __VOFA_H__
 
 #include <stdint.h>
 #include "bsp_usart.h"
@@ -15,6 +15,7 @@
 extern float data_view[20];
 
 extern void VOFA_Init(UART_HandleTypeDef *vofa_usart_handle);
+
 extern void VOFA_Send_Data(float *buf, uint8_t len);
 
-#endif /* VOFA_H */
+#endif /* __VOFA_H__ */

@@ -28,16 +28,17 @@ static uint8_t buzzer_one_note_flag = 0;
 // 音符偏移量
 static const uint8_t _note_tab[] = {9, 11, 0, 2, 4, 5, 7};
 // 音符频率
-const uint16_t Note_Freq[] = {0,
-                              16, 17, 18, 19, 21, 22, 23, 25, 26, 28, 29, 31,
-                              33, 35, 37, 39, 41, 44, 46, 49, 52, 55, 58, 61,
-                              65, 69, 73, 78, 82, 87, 92, 98, 104, 110, 117, 123,
-                              131, 139, 147, 156, 165, 175, 185, 196, 208, 220, 233, 247,
-                              262, 277, 294, 311, 330, 349, 370, 392, 415, 440, 466, 494,
-                              523, 554, 587, 622, 659, 698, 740, 784, 831, 880, 932, 988,
-                              1047, 1109, 1175, 1245, 1319, 1397, 1480, 1568, 1661, 1760, 1865, 1976,
-                              2093, 2217, 2349, 2489, 2637, 2794, 2960, 3136, 3322, 3520, 3729, 3951,
-                              4186, 4435, 4699, 4978, 5274, 5588, 5920, 6272, 6645, 7040, 7459, 7902};
+const uint16_t Note_Freq[] = {
+	0,
+	16, 17, 18, 19, 21, 22, 23, 25, 26, 28, 29, 31,
+	33, 35, 37, 39, 41, 44, 46, 49, 52, 55, 58, 61,
+	65, 69, 73, 78, 82, 87, 92, 98, 104, 110, 117, 123,
+	131, 139, 147, 156, 165, 175, 185, 196, 208, 220, 233, 247,
+	262, 277, 294, 311, 330, 349, 370, 392, 415, 440, 466, 494,
+	523, 554, 587, 622, 659, 698, 740, 784, 831, 880, 932, 988,
+	1047, 1109, 1175, 1245, 1319, 1397, 1480, 1568, 1661, 1760, 1865, 1976,
+	2093, 2217, 2349, 2489, 2637, 2794, 2960, 3136, 3322, 3520, 3729, 3951,
+	4186, 4435, 4699, 4978, 5274, 5588, 5920, 6272, 6645, 7040, 7459, 7902};
 // 音乐字符串 @todo（存入flash节省空间）
 const char StartUP_sound[]      = "T240L4 O6cde L2g";
 const char No_RC_sound[]        = "T200L8 O5ecececec";
@@ -54,27 +55,28 @@ const char DuoLaAMeng[]         = "t180l8 o6dc+<bab>c+dc+<bab>c+dc+<bab>c+dc+<ba
  */
 void Buzzer_Register(void)
 {
-    buzzer_instance_t *buzzer_ins      = (buzzer_instance_t *)malloc(sizeof(buzzer_instance_t));
-    pwm_init_config_t buzzer_config = {
-        .htim      = &htim12,
-        .channel   = TIM_CHANNEL_2,
-        .dutyratio = 0,
-        .period    = 0.001f,
-        .callback  = NULL,
-        .id        = NULL,
-    };
-    buzzer_ins->buzzer_pwm   = PWM_Register(&buzzer_config);
-    buzzer_ins->sound        = NULL;
-    buzzer_ins->_repeat      = false;
-    buzzer_ins->_note_mode   = NORMAL;
-    buzzer_ins->_octave      = 4;
-    buzzer_ins->_tempo       = 120;
-    buzzer_ins->_note_length = 4;
-    buzzer_ins->_next_tune   = NULL;
-    buzzer_ins->note         = 0;
-    buzzer_ins->busy         = 0;
-    buzzer                   = buzzer_ins;
+	buzzer_instance_t *buzzer_ins   = (buzzer_instance_t *) malloc(sizeof(buzzer_instance_t));
+	pwm_init_config_t buzzer_config = {
+		.htim = &htim12,
+		.channel = TIM_CHANNEL_2,
+		.dutyratio = 0,
+		.period = 0.001f,
+		.callback = NULL,
+		.id = NULL,
+	};
+	buzzer_ins->buzzer_pwm   = PWM_Register(&buzzer_config);
+	buzzer_ins->sound        = NULL;
+	buzzer_ins->_repeat      = false;
+	buzzer_ins->_note_mode   = NORMAL;
+	buzzer_ins->_octave      = 4;
+	buzzer_ins->_tempo       = 120;
+	buzzer_ins->_note_length = 4;
+	buzzer_ins->_next_tune   = NULL;
+	buzzer_ins->note         = 0;
+	buzzer_ins->busy         = 0;
+	buzzer                   = buzzer_ins;
 }
+
 /**
  * @brief :  蜂鸣器播放
  * @param *sound 音乐字符串
@@ -82,285 +84,330 @@ void Buzzer_Register(void)
  */
 void Buzzer_Play(const char *sound)
 {
-    // 如果蜂鸣器未注册，则注册
-    if (buzzer == NULL) {
-        Buzzer_Register();
-    }
-    // if (buzzer->busy) return;
-    buzzer->sound      = sound;
-    buzzer->_next_tune = sound;
-    buzzer->busy       = 1;
-    osThreadResume(Buzzer_Handle); // 恢复线程
+	// 如果蜂鸣器未注册，则注册
+	if (buzzer == NULL)
+	{
+		Buzzer_Register( );
+	}
+	// if (buzzer->busy) return;
+	buzzer->sound      = sound;
+	buzzer->_next_tune = sound;
+	buzzer->busy       = 1;
+	osThreadResume(Buzzer_Handle); // 恢复线程
 }
+
 /**
  * @brief :  蜂鸣器停止唱歌
  * @param none
  * @return  void
  */
-void Buzzer_Stop()
+void Buzzer_Stop( )
 {
-    // 如果蜂鸣器未注册，则注册
-    if (buzzer == NULL) {
-        Buzzer_Register();
-    }
-    buzzer->sound      = NULL;
-    buzzer->_next_tune = NULL;
-    buzzer->busy       = 0;
-    osThreadResume(Buzzer_Handle); // 恢复线程
+	// 如果蜂鸣器未注册，则注册
+	if (buzzer == NULL)
+	{
+		Buzzer_Register( );
+	}
+	buzzer->sound      = NULL;
+	buzzer->_next_tune = NULL;
+	buzzer->busy       = 0;
+	osThreadResume(Buzzer_Handle); // 恢复线程
 }
+
 /**
  * @brief :  音符播放
  * @return   void
  */
-inline static void NotePlay()
+inline static void NotePlay( )
 {
-    if (buzzer->note == 0) { // 休止符
-        PWM_Set_DutyRatio(buzzer->buzzer_pwm, 0);
-    } else {
-        float freq = Note_Freq[buzzer->note];
-        PWM_Set_Period(buzzer->buzzer_pwm, 1.0f / freq);
+	if (buzzer->note == 0)
+	{ // 休止符
+		PWM_Set_DutyRatio(buzzer->buzzer_pwm, 0);
+	}
+	else
+	{
+		float freq = Note_Freq[buzzer->note];
+		PWM_Set_Period(buzzer->buzzer_pwm, 1.0f / freq);
 #if (BUZZER_SILENCE == 1)
-        PWM_Set_DutyRatio(buzzer->buzzer_pwm, 0);
+		PWM_Set_DutyRatio(buzzer->buzzer_pwm, 0);
 #else
-        PWM_Set_DutyRatio(buzzer->buzzer_pwm, 0.5f); // 音量
+		PWM_Set_DutyRatio(buzzer->buzzer_pwm, 0.5f); // 音量
 #endif
-    }
-    float _note_length,note_delay;
-    if(buzzer->_note_length_single != 0){
-        _note_length = buzzer->_note_length_single;
-        buzzer->_note_length_single = 0;
-    }else{
-        _note_length = buzzer->_note_length;
-    }
-    note_delay = 1000 * (4.0f / _note_length) * 60 / (float)buzzer->_tempo;
-    note_delay += note_delay / 2.0f * (float)buzzer->dots;
-    osDelay((uint32_t)note_delay);
-    if(buzzer->_slur){
-        buzzer->_slur = 0;
-    }else{
-        PWM_Set_DutyRatio(buzzer->buzzer_pwm, 0);
-        // osDelay(10);
-    }
+	}
+	float _note_length, note_delay;
+	if (buzzer->_note_length_single != 0)
+	{
+		_note_length                = buzzer->_note_length_single;
+		buzzer->_note_length_single = 0;
+	}
+	else
+	{
+		_note_length = buzzer->_note_length;
+	}
+	note_delay = 1000 * (4.0f / _note_length) * 60 / (float) buzzer->_tempo;
+	note_delay += note_delay / 2.0f * (float) buzzer->dots;
+	osDelay((uint32_t) note_delay);
+	if (buzzer->_slur)
+	{
+		buzzer->_slur = 0;
+	}
+	else
+	{
+		PWM_Set_DutyRatio(buzzer->buzzer_pwm, 0);
+		// osDelay(10);
+	}
 }
+
 /**
  * @brief :  下一个字符
  * @return  int
  */
-inline static int next_char()
+inline static int next_char( )
 {
-    const char *next_tune = buzzer->_next_tune;
-    while (*next_tune == ' ' || *next_tune == '|') {
-        next_tune++;
-    }
-    buzzer->_next_tune = next_tune;
+	const char *next_tune = buzzer->_next_tune;
+	while (*next_tune == ' ' || *next_tune == '|')
+	{
+		next_tune++;
+	}
+	buzzer->_next_tune = next_tune;
 
-    return toupper(*buzzer->_next_tune);
+	return toupper(*buzzer->_next_tune);
 }
+
 /**
  * @brief :  下一个数字
  * @return  unsigned
  */
-inline static unsigned next_number()
+inline static unsigned next_number( )
 {
-    unsigned number = 0;
-    int next_character;
-    buzzer->_next_tune++;
-    for (;;) {
-        next_character = next_char();
+	unsigned number = 0;
+	int next_character;
+	buzzer->_next_tune++;
+	for (;;)
+	{
+		next_character = next_char( );
 
-        if (!isdigit(next_character)) {
-            return number;
-        }
+		if (!isdigit(next_character))
+		{
+			return number;
+		}
 
-        buzzer->_next_tune++;
-        number = (number * 10) + (next_character - '0');
-    }
+		buzzer->_next_tune++;
+		number = (number * 10) + (next_character - '0');
+	}
 }
+
 /**
  * @brief :  下一个点
  * @return  unsigned
  */
-inline static unsigned next_dots()
+inline static unsigned next_dots( )
 {
-    unsigned dots = 0;
-    while (next_char() == '.') {
-        buzzer->_next_tune++;
-        dots++;
-    }
-    return dots;
+	unsigned dots = 0;
+	while (next_char( ) == '.')
+	{
+		buzzer->_next_tune++;
+		dots++;
+	}
+	return dots;
 }
+
 /**
  * @brief :  音符处理
  * @return  void
  */
-inline static void Note_handle()
+inline static void Note_handle( )
 {
-    int c = next_char();
-    if (c >= 'A' && c <= 'G') { buzzer->note = _note_tab[c - 'A'] + (buzzer->_octave * 12) + 1; }
-    buzzer->_next_tune++;
-    uint8_t addNoteParam = 1;
-    while(addNoteParam){
-        c = next_char();
-        switch (c) {
-            case '#': // Up a semitone.
-            case '+':
-                if (buzzer->note < 84) {
-                    buzzer->note++;
-                }
-                buzzer->_next_tune++;
-                break;
-            case '-': // Down a semitone.
-                if (buzzer->note > 1) {
-                    buzzer->note--;
-                }
-                buzzer->_next_tune++;
-                break;
-            case '0' ... '9':
-                buzzer->_note_length_single = next_number();
-                break;
-            default:
-                addNoteParam = 0;
-                // 0 / No next char here is OK.
-                break;
-        }
-    }
-        
-    buzzer->dots = next_dots();
-#if 0
-    // Shorthand length notation.
-    unsigned note_length = next_number();
+	int c = next_char( );
+	if (c >= 'A' && c <= 'G')
+	{
+		buzzer->note = _note_tab[c - 'A'] + (buzzer->_octave * 12) + 1;
+	}
+	buzzer->_next_tune++;
+	uint8_t addNoteParam = 1;
+	while (addNoteParam)
+	{
+		c = next_char( );
+		switch (c)
+		{
+			case '#': // Up a semitone.
+			case '+':
+				if (buzzer->note < 84)
+				{
+					buzzer->note++;
+				}
+				buzzer->_next_tune++;
+				break;
+			case '-': // Down a semitone.
+				if (buzzer->note > 1)
+				{
+					buzzer->note--;
+				}
+				buzzer->_next_tune++;
+				break;
+			case '0' ... '9':
+				buzzer->_note_length_single = next_number( );
+				break;
+			default:
+				addNoteParam = 0;
+				// 0 / No next char here is OK.
+				break;
+		}
+	}
 
-    if (note_length == 0) {
-        note_length = buzzer->_note_length;
-    }
+	buzzer->dots = next_dots( );
+#if 0
+	// Shorthand length notation.
+	unsigned note_length = next_number( );
+
+	if (note_length == 0)
+	{
+		note_length = buzzer->_note_length;
+	}
 #endif
 }
+
 /**
  * @brief :  音符模式处理
  * @return  void
  */
-inline static void Mode_handle()
+inline static void Mode_handle( )
 {
-    int c = next_char();
-    if (c == 0) {
-        return;
-    }
-    buzzer->_next_tune++;
+	int c = next_char( );
+	if (c == 0)
+	{
+		return;
+	}
+	buzzer->_next_tune++;
 
-    switch (c) {
-        case 'N':
-            buzzer->_note_mode = NORMAL;
-            break;
+	switch (c)
+	{
+		case 'N':
+			buzzer->_note_mode = NORMAL;
+			break;
 
-        case 'L':
-            buzzer->_note_mode = LEGATO;
-            break;
+		case 'L':
+			buzzer->_note_mode = LEGATO;
+			break;
 
-        case 'S':
-            buzzer->_note_mode = STACCATO;
-            break;
+		case 'S':
+			buzzer->_note_mode = STACCATO;
+			break;
 
-        case 'F':
-            buzzer->_repeat = false;
-            break;
+		case 'F':
+			buzzer->_repeat = false;
+			break;
 
-        case 'B':
-            buzzer->_repeat = true;
-            break;
+		case 'B':
+			buzzer->_repeat = true;
+			break;
 
-        default:
-            return;
-    }
+		default:
+			return;
+	}
 }
+
 /**
  * @brief :  音乐字符串处理
  * @return  void
  */
-inline static void string_handle()
+inline static void string_handle( )
 {
-    while (1) {
-        if (buzzer->_next_tune == NULL)
-            return;
-        int c = next_char();
-        switch (c) {
-            case 'L': // Select note length.
-                buzzer->_note_length = next_number();
-                if (buzzer->_note_length < 1)
-                    return;
-                break;
-            case 'O': // Select octave.
-                buzzer->_octave = next_number();
-                if (buzzer->_octave > 8) {
-                    buzzer->_octave = 8;
-                }
-                break;
-            case '<': // Decrease octave.
-                buzzer->_next_tune++;
-                if (buzzer->_octave > 0) {
-                    buzzer->_octave--;
-                }
-                break;
-            case '>': // Increase octave.
-                buzzer->_next_tune++;
-                if (buzzer->_octave < 8) {
-                    buzzer->_octave++;
-                }
-                break;
-            case 'M': // Select inter-note gap.
-                Mode_handle();
-                break;
-            case 'P': // Pause for a note length.
-                buzzer->_note_length = next_number();
-                buzzer->dots         = next_dots();
-                buzzer->note         = 0;
-                NotePlay();
-                if (buzzer->_note_length < 1)
-                    return;
-                break;
-            case 'T': { // Change tempo.
-                unsigned nt = next_number();
-                if ((nt >= 32) && (nt <= 255)) {
-                    buzzer->_tempo = nt;
-                } else {
-                    return;
-                }
-                break;
-            }
-            case 'N': //不知道有什么用，可能是某种自定义标记，但扒下来的哆啦A梦谱有这东西
-            case 'R':   //休止符
-                buzzer->note = 0;
-                buzzer->_note_length_single = next_number();
-                break;
+	while (1)
+	{
+		if (buzzer->_next_tune == NULL)
+			return;
+		int c = next_char( );
+		switch (c)
+		{
+			case 'L': // Select note length.
+				buzzer->_note_length = next_number( );
+				if (buzzer->_note_length < 1)
+					return;
+				break;
+			case 'O': // Select octave.
+				buzzer->_octave = next_number( );
+				if (buzzer->_octave > 8)
+				{
+					buzzer->_octave = 8;
+				}
+				break;
+			case '<': // Decrease octave.
+				buzzer->_next_tune++;
+				if (buzzer->_octave > 0)
+				{
+					buzzer->_octave--;
+				}
+				break;
+			case '>': // Increase octave.
+				buzzer->_next_tune++;
+				if (buzzer->_octave < 8)
+				{
+					buzzer->_octave++;
+				}
+				break;
+			case 'M': // Select inter-note gap.
+				Mode_handle( );
+				break;
+			case 'P': // Pause for a note length.
+				buzzer->_note_length = next_number( );
+				buzzer->dots = next_dots( );
+				buzzer->note = 0;
+				NotePlay( );
+				if (buzzer->_note_length < 1)
+					return;
+				break;
+			case 'T':
+			{ // Change tempo.
+				unsigned nt = next_number( );
+				if ((nt >= 32) && (nt <= 255))
+				{
+					buzzer->_tempo = nt;
+				}
+				else
+				{
+					return;
+				}
+				break;
+			}
+			case 'N': //不知道有什么用，可能是某种自定义标记，但扒下来的哆啦A梦谱有这东西
+			case 'R':   //休止符
+				buzzer->note = 0;
+				buzzer->_note_length_single = next_number( );
+				break;
 #if 0
-            case 'N': // Play an arbitrary note.
-                note = next_number();
+			case 'N': // Play an arbitrary note.
+				note = next_number( );
 
-                if (note > 84) {
-                    return tune_error();
-                }
+				if (note > 84)
+				{
+					return tune_error( );
+				}
 
-                if (note == 0) {
-                    // This is a rest - pause for the current note length.
-                    silence = rest_duration(_note_length, next_dots());
-                    return Tunes::Status::Continue;
-                }
+				if (note == 0)
+				{
+					// This is a rest - pause for the current note length.
+					silence = rest_duration(_note_length, next_dots( ));
+					return Tunes::Status::Continue;
+				}
 
-                break;
+				break;
 #endif
-            case 'A' ... 'G': // Play a note in the current octave.
-                Note_handle();
+			case 'A' ... 'G': // Play a note in the current octave.
+				Note_handle( );
 
-                if(*buzzer->_next_tune == '&'){
-                    buzzer->_next_tune++;
-                    buzzer->_slur = 1;
-                }
-                    
-                NotePlay();
-                break;
-            default:
-                return;
-        }
-    }
+				if (*buzzer->_next_tune == '&')
+				{
+					buzzer->_next_tune++;
+					buzzer->_slur = 1;
+				}
+
+				NotePlay( );
+				break;
+			default:
+				return;
+		}
+	}
 }
 
 /**
@@ -369,8 +416,9 @@ inline static void string_handle()
  */
 void Buzzer_Silence(void)
 {
-    PWM_Set_DutyRatio(buzzer->buzzer_pwm, 0);
+	PWM_Set_DutyRatio(buzzer->buzzer_pwm, 0);
 }
+
 /**
  * @brief :  蜂鸣器播放单个音符，阻塞模式
  * @param Note 音符
@@ -379,48 +427,53 @@ void Buzzer_Silence(void)
  */
 void Buzzer_One_Note(uint16_t Note, float delay)
 {
-    // 如果蜂鸣器未注册，则注册
-    if (buzzer == NULL) {
-        Buzzer_Register();
-    }
-    Buzzer_Stop();
-    PWM_Set_Period(buzzer->buzzer_pwm, 1.0f / (float)Note);
+	// 如果蜂鸣器未注册，则注册
+	if (buzzer == NULL)
+	{
+		Buzzer_Register( );
+	}
+	Buzzer_Stop( );
+	PWM_Set_Period(buzzer->buzzer_pwm, 1.0f / (float) Note);
 #if (BUZZER_SILENCE == 1)
-    PWM_Set_DutyRatio(buzzer->buzzer_pwm, 0);
+	PWM_Set_DutyRatio(buzzer->buzzer_pwm, 0);
 #else
-    PWM_Set_DutyRatio(buzzer->buzzer_pwm, 0.9f); // 音量
+	PWM_Set_DutyRatio(buzzer->buzzer_pwm, 0.9f); // 音量
 #endif
-    buzzer_one_note_flag = 1;
-    buzzer_one_note_time = delay;
-    osThreadResume(Buzzer_Handle); // 恢复线程
+	buzzer_one_note_flag = 1;
+	buzzer_one_note_time = delay;
+	osThreadResume(Buzzer_Handle); // 恢复线程
 }
+
 /**
  * @brief :  蜂鸣器任务，播放完毕后自动挂起线程，循环播放除外
  * @return  void
  */
 __attribute__((noreturn)) void Buzzer_Task(void *argument)
 {
-    UNUSED(argument);
-    for (;;) {
-        if(buzzer == NULL){
-            osThreadSuspend(Buzzer_Handle); // 挂起线程
-            continue;
-        }
-        if(buzzer_one_note_flag)
-        {
-            DWT_Delay(buzzer_one_note_time);
-            Buzzer_Silence();
-            buzzer_one_note_flag = 0;
-        }
-        else
-        {
-            do {
-                string_handle();
-                Buzzer_Silence();
-            } while (buzzer->_repeat);
-            buzzer->busy = 0;   
-        }
-            
-        osThreadSuspend(Buzzer_Handle); // 挂起线程
-    }
+	UNUSED(argument);
+	for (;;)
+	{
+		if (buzzer == NULL)
+		{
+			osThreadSuspend(Buzzer_Handle); // 挂起线程
+			continue;
+		}
+		if (buzzer_one_note_flag)
+		{
+			DWT_Delay(buzzer_one_note_time);
+			Buzzer_Silence( );
+			buzzer_one_note_flag = 0;
+		}
+		else
+		{
+			do
+			{
+				string_handle( );
+				Buzzer_Silence( );
+			} while (buzzer->_repeat);
+			buzzer->busy = 0;
+		}
+
+		osThreadSuspend(Buzzer_Handle); // 挂起线程
+	}
 }
