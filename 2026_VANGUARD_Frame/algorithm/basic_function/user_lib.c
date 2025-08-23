@@ -509,3 +509,11 @@ float Get_OLS_Smooth(Ordinary_Least_Squares_t *OLS)
 {
   return OLS->k * OLS->x[OLS->Order - 1] + OLS->b;
 }
+
+//判断是否出现NAN
+bool Judge_IF_NAN(float x )
+{
+  bool res = 0;
+  res = (bool)__ARM_isnan((double)x);
+  return res;
+}

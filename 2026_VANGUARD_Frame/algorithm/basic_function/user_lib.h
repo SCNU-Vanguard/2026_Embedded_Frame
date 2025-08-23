@@ -18,6 +18,7 @@
 #include <math.h>
 #include <stdint.h>
 #include <stdlib.h>
+#include <stdbool.h>
 
 #include "arm_math.h"
 
@@ -225,5 +226,8 @@ float OLS_Smooth(Ordinary_Least_Squares_t *OLS, float deltax, float y);
 float Get_OLS_Derivative(Ordinary_Least_Squares_t *OLS);
 
 float Get_OLS_Smooth(Ordinary_Least_Squares_t *OLS);
+
+//判断是否出现NAN
+bool Judge_IF_NAN(float x );
 
 #endif /* __USER_LIB_H__ */

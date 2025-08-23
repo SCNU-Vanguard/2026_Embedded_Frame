@@ -1969,6 +1969,16 @@
               <FileType>5</FileType>
               <FilePath>..\algorithm\basic_function\user_lib.h</FilePath>
             </File>
+            <File>
+              <FileName>signal_generator.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\algorithm\basic_function\signal_generator.c</FilePath>
+            </File>
+            <File>
+              <FileName>signal_generator.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\algorithm\basic_function\signal_generator.h</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
