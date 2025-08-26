@@ -12,6 +12,10 @@
 #ifndef __BSP_SPI_H__
 #define __BSP_SPI_H__
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <stdint.h>
 #include "main.h"
 #include "spi.h"
@@ -111,5 +115,9 @@ void SPI_Transmit_Receive(SPI_t *spi_ins, uint8_t *ptr_data_rx, uint8_t *ptr_dat
  * @todo 是否直接将mode作为transmit/recv的参数,而不是作为spi实例的属性?两者各有优劣
  */
 void SPI_Set_Mode(SPI_t *spi_ins, spi_tx_rx_mode_e spi_mode);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* __BSP_SPI_H__ */

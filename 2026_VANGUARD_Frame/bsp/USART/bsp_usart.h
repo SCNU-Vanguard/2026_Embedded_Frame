@@ -12,6 +12,10 @@
 #ifndef __BSP_USART_H__
 #define __BSP_USART_H__
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <stdint.h>
 #include "main.h"
 #include "usart.h"
@@ -61,5 +65,9 @@ void USART_Send(USART_t *_instance, uint8_t *send_buf, uint16_t send_size, usart
 uint8_t USART_Error_Lost(USART_t *_instance);
 
 uint8_t USART_Is_Ready(USART_t *_instance);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* __BSP_USART_H__ */

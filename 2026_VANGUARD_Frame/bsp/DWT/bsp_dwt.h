@@ -14,6 +14,10 @@
 #ifndef __BSP_DWT_H__
 #define __BSP_DWT_H__
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <stdint.h>
 #include "main.h"
 
@@ -39,5 +43,9 @@ extern uint64_t DWT_GetTimeline_us(void);
 extern void DWT_Delay(float Delay);
 
 extern DWT_clock_t system_time;
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* __BSP_DWT_H__ */

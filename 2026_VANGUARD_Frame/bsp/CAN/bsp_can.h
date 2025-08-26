@@ -12,6 +12,10 @@
 #ifndef __BSP_CAN_H__
 #define __BSP_CAN_H__
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <stdint.h>
 #include "main.h"
 #include "fdcan.h"
@@ -77,5 +81,9 @@ uint8_t CAN_Transmit(CAN_t *_instance, float timeout);
 
 /* 单次发送函数，用于只发不收的CAN通信（比如激活命令） */
 uint8_t CAN_Transmit_Once(FDCAN_HandleTypeDef *can_handle, uint32_t StdId, uint8_t *tx_buff, float timeout);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* __BSP_CAN_H__ */

@@ -12,6 +12,10 @@
 #ifndef __BSP_PWM_H__
 #define __BSP_PWM_H__
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <stdint.h>
 #include "main.h"
 #include "tim.h"
@@ -91,5 +95,9 @@ void PWM_Set_Period(PWM_t *pwm, float period);
  *       例如:使用16位数据,则需要配置DMA传输位数为16位(half word),配置错误会导致指针越界或数据错误
  */
 void PWM_Start_DMA(PWM_t *pwm, uint32_t *pData, uint32_t Size);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* __BSP_PWM_H__ */

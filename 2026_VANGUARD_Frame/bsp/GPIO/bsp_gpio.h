@@ -12,6 +12,10 @@
 #ifndef __BSP_GPIO_H__
 #define __BSP_GPIO_H__
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <stdint.h>
 #include "gpio.h"
 
@@ -97,5 +101,9 @@ void GPIO_Reset(GPIO_t *_instance);
  * @return GPIO_PinState
  */
 GPIO_PinState GPIO_Read(GPIO_t *_instance);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* __BSP_GPIO_H__ */
