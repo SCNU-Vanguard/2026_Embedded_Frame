@@ -340,7 +340,7 @@
               <MiscControls></MiscControls>
               <Define>USE_PWR_LDO_SUPPLY,USE_HAL_DRIVER,STM32H723xx</Define>
               <Undefine></Undefine>
-              <IncludePath>../Core/Inc;../Drivers/STM32H7xx_HAL_Driver/Inc;../Drivers/STM32H7xx_HAL_Driver/Inc/Legacy;../Drivers/CMSIS/Device/ST/STM32H7xx/Include;../Drivers/CMSIS/Include;../Middlewares/Third_Party/FreeRTOS/Source/include;../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2;../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM4F;../Middlewares/ST/ARM/DSP/Inc;../bsp/DWT;../bsp/USART;../bsp/CAN;../bsp/I2C;../bsp/SPI;../bsp/FLASH;../bsp/TIM;../bsp/PWM;../bsp/ADC;..\bsp\GPIO;..\module\buzzer;..\module\imu;..\module\led;..\module\vofa;..\module\led\WS2812;..\module\motor;..\module\remote;..\module\defense_center;..\module\message_center;..\algorithm;..\algorithm\controller;..\algorithm\controller\PID;..\module\motor\DJI_motor;..\module\motor\DM_motor;..\algorithm\basic_function</IncludePath>
+              <IncludePath>../Core/Inc;../Drivers/STM32H7xx_HAL_Driver/Inc;../Drivers/STM32H7xx_HAL_Driver/Inc/Legacy;../Drivers/CMSIS/Device/ST/STM32H7xx/Include;../Drivers/CMSIS/Include;../Middlewares/Third_Party/FreeRTOS/Source/include;../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2;../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM4F;../Middlewares/ST/ARM/DSP/Inc;../bsp/DWT;../bsp/USART;../bsp/CAN;../bsp/I2C;../bsp/SPI;../bsp/FLASH;../bsp/TIM;../bsp/PWM;../bsp/ADC;..\bsp\GPIO;..\module\buzzer;..\module\imu;..\module\led;..\module\vofa;..\module\led\WS2812;..\module\motor;..\module\remote;..\module\defense_center;..\module\message_center;..\algorithm;..\algorithm\controller;..\algorithm\controller\PID;..\module\motor\DJI_motor;..\module\motor\DM_motor;..\algorithm\basic_function;..\application\chassis;..\application\communication;..\application\gimbal;..\application\shoot</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -2013,6 +2013,66 @@
               <FileName>robot_frame_init.h</FileName>
               <FileType>5</FileType>
               <FilePath>..\application\robot_frame_init.h</FilePath>
+            </File>
+            <File>
+              <FileName>chassis.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\application\chassis\chassis.c</FilePath>
+            </File>
+            <File>
+              <FileName>chassis.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\application\chassis\chassis.h</FilePath>
+            </File>
+            <File>
+              <FileName>chassis_task.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\application\chassis\chassis_task.c</FilePath>
+            </File>
+            <File>
+              <FileName>chassis_task.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\application\chassis\chassis_task.h</FilePath>
+            </File>
+            <File>
+              <FileName>gimbal.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\application\gimbal\gimbal.c</FilePath>
+            </File>
+            <File>
+              <FileName>gimbal.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\application\gimbal\gimbal.h</FilePath>
+            </File>
+            <File>
+              <FileName>gimbal_task.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\application\gimbal\gimbal_task.c</FilePath>
+            </File>
+            <File>
+              <FileName>gimbal_task.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\application\gimbal\gimbal_task.h</FilePath>
+            </File>
+            <File>
+              <FileName>shoot.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\application\shoot\shoot.c</FilePath>
+            </File>
+            <File>
+              <FileName>shoot.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\application\shoot\shoot.h</FilePath>
+            </File>
+            <File>
+              <FileName>shoot_task.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\application\shoot\shoot_task.c</FilePath>
+            </File>
+            <File>
+              <FileName>shoot_task.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\application\shoot\shoot_task.h</FilePath>
             </File>
           </Files>
         </Group>
