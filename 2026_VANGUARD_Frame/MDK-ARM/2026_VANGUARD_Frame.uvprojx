@@ -1979,6 +1979,41 @@
               <FileType>5</FileType>
               <FilePath>..\algorithm\basic_function\signal_generator.h</FilePath>
             </File>
+            <File>
+              <FileName>CRC.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\algorithm\basic_function\CRC.c</FilePath>
+            </File>
+            <File>
+              <FileName>CRC.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\algorithm\basic_function\CRC.h</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>application</GroupName>
+          <Files>
+            <File>
+              <FileName>robot_frame_config.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\application\robot_frame_config.c</FilePath>
+            </File>
+            <File>
+              <FileName>robot_frame_config.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\application\robot_frame_config.h</FilePath>
+            </File>
+            <File>
+              <FileName>robot_frame_init.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\application\robot_frame_init.c</FilePath>
+            </File>
+            <File>
+              <FileName>robot_frame_init.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\application\robot_frame_init.h</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
