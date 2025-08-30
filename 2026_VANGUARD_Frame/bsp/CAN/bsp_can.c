@@ -8,6 +8,7 @@
  * All rights reserved.
  ******************************************************************************
  */
+
 #include <stdlib.h>
 #include <string.h>
 #include "bsp_can.h"

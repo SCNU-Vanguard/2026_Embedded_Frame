@@ -20,6 +20,7 @@
 #include "main.h"
 #include "cmsis_os.h"
 #include "fdcan.h"
+#include "i2c.h"
 #include "spi.h"
 #include "tim.h"
 #include "usart.h"
@@ -98,7 +99,6 @@ int main(void)
   MX_GPIO_Init();
   MX_TIM1_Init();
   MX_TIM2_Init();
-  MX_UART4_Init();
   MX_UART5_Init();
   MX_UART7_Init();
   MX_USART1_UART_Init();
@@ -112,6 +112,7 @@ int main(void)
   MX_SPI6_Init();
   MX_TIM3_Init();
   MX_TIM12_Init();
+  MX_I2C2_Init();
   /* USER CODE BEGIN 2 */
 
   /* USER CODE END 2 */

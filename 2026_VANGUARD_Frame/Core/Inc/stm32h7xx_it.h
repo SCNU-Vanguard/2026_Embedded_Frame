@@ -55,7 +55,6 @@ void DebugMon_Handler(void);
 void USART1_IRQHandler(void);
 void USART2_IRQHandler(void);
 void USART3_IRQHandler(void);
-void UART4_IRQHandler(void);
 void TIM7_IRQHandler(void);
 void UART7_IRQHandler(void);
 void USART10_IRQHandler(void);
