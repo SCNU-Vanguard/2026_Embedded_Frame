@@ -340,7 +340,7 @@
               <MiscControls></MiscControls>
               <Define>USE_PWR_LDO_SUPPLY,USE_HAL_DRIVER,STM32H723xx</Define>
               <Undefine></Undefine>
-              <IncludePath>../Core/Inc;../Drivers/STM32H7xx_HAL_Driver/Inc;../Drivers/STM32H7xx_HAL_Driver/Inc/Legacy;../Drivers/CMSIS/Device/ST/STM32H7xx/Include;../Drivers/CMSIS/Include;../Middlewares/Third_Party/FreeRTOS/Source/include;../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2;../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM4F;../Middlewares/ST/ARM/DSP/Inc;../bsp/DWT;../bsp/USART;../bsp/CAN;../bsp/I2C;../bsp/SPI;../bsp/FLASH;../bsp/TIM;../bsp/PWM;../bsp/ADC;../bsp/GPIO;../module/buzzer;../module/imu;../module/led;../module/vofa;../module/led/WS2812;../module/motor;../module/remote;../module/defense_center;../module/message_center;../algorithm;../algorithm/controller;../algorithm/controller/PID;../module/motor/DJI_motor;../module/motor/DM_motor;../algorithm/basic_function;../application/chassis;../application/communication;../application/gimbal;../application/shoot</IncludePath>
+              <IncludePath>../Core/Inc;../Drivers/STM32H7xx_HAL_Driver/Inc;../Drivers/STM32H7xx_HAL_Driver/Inc/Legacy;../Drivers/CMSIS/Device/ST/STM32H7xx/Include;../Drivers/CMSIS/Include;../Middlewares/Third_Party/FreeRTOS/Source/include;../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2;../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM4F;../Middlewares/ST/ARM/DSP/Inc;../bsp/DWT;../bsp/USART;../bsp/CAN;../bsp/I2C;../bsp/SPI;../bsp/FLASH;../bsp/TIM;../bsp/PWM;../bsp/ADC;../bsp/GPIO;../module/buzzer;../module/imu;../module/led;../module/vofa;../module/led/WS2812;../module/motor;../module/remote;../module/defense_center;../module/message_center;../algorithm;../algorithm/controller;../algorithm/controller/PID;../module/motor/DJI_motor;../module/motor/DM_motor;../algorithm/basic_function;../application/chassis;../application/communication;../application/gimbal;../application/shoot;..\algorithm\filter;..\algorithm\filter\AHRS;..\algorithm\filter\AHRS\madgwick;..\algorithm\filter\AHRS\mahony;..\algorithm\filter\EKF;..\algorithm\filter\kalman;..\Middlewares\ST\ARM\DSP\Lib</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -2055,6 +2055,46 @@
               <FileType>5</FileType>
               <FilePath>..\algorithm\basic_function\CRC.h</FilePath>
             </File>
+            <File>
+              <FileName>MadgwickAHRS.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\algorithm\filter\AHRS\madgwick\MadgwickAHRS.c</FilePath>
+            </File>
+            <File>
+              <FileName>MadgwickAHRS.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\algorithm\filter\AHRS\madgwick\MadgwickAHRS.h</FilePath>
+            </File>
+            <File>
+              <FileName>MahonyAHRS.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\algorithm\filter\AHRS\mahony\MahonyAHRS.c</FilePath>
+            </File>
+            <File>
+              <FileName>MahonyAHRS.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\algorithm\filter\AHRS\mahony\MahonyAHRS.h</FilePath>
+            </File>
+            <File>
+              <FileName>QuaternionEKF.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\algorithm\filter\EKF\QuaternionEKF.c</FilePath>
+            </File>
+            <File>
+              <FileName>QuaternionEKF.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\algorithm\filter\EKF\QuaternionEKF.h</FilePath>
+            </File>
+            <File>
+              <FileName>kalman_filter.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\algorithm\filter\kalman\kalman_filter.c</FilePath>
+            </File>
+            <File>
+              <FileName>kalman_filter.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\algorithm\filter\kalman\kalman_filter.h</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -2139,6 +2179,16 @@
               <FileName>shoot_task.h</FileName>
               <FileType>5</FileType>
               <FilePath>..\application\shoot\shoot_task.h</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>DSP</GroupName>
+          <Files>
+            <File>
+              <FileName>arm_cortexM7lfdp_math.lib</FileName>
+              <FileType>4</FileType>
+              <FilePath>..\Middlewares\ST\ARM\DSP\Lib\arm_cortexM7lfdp_math.lib</FilePath>
             </File>
           </Files>
         </Group>

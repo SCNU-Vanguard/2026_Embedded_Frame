@@ -36,10 +36,6 @@
 #endif
 #endif
 
-#ifndef PI
-#define PI 3.1415926
-#endif
-
 #define FAST_CALC 0
 
 #ifndef user_abs
