@@ -339,8 +339,8 @@ void MatInit(mat *m, uint8_t row, uint8_t col)
 }
 
 /**
- * @brief          最小二乘法初始化
- * @param[in]      最小二乘法结构体
+ * @brief          普通最小二乘法初始化
+ * @param[in]      普通最小二乘法结构体
  * @param[in]      样本数
  * @retval         返回空
  */
@@ -358,8 +358,8 @@ void OLS_Init(Ordinary_Least_Squares_t *OLS, uint16_t order)
 }
 
 /**
- * @brief          最小二乘法拟合
- * @param[in]      最小二乘法结构体
+ * @brief          普通最小二乘法拟合
+ * @param[in]      普通最小二乘法结构体
  * @param[in]      信号新样本距上一个样本时间间隔
  * @param[in]      信号值
  */
@@ -400,8 +400,8 @@ void OLS_Update(Ordinary_Least_Squares_t *OLS, float deltax, float y)
 }
 
 /**
- * @brief          最小二乘法提取信号微分
- * @param[in]      最小二乘法结构体
+ * @brief          普通最小二乘法提取信号微分
+ * @param[in]      普通最小二乘法结构体
  * @param[in]      信号新样本距上一个样本时间间隔
  * @param[in]      信号值
  * @retval         返回斜率k
@@ -445,8 +445,8 @@ float OLS_Derivative(Ordinary_Least_Squares_t *OLS, float deltax, float y)
 }
 
 /**
- * @brief          获取最小二乘法提取信号微分
- * @param[in]      最小二乘法结构体
+ * @brief          获取普通最小二乘法提取信号微分
+ * @param[in]      普通最小二乘法结构体
  * @retval         返回斜率k
  */
 float Get_OLS_Derivative(Ordinary_Least_Squares_t *OLS)
@@ -455,8 +455,8 @@ float Get_OLS_Derivative(Ordinary_Least_Squares_t *OLS)
 }
 
 /**
- * @brief          最小二乘法平滑信号
- * @param[in]      最小二乘法结构体
+ * @brief          普通最小二乘法平滑信号
+ * @param[in]      普通最小二乘法结构体
  * @param[in]      信号新样本距上一个样本时间间隔
  * @param[in]      信号值
  * @retval         返回平滑输出
@@ -501,8 +501,8 @@ float OLS_Smooth(Ordinary_Least_Squares_t *OLS, float deltax, float y)
 }
 
 /**
- * @brief          获取最小二乘法平滑信号
- * @param[in]      最小二乘法结构体
+ * @brief          获取普通最小二乘法平滑信号
+ * @param[in]      普通最小二乘法结构体
  * @retval         返回平滑输出
  */
 float Get_OLS_Smooth(Ordinary_Least_Squares_t *OLS)
