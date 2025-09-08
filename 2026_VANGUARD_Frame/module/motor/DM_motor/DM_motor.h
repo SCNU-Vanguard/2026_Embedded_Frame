@@ -23,8 +23,6 @@
 #define MIT_MODE 	0x000
 #define POS_MODE	0x100
 #define SPEED_MODE	0x200
-#define DM_MOTOR_YAW_RX_ID 0x44
-#define DM_MOTOR_YAW_TX_ID 0x33
 
 #define DM_P_MIN  (-3.141593)
 #define DM_P_MAX  3.141593
