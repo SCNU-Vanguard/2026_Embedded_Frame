@@ -21,6 +21,15 @@ extern "C" {
 #include <stdint.h>
 #include "main.h"
 
+//TODO(GUATAI):有💩
+#define TIME_ELAPSE(dt, code)                     	\
+				do                                        	\
+				{                                         	\
+					float t_start = DWT_GetTimeline_s();      \
+					code;                                     \
+					dt = DWT_GetTimeline_s() - t_start;       \
+				} while (0)
+
 typedef struct
 {
 	uint32_t s;

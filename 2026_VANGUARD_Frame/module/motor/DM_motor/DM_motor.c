@@ -83,36 +83,6 @@ void DM_Motor_Start(DM_motor_t *motor)
 	{
 		for (size_t i = 0 ; i < idx ; ++i)
 		{
-			DM_Motor_Set_Mode(DM_CMD_ENABLE_MODE, dm_motor_instances[i]);
-		}
-	}
-	else
-	{
-		DM_Motor_Set_Mode(DM_CMD_ENABLE_MODE, motor);
-	}
-}
-
-void DM_Motor_Stop(DM_motor_t *motor)
-{
-	if (motor == NULL)
-	{
-		for (size_t i = 0 ; i < idx ; ++i)
-		{
-			DM_Motor_Set_Mode(DM_CMD_DISABLE_MODE, dm_motor_instances[i]);
-		}
-	}
-	else
-	{
-		DM_Motor_Set_Mode(DM_CMD_DISABLE_MODE, motor);
-	}
-}
-
-void DM_Motor_ENABLE(DM_motor_t *motor)
-{
-	if (motor == NULL)
-	{
-		for (size_t i = 0 ; i < idx ; ++i)
-		{
 			dm_motor_instances[i]->motor_state_flag = MOTOR_ENABLE;
 		}
 	}
@@ -122,7 +92,7 @@ void DM_Motor_ENABLE(DM_motor_t *motor)
 	}
 }
 
-void DM_Motor_DISABLE(DM_motor_t *motor)
+void DM_Motor_Stop(DM_motor_t *motor)
 {
 	if (motor == NULL)
 	{
@@ -134,6 +104,36 @@ void DM_Motor_DISABLE(DM_motor_t *motor)
 	else
 	{
 		motor->motor_state_flag = MOTOR_DISABLE;
+	}
+}
+
+void DM_Motor_ENABLE(DM_motor_t *motor)
+{
+	if (motor == NULL)
+	{
+		for (size_t i = 0 ; i < idx ; ++i)
+		{
+			DM_Motor_Set_Mode(DM_CMD_ENABLE_MODE, dm_motor_instances[i]);
+		}
+	}
+	else
+	{
+		DM_Motor_Set_Mode(DM_CMD_ENABLE_MODE, motor);
+	}
+}
+
+void DM_Motor_DISABLE(DM_motor_t *motor)
+{
+	if (motor == NULL)
+	{
+		for (size_t i = 0 ; i < idx ; ++i)
+		{
+			DM_Motor_Set_Mode(DM_CMD_DISABLE_MODE, dm_motor_instances[i]);
+		}
+	}
+	else
+	{
+		DM_Motor_Set_Mode(DM_CMD_DISABLE_MODE, motor);
 	}
 }
 
@@ -198,7 +198,7 @@ void DM_MIT_Ctrl(DM_motor_t *motor,
 	motor->motor_can_instance->tx_buff[6] = ((kd_tmp & 0xF) << 4) | (tor_tmp >> 8);
 	motor->motor_can_instance->tx_buff[7] = tor_tmp;
 
-	motor->motor_can_instance->tx_header.Identifier = DM_MOTOR_YAW_TX_ID + MIT_MODE;
+	motor->motor_can_instance->tx_header.Identifier = motor->dm_tx_id + MIT_MODE;
 	CAN_Transmit(motor->motor_can_instance, 1);
 }
 
@@ -237,7 +237,7 @@ void DM_Pos_Speed_Ctrl(DM_motor_t *motor, float pos, float vel)
 	motor->motor_can_instance->tx_buff[6] = *(vbuf + 2);
 	motor->motor_can_instance->tx_buff[7] = *(vbuf + 3);
 
-	motor->motor_can_instance->tx_header.Identifier = DM_MOTOR_YAW_TX_ID + POS_MODE;
+	motor->motor_can_instance->tx_header.Identifier = motor->dm_tx_id + POS_MODE;
 	CAN_Transmit(motor->motor_can_instance, 1);
 }
 
@@ -266,11 +266,11 @@ void DM_Speed_Ctrl(DM_motor_t *motor, float vel)
 	motor->motor_can_instance->tx_buff[2] = *(vbuf + 2);
 	motor->motor_can_instance->tx_buff[3] = *(vbuf + 3);
 
-	motor->motor_can_instance->tx_header.Identifier = DM_MOTOR_YAW_TX_ID + SPEED_MODE;
+	motor->motor_can_instance->tx_header.Identifier = motor->dm_tx_id + SPEED_MODE;
 	CAN_Transmit(motor->motor_can_instance, 1);
 }
 
-static void DM_Motor_Decode(CAN_t *motor_can)
+static void DM_Motor_Decode(CAN_instance_t *motor_can)
 {
 	float velocity = 0.0f;
 
@@ -343,6 +343,9 @@ DM_motor_t *DM_Motor_Init(motor_init_config_t *config)
 	instance->motor_controller.current_feedforward_ptr  = config->controller_param_init_config.current_feedforward_ptr;
 	instance->motor_controller.speed_feedforward_ptr    = config->controller_param_init_config.speed_feedforward_ptr;
 
+	instance->dm_tx_id = config->can_init_config.tx_id;
+	instance->dm_rx_id = config->can_init_config.rx_id;
+
 	config->can_init_config.can_module_callback = DM_Motor_Decode;
 	config->can_init_config.id                  = instance;
 	instance->motor_can_instance                = CAN_Register(&config->can_init_config);
@@ -357,7 +360,7 @@ DM_motor_t *DM_Motor_Init(motor_init_config_t *config)
 
 	instance->error_code = DM_ERROR_NONE;
 
-	DM_Motor_Start(instance);
+	DM_Motor_ENABLE(instance);
 	DWT_Delay(0.1);
 	dm_motor_instances[idx++] = instance;
 
@@ -433,7 +436,7 @@ void DM_Motor_Control(void)
 		receive_data     = &motor->receive_data;
 		pid_ref          = motor_controller->pid_ref; // 保存设定值,防止motor_controller->pid_ref在计算过程中被修改
 		// 多环目标值是上环输出为下环输入
-		
+
 		/* ------------------------------digital_pid------------------------------------*/
 		if (motor_setting->motor_reverse_flag == MOTOR_DIRECTION_REVERSE)
 		{
@@ -517,7 +520,7 @@ void DM_Motor_Control(void)
 			}
 			else
 			{
-				motor->transmit_data.velocity_des = pid_ref ;
+				motor->transmit_data.velocity_des = pid_ref;
 			}
 
 			//速度模式最终只控制速度，所以应该在此都是只传一个速度控制量即可
@@ -526,7 +529,7 @@ void DM_Motor_Control(void)
 			// if (motor->motor_settings.outer_loop_type == ANGLE_LOOP)
 			// {
 			// 	motor->transmit_data.velocity_des = pid_ref ;//+ motor->dm_offset_control;缺陷设计，前馈控制应该搭建控制环路分析得到具体的前馈控制器，但是可以临时应对突发情况得到一个不好不差的控制
-				
+
 			// 	//pid 应做好限幅
 			// 	// if (motor->transmit_data.velocity_des >= motor->motor_controller.angle_PID->output_limit)
 			// 	// {
@@ -616,8 +619,8 @@ void DM_Motor_Control(void)
 			// }
 
 			DM_Pos_Speed_Ctrl(motor,
-				              motor->transmit_data.position_des,
-				              motor->transmit_data.velocity_des);
+			                  motor->transmit_data.position_des,
+			                  motor->transmit_data.velocity_des);
 		}
 
 		else if (motor->dm_mode == MIT_MODE)
@@ -655,19 +658,19 @@ void DM_Motor_Control(void)
 				// else
 				// {
 
-					// if (motor->transmit_data.torque_des < 0)
-					// {
-					// 	motor->transmit_data.torque_des -= motor->dm_offset_control;
-					// }
-					// else if (motor->transmit_data.torque_des > 0)
-					// {
-					// 	motor->transmit_data.torque_des += motor->dm_offset_control;
-					// }
+				// if (motor->transmit_data.torque_des < 0)
+				// {
+				// 	motor->transmit_data.torque_des -= motor->dm_offset_control;
+				// }
+				// else if (motor->transmit_data.torque_des > 0)
+				// {
+				// 	motor->transmit_data.torque_des += motor->dm_offset_control;
+				// }
 
-					// if (motor->motor_controller.angle_PID->output == 0)
-					// {
-					// 	motor->transmit_data.torque_des = 0.0f;
-					// }
+				// if (motor->motor_controller.angle_PID->output == 0)
+				// {
+				// 	motor->transmit_data.torque_des = 0.0f;
+				// }
 
 				// }
 
@@ -702,7 +705,7 @@ void DM_Motor_Control(void)
 			if (motor->motor_settings.outer_loop_type == TORQUE_LOOP)
 			{
 				motor->transmit_data.torque_des = pid_ref;
-				
+
 				//pid 应做好限幅
 				// if (motor->transmit_data.torque_des >= max)
 				// {

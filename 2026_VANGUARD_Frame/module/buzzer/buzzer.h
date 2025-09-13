@@ -15,7 +15,6 @@
 #include <stdint.h>
 #include "bsp_pwm.h"
 
-
 #define Do_freq Note_Freq[49]
 #define Re_freq Note_Freq[51]
 #define Mi_freq Note_Freq[53]
@@ -53,13 +52,18 @@ extern const uint16_t Note_Freq[];
 
 extern const char StartUP_sound[]; // 除了extern想不出smarter的方法了，各位大佬有什么好的方法可以提出来,
 extern const char No_RC_sound[];
+extern const char Yes_RC_sound[];
 extern const char RoboMaster_You[];
 extern const char RoboMaster_Prepare[];
-extern const char Test[];
-extern const char DIDIDA[];
-extern const char GuYongZhe[];
-extern const char YongZheDouELong[];
-extern const char DuoLaAMeng[];
+// extern const char DIDIDA[];
+// extern const char GuYongZhe[];
+// extern const char YongZheDouELong[];
+// extern const char DuoLaAMeng[];
+extern const char Call_Airsupport_sound[];
+extern const char Init_sound[];
+extern const char Err_sound[];
+extern const char Ready_sound[];
+extern const char Warming_sound[];
 
 void Buzzer_Register(void);
 

@@ -15,7 +15,7 @@
 #define WS2812_LowLevel    0xC0     // 0
 #define WS2812_HighLevel   0xF0     // 1
 
-ws2812_init_config_t *ws2812_config;
+ws2812_init_config_t ws2812_config;
 ws2812_instance_t *ws2812_instance;
 
 ws2812_instance_t *WS2812_Init(ws2812_init_config_t *config)
@@ -38,7 +38,7 @@ ws2812_instance_t *WS2812_Init(ws2812_init_config_t *config)
 	return instance;
 }
 
-void WS2812_Control(ws2812_instance_t *ws2812, uint8_t r, uint8_t g, uint8_t b)
+void WS2812_Control_Three(ws2812_instance_t *ws2812, uint8_t r, uint8_t g, uint8_t b)
 {
 	uint8_t txbuf[24];
 	uint8_t res = 0;
@@ -55,4 +55,28 @@ void WS2812_Control(ws2812_instance_t *ws2812, uint8_t r, uint8_t g, uint8_t b)
 	{
 		SPI_Transmit(ws2812->ws2812_spi, &res, 1);
 	}
+}
+
+//(0xff0000)// 红色
+//(0xffa308)// 橙色
+//(0xffee46)// 黄色
+//(0x444444)// 白色
+//(0x43c9b0)// 青色
+//(0x2b74ce)// 蓝色
+//(0xc586b6)// 粉色
+//(0x40e476)// 鲜绿
+//(0x111111)//
+//(0x000000)//灭
+void WS2812_Control(ws2812_instance_t *ws2812, uint32_t color)
+{
+	static uint8_t txbuf[24];
+
+	for (int i = 0; i < 8; i++)
+	{
+		txbuf[7-i]  = (((color>>(i+8))&0x01) ? WS2812_HighLevel : WS2812_LowLevel)>>1;
+		txbuf[15-i] = (((color>>(i+16))&0x01) ? WS2812_HighLevel : WS2812_LowLevel)>>1;
+		txbuf[23-i] = (((color>>i)&0x01) ? WS2812_HighLevel : WS2812_LowLevel)>>1;
+	}
+
+  SPI_Transmit(ws2812->ws2812_spi, txbuf, 24);
 }

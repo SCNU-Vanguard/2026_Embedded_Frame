@@ -21,7 +21,7 @@
 #include "cmsis_os.h"
 #include "cmsis_os2.h"
 
-osThreadId_t Buzzer_Handle; // 由于线程挂起后无法自己恢复，所以需要使用线程句柄
+extern osThreadId_t Buzzer_Handle; // 由于线程挂起后无法自己恢复，所以需要使用线程句柄
 static buzzer_instance_t *buzzer = NULL;
 static float buzzer_one_note_time;
 static uint8_t buzzer_one_note_flag = 0;
@@ -42,13 +42,19 @@ const uint16_t Note_Freq[] = {
 // 音乐字符串 @todo（存入flash节省空间）
 const char StartUP_sound[]      = "T240L4 O6cde L2g";
 const char No_RC_sound[]        = "T200L8 O5ecececec";
+const char Yes_RC_sound[]       = "T240L8 O5aO6dc O5aO6dc O5aO6dc L16dcdcdcdc";
 const char RoboMaster_You[]     = "T75 L4O5ef g.L8e gL16eL8g.L4b O6c. O5L8cdeL4g L8a...L16gL8aL16gL8g.g L2d L4efL2g L8gL16eL8g.O6L4dc. O5L8cde O6L4c O5L8a...L16g L8aL16gL8a. O6L4cd. P8O5L8deL16d L1c";
 const char RoboMaster_Prepare[] = "T140L8 O4aaO5cc O4g#g#aa O4aaO5cc O4g#g#aa O4aaO5cc O4g#g#aa O4aaO5cc O4g#g#aa O4aaO5dd O4g#g#aa O4aaO5dd O4g#g#aa O4g#g#aa bbO5cc ddee O4bbO5aa O4aaO5cc O4g#g#aa O4aaO5cc O4g#g#aa O4aaO5cc O4g#g#aa O4aaO5cc O4g#g#aa O4aaO5dd O4g#g#aa O4aaO5dd O4g#g#aa O4g#g#aa bbO5cc ddee O4bbO5aa L2O5eL1O6c L2O5eL1O5a L2O5cL1O5f L2O4bL1O5e L2O5eL1O6c L2O5eL1O5a L2O5cL1O5f L2O4bL1O5e";
-const char Test[]               = "T240L8 O5aO6dc O5aO6dc O5aO6dc L16dcdcdcdc";
-const char DIDIDA[]             = "t130L8 g.&a+64r64<f+16.&f+64r64>f+16.&f+64r64f+16.&f+64r64>c+16.&c+64r64<f+16.&f+64r64f+16.&f+64r64b16.&b64r64a+16.&a+64r64<g+16.&g+64r64>g+16.&g+64r64g+16.&g+64r64b16.&b64r64b16.&b64r64a+16.&a+64r64b16.&b64r64g+16.&g+64r64<f+16.&f+64r64>f+16.&f+64r64f+16.&f+64r64>d+16.&d+64r64<f+16.&f+64r64c+16.&c+64r64g+16.&g+64r64a+16.&a+64r64<e16.&e64r64>d+16.&d+64r64d+16.&d+64r64b16.";
-const char GuYongZhe[]          = "t65L4 <g+16>f+16g+8&g+32.r64g+16g+16f+16g+16f+16a+8&a+32.r64a+16a+16g+16a+8&a+32.r64g+8d+2&d+32r16.d+16f+16d+16c+8&c+32.r64d+16c+8&c+32.r64d+16c+8&c+32.r64d+16f+16d+16f+16d+16c+8&c+32.";
-const char YongZheDouELong[]    = "t65L4 @4v10o5l8d4a4g2.fed4c<b->c<a>e4d1.a4>c4<b2.gfe4fga1&a1d4a4g2.fed4c<b->c<a>e4d1.";
-const char DuoLaAMeng[]         = "t180l8 o6dc+<bab>c+dc+<bab>c+dc+<bab>c+dc+<ba4.>edc+c-c+dedc+c-c+dedc+c-c+dc+dd+e4.c-c+d<gababn73f+gagabef+gf+gadef+>ed+dc+c<ba+ag+gf+fe1&e2<a4>dd4f+b4f+a4.a4ba4f+g4f+e4.c-4ee4g>c+4c+<b4ag4gg4f+c-4c+4.de4.<ab>dc+del4<a.a>d8df+8bf+8a.ab8af+8gf+8e.c-e8eg8>c+.<ba8gg8f+e8c+.e.d<a8>f+e8dl8ef+gab4.b4agabl4a.ef+8g+e8a2.<b.a.ef+8g+e8a.a>e8ea8ag8b.a.g2.e.n73b8ab8ag2al8bf+2&f+ed1&d2>d4dc+4c+<b4ba4ab4b>c+4c+d4.<dc+de4<bb4.>e4<bb4.b4>c+d4c-e2.>d4dc+4c+<b4ba>def+4f+f+ef+g2&g<d<b4a+b4>dc+4dl4e.d2.d2.<a>d8df+8bf+8a.ab8af+8gf+8e.c-e8eg8>c+c+8<ba8gg8gf+8c-c+.d8e.l8<ab>dc+del4<a.a>d8df+8bf+8a.ab8af+8gf+8e.c-e8eg8>c+.<ba8gg8f+e8c+.e.d<a8>f+e8dl8ef+gab4.b4agabl4a.ef+8g+e8a2.<b.a.ef+8g+e8a.a>e8ea8ag8b.a.g2.e.n73b8ab8ag2al8bf+2&f+ed2.&d<ab>c+def+ff+d4<a>f+ff+d4<a>gf+ge4.<a4aa4.>gf+ge4<a>gf+ge4<a>f+gg+a4.a4aa4.ba+ba+ba+b4>c+d4<bag+ag+ag+a4>c+d4<a>c+cc+cc+cc+4dedc+d1&d2<<a4>dd4f+b4f+a4.a4ba4f+g4f+e4.c-4ee4g>c+4c+<b4ag4gg4f+c-4c+4.de4.<ab>dc+del4<a.a>d8df+8bf+8a.ab8af+8gf+8e.c-e8eg8>c+c+8<ba8gg8f+e8c+.e.d<a8>f+e8dl8ef+gab4.b4agabl4a.ef+8g+e8a2.<b.a.ef+8g+e8a.a>e8ea8ag8b.a.g2.e.n73b8ab8ag2ab8f+2&f+8e8d2.<de8f+a8>b.a.g2.e.n73b8ab8ag2al8bf+2&f+ed4.>d<af+d4de4f+gf+gf+4gf+4e4.ff+ff+f4f+l4ed2<b.b.>c+d8e.<b.b.>c+d8ed2.&d8d1&d1&d8&d64";
+// const char DIDIDA[]             = "t130L8 g.&a+64r64<f+16.&f+64r64>f+16.&f+64r64f+16.&f+64r64>c+16.&c+64r64<f+16.&f+64r64f+16.&f+64r64b16.&b64r64a+16.&a+64r64<g+16.&g+64r64>g+16.&g+64r64g+16.&g+64r64b16.&b64r64b16.&b64r64a+16.&a+64r64b16.&b64r64g+16.&g+64r64<f+16.&f+64r64>f+16.&f+64r64f+16.&f+64r64>d+16.&d+64r64<f+16.&f+64r64c+16.&c+64r64g+16.&g+64r64a+16.&a+64r64<e16.&e64r64>d+16.&d+64r64d+16.&d+64r64b16.";
+// const char GuYongZhe[]          = "t65L4 <g+16>f+16g+8&g+32.r64g+16g+16f+16g+16f+16a+8&a+32.r64a+16a+16g+16a+8&a+32.r64g+8d+2&d+32r16.d+16f+16d+16c+8&c+32.r64d+16c+8&c+32.r64d+16c+8&c+32.r64d+16f+16d+16f+16d+16c+8&c+32.";
+// const char YongZheDouELong[]    = "t65L4 @4v10o5l8d4a4g2.fed4c<b->c<a>e4d1.a4>c4<b2.gfe4fga1&a1d4a4g2.fed4c<b->c<a>e4d1.";
+// const char DuoLaAMeng[]         = "t180l8 o6dc+<bab>c+dc+<bab>c+dc+<bab>c+dc+<ba4.>edc+c-c+dedc+c-c+dedc+c-c+dc+dd+e4.c-c+d<gababn73f+gagabef+gf+gadef+>ed+dc+c<ba+ag+gf+fe1&e2<a4>dd4f+b4f+a4.a4ba4f+g4f+e4.c-4ee4g>c+4c+<b4ag4gg4f+c-4c+4.de4.<ab>dc+del4<a.a>d8df+8bf+8a.ab8af+8gf+8e.c-e8eg8>c+.<ba8gg8f+e8c+.e.d<a8>f+e8dl8ef+gab4.b4agabl4a.ef+8g+e8a2.<b.a.ef+8g+e8a.a>e8ea8ag8b.a.g2.e.n73b8ab8ag2al8bf+2&f+ed1&d2>d4dc+4c+<b4ba4ab4b>c+4c+d4.<dc+de4<bb4.>e4<bb4.b4>c+d4c-e2.>d4dc+4c+<b4ba>def+4f+f+ef+g2&g<d<b4a+b4>dc+4dl4e.d2.d2.<a>d8df+8bf+8a.ab8af+8gf+8e.c-e8eg8>c+c+8<ba8gg8gf+8c-c+.d8e.l8<ab>dc+del4<a.a>d8df+8bf+8a.ab8af+8gf+8e.c-e8eg8>c+.<ba8gg8f+e8c+.e.d<a8>f+e8dl8ef+gab4.b4agabl4a.ef+8g+e8a2.<b.a.ef+8g+e8a.a>e8ea8ag8b.a.g2.e.n73b8ab8ag2al8bf+2&f+ed2.&d<ab>c+def+ff+d4<a>f+ff+d4<a>gf+ge4.<a4aa4.>gf+ge4<a>gf+ge4<a>f+gg+a4.a4aa4.ba+ba+ba+b4>c+d4<bag+ag+ag+a4>c+d4<a>c+cc+cc+cc+4dedc+d1&d2<<a4>dd4f+b4f+a4.a4ba4f+g4f+e4.c-4ee4g>c+4c+<b4ag4gg4f+c-4c+4.de4.<ab>dc+del4<a.a>d8df+8bf+8a.ab8af+8gf+8e.c-e8eg8>c+c+8<ba8gg8f+e8c+.e.d<a8>f+e8dl8ef+gab4.b4agabl4a.ef+8g+e8a2.<b.a.ef+8g+e8a.a>e8ea8ag8b.a.g2.e.n73b8ab8ag2ab8f+2&f+8e8d2.<de8f+a8>b.a.g2.e.n73b8ab8ag2al8bf+2&f+ed4.>d<af+d4de4f+gf+gf+4gf+4e4.ff+ff+f4f+l4ed2<b.b.>c+d8e.<b.b.>c+d8ed2.&d8d1&d1&d8&d64";
+const char Call_Airsupport_sound[] = "T120 L8 O4 d c g L4p a";
+const char Init_sound[]  = "T240L8 O5fgh";
+const char Err_sound[]   = "T120L8 O5c O4g O5c O4g O5c O4g";
+const char Ready_sound[]    = "T120L16 O5cde O6d 07h";
+const char Warming_sound[] = "T240 O6 L16 G L16 G L16 G P16 L8 G.";
+
 /**
  * @brief :  蜂鸣器注册
  * @return  void

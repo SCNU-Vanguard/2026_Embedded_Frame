@@ -25,7 +25,10 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+#include "buzzer.h"
+#include "ws2812.h"
 
+#include "bmi088.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -110,10 +113,14 @@ void MX_FREERTOS_Init(void) {
   * @param  argument: Not used
   * @retval None
   */
+uint8_t init_cnt = 0;
 /* USER CODE END Header_StartDefaultTask */
 void StartDefaultTask(void *argument)
 {
   /* USER CODE BEGIN StartDefaultTask */
+	WS2812_Control(ws2812_instance, GREEN_WS2812_COLOR);
+	Buzzer_Play(StartUP_sound);
+	
   /* Infinite loop */
   for(;;)
   {

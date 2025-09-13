@@ -61,8 +61,8 @@ typedef struct
 	SPI_t *spi_gyro; // 注意,SPIInstnace内部也有一个GPIOInstance,用于控制片选CS
 	SPI_t *spi_acc;  // 注意,SPIInstnace内部也有一个GPIOInstance,用于控制片选CS
 	// EXTI GPIO,如果BMI088工作在中断模式,则需要配置中断引脚(有数据产生时触发解算)
-	GPIO_t *gyro_int;
-	GPIO_t *acc_int;
+	GPIO_instance_t *gyro_int;
+	GPIO_instance_t *acc_int;
 	// 温度控制
 	PID_t *heat_pid;     // 恒温PID
 	PWM_t *heat_pwm;     // 加热PWM
@@ -117,6 +117,9 @@ typedef struct
 
 	pwm_init_config_t heat_pwm_config;
 } bmi088_init_config_t;
+
+extern bmi088_init_config_t bmi088_init_h7;
+extern bmi088_instance_t *bmi088_h7;
 
 /**
  * @brief 初始化BMI088,返回BMI088实例指针

@@ -89,13 +89,13 @@ typedef struct
 	motor_control_setting_t motor_settings; // 电机设置
 	motor_controller_t motor_controller;    // 电机控制器
 
-	CAN_t *motor_can_instance;
+	CAN_instance_t *motor_can_instance;
 
 	motor_working_type_e motor_state_flag; // 启停标志
     motor_error_detection_type_e motor_error_detection; // 异常检测
 
-	DM_motor_callback_t receive_data;
-	DM_motor_fillmessage_t transmit_data;
+	DM_motor_callback_t receive_data;		// 电机反馈值
+	DM_motor_fillmessage_t transmit_data;	// 电机目标值
     DM_motor_feedback_data_e motor_feedback;
 
 	supervisor_t *supervisor;
@@ -103,6 +103,8 @@ typedef struct
 	uint32_t feed_cnt;
 	float dt;
 
+	uint8_t dm_tx_id;
+	uint8_t dm_rx_id;
 	uint16_t dm_mode;
 	uint16_t contorl_mode_state;
 	float dm_offset_control;

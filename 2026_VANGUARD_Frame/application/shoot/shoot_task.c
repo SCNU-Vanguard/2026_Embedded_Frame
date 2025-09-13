@@ -22,7 +22,7 @@
 
 #include "message_center.h"
 
-#define SHOOT_TASK_PERIOD 10 // ms
+#define SHOOT_TASK_PERIOD 5 // ms
 
 osThreadId_t shoot_task_handel;
 
@@ -36,7 +36,7 @@ void Shoot_Task_Init( void )
     const osThreadAttr_t attr = {
             .name = "Shoot_Task",
             .stack_size = 128 * 8,
-            .priority = ( osPriority_t )osPriorityRealtime7,
+            .priority = ( osPriority_t )osPriorityRealtime3,
     };
     shoot_task_handel = osThreadNew( Shoot_Task, NULL, &attr );
 

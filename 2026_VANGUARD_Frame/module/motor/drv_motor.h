@@ -33,8 +33,8 @@
 
 typedef enum
 {
-  ABS = 0,
-  INCR = 1
+	ABS  = 0,
+	INCR = 1
 } motor_reference_e;
 
 /* 电机控制器,包括其他来源的反馈数据指针,3环控制器和电机的参考输入*/
@@ -46,13 +46,13 @@ typedef struct
 
 	float *angle_feedforward_ptr; // 角度前馈数据指针
 	float *speed_feedforward_ptr; // 速度前馈数据指针
-	float *torque_feedforward_ptr; // 扭矩前馈数据指针
 	float *current_feedforward_ptr; // 电流前馈数据指针
+	float *torque_feedforward_ptr; // 扭矩前馈数据指针
 
+	PID_t *angle_PID;
+	PID_t *speed_PID;
 	PID_t *current_PID;
 	PID_t *torque_PID;
-	PID_t *speed_PID;
-	PID_t *angle_PID;
 
 	float pid_ref; // 将会作为每个环的输入和输出顺次通过串级闭环
 } motor_controller_t;
@@ -64,13 +64,13 @@ typedef struct
 typedef enum
 {
 	OPEN_LOOP    = 0b0000,
-	CURRENT_LOOP = 0b0001,
+	TORQUE_LOOP  = 0b0001,
 	SPEED_LOOP   = 0b0010,
 	ANGLE_LOOP   = 0b0100,
-	TORQUE_LOOP  = 0b1000,
+	CURRENT_LOOP = 0b1000,
 
-	// only for checking
-	SPEED_AND_CURRENT_LOOP = 0b0011,
+	// only for checking 本框架电流环一般不考虑
+	SPEED_AND_TORQUE_LOOP  = 0b0011,
 	ANGLE_AND_SPEED_LOOP   = 0b0110,
 	ALL_THREE_LOOP         = 0b0111,
 } closeloop_type_e;
@@ -110,8 +110,8 @@ typedef struct
 	closeloop_type_e outer_loop_type;    		// 最外层的闭环,未设置时默认为最高级的闭环
 	closeloop_type_e close_loop_type;             // 使用几个闭环(串级)
 
-	motion_reverse_flag_e motor_reverse_flag;             // 是否反转
-	feedback_reverse_flag_e feedback_reverse_flag;        // 反馈是否反向
+	motion_reverse_flag_e motor_reverse_flag;             // 电机转向是否反转(不改变原数据)
+	feedback_reverse_flag_e feedback_reverse_flag;        // 反馈数据是否反向(不改变原数据)
 
 	feedback_type_e angle_feedback_source;       	// 角度反馈类型
 	feedback_type_e speed_feedback_source;       	// 速度反馈类型
@@ -147,7 +147,7 @@ typedef enum
 	MOTOR_ERROR_DETECTION_NONE  = 0b0000,
 	MOTOR_ERROR_DETECTION_CRASH = 0b0001,
 	MOTOR_ERROR_DETECTION_STUCK = 0b0010,
-  MOTOR_ERROR_DETECTION_LOST  = 0b0100,
+	MOTOR_ERROR_DETECTION_LOST  = 0b0100,
 	MOTOR_ERROR_PROTECTED       = 0b1000,
 } motor_error_detection_type_e;
 

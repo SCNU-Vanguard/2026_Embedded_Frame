@@ -1,5 +1,5 @@
 /**
-* @file chassis.h
+* @file daemon.h
  * @author guatai (2508588132@qq.com)
  * @brief
  * @version 0.1
@@ -9,19 +9,19 @@
  *
  */
 
-#ifndef __CHASSIS_H__
-#define __CHASSIS_H__
+#ifndef __DAEMON_H__
+#define __DAEMON_H__
 
 #include <stdint.h>
 
 typedef struct 
 {
     /* data */
-}__attribute__((packed))chassis_behaviour_t;
+}__attribute__((packed))daemon_behaviour_t;
 
 typedef struct
 {
     /* data */
-}__attribute__((packed))chassis_cmd_t;
+}__attribute__((packed))daemon_cmd_t;    
 
-#endif /* __CHASSIS_H__ */
+#endif /* __DAEMON_H__ */

@@ -22,7 +22,7 @@
 
 #include "message_center.h"
 
-#define GIMBAL_TASK_PERIOD 10 // ms
+#define GIMBAL_TASK_PERIOD 1 // ms
 
 osThreadId_t gimbal_task_handel;
 
@@ -36,7 +36,7 @@ void Gimbal_Task_Init( void )
     const osThreadAttr_t attr = {
             .name = "Gimbal_Task",
             .stack_size = 128 * 8,
-            .priority = ( osPriority_t )osPriorityRealtime7,
+            .priority = ( osPriority_t )osPriorityRealtime4,
     };
     gimbal_task_handel = osThreadNew( Gimbal_Task, NULL, &attr );
 

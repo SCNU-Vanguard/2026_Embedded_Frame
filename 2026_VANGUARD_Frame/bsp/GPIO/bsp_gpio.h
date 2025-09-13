@@ -47,7 +47,7 @@ typedef struct tmpgpio
 	// 随便取个名字当临时声明
 	void (*gpio_model_callback)(struct tmpgpio *); // exti中断回调函数
 	void *id;                                      // 区分不同的GPIO实例
-} GPIO_t;
+} GPIO_instance_t;
 
 /**
  * @brief GPIO初始化配置结构体定义
@@ -61,7 +61,7 @@ typedef struct
 	uint16_t GPIO_Pin;          // 引脚号,@note 这里的引脚号是GPIO_PIN_0,GPIO_PIN_1...
 	// 这些引脚是stm32f4xx_hal_gpio.h中定义的宏!!! 一定要注意
 
-	void (*gpio_model_callback)(GPIO_t *); // exti中断回调函数
+	void (*gpio_model_callback)(GPIO_instance_t *); // exti中断回调函数
 	void *id;                                    // 区分不同的GPIO实例
 } gpio_init_config_t;
 
@@ -69,30 +69,30 @@ typedef struct
  * @brief 注册GPIO实例
  *
  * @param GPIO_config
- * @return GPIO_t*
+ * @return GPIO_instance_t*
  */
-GPIO_t *GPIO_Register(gpio_init_config_t *GPIO_config);
+GPIO_instance_t *GPIO_Register(gpio_init_config_t *GPIO_config);
 
 /**
  * @brief GPIO API,切换GPIO电平
  *
  * @param _instance
  */
-void GPIO_Toggel(GPIO_t *_instance);
+void GPIO_Toggel(GPIO_instance_t *_instance);
 
 /**
  * @brief 设置GPIO电平
  *
  * @param _instance
  */
-void GPIO_Set(GPIO_t *_instance);
+void GPIO_Set(GPIO_instance_t *_instance);
 
 /**
  * @brief 复位GPIO电平
  *
  * @param _instance
  */
-void GPIO_Reset(GPIO_t *_instance);
+void GPIO_Reset(GPIO_instance_t *_instance);
 
 /**
  * @brief 读取GPIO电平
@@ -100,7 +100,7 @@ void GPIO_Reset(GPIO_t *_instance);
  * @param _instance
  * @return GPIO_PinState
  */
-GPIO_PinState GPIO_Read(GPIO_t *_instance);
+GPIO_PinState GPIO_Read(GPIO_instance_t *_instance);
 
 #ifdef __cplusplus
 }

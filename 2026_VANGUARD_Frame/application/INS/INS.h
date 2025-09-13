@@ -1,5 +1,5 @@
 /**
-* @file chassis.h
+* @file INS.h
  * @author guatai (2508588132@qq.com)
  * @brief
  * @version 0.1
@@ -9,19 +9,21 @@
  *
  */
 
-#ifndef __CHASSIS_H__
-#define __CHASSIS_H__
+#ifndef __INS_H__
+#define __INS_H__
 
 #include <stdint.h>
 
 typedef struct 
 {
     /* data */
-}__attribute__((packed))chassis_behaviour_t;
+}__attribute__((packed))INS_behaviour_t;
 
 typedef struct
 {
     /* data */
-}__attribute__((packed))chassis_cmd_t;
+}__attribute__((packed))INS_cmd_t;
 
-#endif /* __CHASSIS_H__ */
+extern void INS_Data_Update(void);
+
+#endif /* __INS_H__ */

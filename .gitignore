@@ -21,10 +21,8 @@
 *.htm
 *.hsc
 ~*
-*.map
 *uvgui*
 *.uvoptx
-*.sct
 *JLinkLog.txt
 *.dbgconf
 .vscode/tags

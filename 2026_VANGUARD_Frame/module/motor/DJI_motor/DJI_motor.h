@@ -66,12 +66,12 @@ typedef struct
 	motor_control_setting_t motor_settings; // 电机控制设置
 	motor_controller_t motor_controller;    // 电机控制器
 
-	CAN_t *motor_can_instance; // 电机CAN实例
+	CAN_instance_t *motor_can_instance; // 电机CAN实例
 
 	motor_working_type_e motor_state_flag; // 启停标志
 	motor_error_detection_type_e motor_error_detection; // 异常检测
 
-	DJI_motor_callback_t measure;            // 电机反馈值
+	DJI_motor_callback_t measure;            // 电机测量值
 	DJI_motor_fillmessage_t target;  // 电机设定值
 	DJI_motor_feedback_data_e motor_feedback;
 

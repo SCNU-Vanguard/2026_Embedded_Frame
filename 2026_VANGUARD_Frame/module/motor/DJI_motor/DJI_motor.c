@@ -30,7 +30,7 @@ void DJI_Motor_Error_Detection(DJI_motor_instance_t *motor);
  * can1: [0]:0x1FF,[1]:0x200,[2]:0x2FF
  * can2: [3]:0x1FF,[4]:0x200,[5]:0x2FF
  */
-static CAN_t sender_assignment[15] = {
+static CAN_instance_t sender_assignment[15] = {
 	[0] = {.can_handle = &hfdcan1, .tx_header.Identifier = 0x1ff, .tx_header.IdType = FDCAN_STANDARD_ID, .tx_header.DataLength = FDCAN_DLC_BYTES_8, .tx_buff = {0}},
 	[1] = {.can_handle = &hfdcan1, .tx_header.Identifier = 0x200, .tx_header.IdType = FDCAN_STANDARD_ID, .tx_header.DataLength = FDCAN_DLC_BYTES_8, .tx_buff = {0}},
 	[2] = {.can_handle = &hfdcan1, .tx_header.Identifier = 0x2ff, .tx_header.IdType = FDCAN_STANDARD_ID, .tx_header.DataLength = FDCAN_DLC_BYTES_8, .tx_buff = {0}},
@@ -137,7 +137,7 @@ static void Motor_Sender_Grouping(DJI_motor_instance_t *motor, can_init_config_t
  *
  * @param _instance 收到数据的instance,通过遍历与所有电机进行对比以选择正确的实例
  */
-static void Decode_DJI_Motor(CAN_t *_instance)
+static void Decode_DJI_Motor(CAN_instance_t *_instance)
 {
 	// 这里对can instance的id进行了强制转换,从而获得电机的instance实例地址
 	// _instance指针指向的id是对应电机instance的地址,通过强制转换为电机instance的指针,再通过->运算符访问电机的成员motor_measure,最后取地址获得指针
@@ -204,9 +204,13 @@ DJI_motor_instance_t *DJI_Motor_Init(motor_init_config_t *config)
 	instance->motor_controller.speed_PID                = PID_Init(config->controller_param_init_config.speed_PID);
 	instance->motor_controller.angle_PID                = PID_Init(config->controller_param_init_config.angle_PID);
 	instance->motor_controller.torque_PID               = PID_Init(config->controller_param_init_config.torque_PID);
+
+	//电机控制闭环时的非电机本身反馈数据指针
 	instance->motor_controller.other_angle_feedback_ptr = config->controller_param_init_config.other_angle_feedback_ptr;
 	instance->motor_controller.other_speed_feedback_ptr = config->controller_param_init_config.other_speed_feedback_ptr;
-	instance->motor_controller.current_feedforward_ptr  = config->controller_param_init_config.current_feedforward_ptr;
+
+	//电机控制闭环时的前馈控制器或前馈控制量指针
+	instance->motor_controller.torque_feedforward_ptr  = config->controller_param_init_config.torque_feedforward_ptr;
 	instance->motor_controller.speed_feedforward_ptr    = config->controller_param_init_config.speed_feedforward_ptr;
 
 	// 后续增加电机前馈控制器(速度和电流)
@@ -341,6 +345,7 @@ void DJI_Motor_SetTar(DJI_motor_instance_t *motor, float val, motor_reference_e 
 // 异常检测
 void DJI_Motor_Error_Detection(DJI_motor_instance_t *motor)
 {
+	;
 }
 
 // 为所有电机实例计算三环PID,发送控制报文
@@ -434,10 +439,11 @@ void DJI_Motor_Control(void)
 		// 计算电流环,目前只要启用了电流环就计算,不管外层闭环是什么,并且电流只有电机自身传感器的反馈
 		if (motor_setting->feedforward_flag & TORQUE_FEEDFORWARD)
 		{
-			pid_ref += *motor_controller->current_feedforward_ptr;
+			pid_ref += *motor_controller->torque_feedforward_ptr;
 		}
 		if (motor_setting->close_loop_type & TORQUE_LOOP)
 		{
+			//采用何种pid需要自己抉择
 			pid_ref = PID_Position(motor_controller->torque_PID,
 			                       receive_data->real_current,
 			                       pid_ref);
@@ -466,7 +472,7 @@ void DJI_Motor_Control(void)
 	}
 	/* ------------------------------handler------------------------------------*/
 
-	// 遍历flag,检查是否要发送这一帧报文
+	// 遍历flag,检查是否要发送这一帧报文TODO(GUATAI):后续应解耦，能够由开发者来选择何时发送，来达到每个模块不同控制频率的需求
 	for (size_t i = 0 ; i < 6 ; ++i)
 	{
 		if (sender_enable_flag[i])

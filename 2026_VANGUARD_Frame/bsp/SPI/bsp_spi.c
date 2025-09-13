@@ -55,11 +55,11 @@ SPI_t *SPI_Register(spi_init_config_t *conf)
 
 void SPI_Transmit(SPI_t *spi_ins, uint8_t *ptr_data, uint8_t len)
 {
-	if (spi_ins->cs_flag != 0)
-	{
+	// if (spi_ins->cs_flag != 0)
+	// {
 		// 拉低片选,开始传输(选中从机)
 		HAL_GPIO_WritePin(spi_ins->GPIOx, spi_ins->cs_pin, GPIO_PIN_RESET);
-	}
+	// }
 	switch (spi_ins->spi_work_mode)
 	{
 		case SPI_DMA_MODE:
@@ -71,10 +71,10 @@ void SPI_Transmit(SPI_t *spi_ins, uint8_t *ptr_data, uint8_t len)
 		case SPI_BLOCK_MODE:
 			HAL_SPI_Transmit(spi_ins->spi_handle, ptr_data, len, 2500); // 默认50ms超时
 			// 阻塞模式不会调用回调函数,传输完成后直接拉高片选结束
-			if (spi_ins->cs_flag != 0)
-			{
+			// if (spi_ins->cs_flag != 0)
+			// {
 				HAL_GPIO_WritePin(spi_ins->GPIOx, spi_ins->cs_pin, GPIO_PIN_SET);
-			}
+			// }
 			break;
 		default:
 			while (1); // error mode! 请查看是否正确设置模式，或出现指针越界导致模式被异常修改的情况
@@ -128,9 +128,9 @@ void SPI_Transmit_Receive(SPI_t *spi_ins, uint8_t *ptr_data_rx, uint8_t *ptr_dat
 	// }
 	// 拉低片选,开始传输
 	HAL_GPIO_WritePin(spi_ins->GPIOx, spi_ins->cs_pin, GPIO_PIN_RESET);
-	*spi_ins->cs_pin_state =
-			spi_ins->cs_state  =
-			HAL_GPIO_ReadPin(spi_ins->GPIOx, spi_ins->cs_pin);
+	// *spi_ins->cs_pin_state =
+	// 		spi_ins->cs_state  =
+	// 		HAL_GPIO_ReadPin(spi_ins->GPIOx, spi_ins->cs_pin);
 	switch (spi_ins->spi_work_mode)
 	{
 		case SPI_DMA_MODE:
@@ -143,9 +143,9 @@ void SPI_Transmit_Receive(SPI_t *spi_ins, uint8_t *ptr_data_rx, uint8_t *ptr_dat
 			HAL_SPI_TransmitReceive(spi_ins->spi_handle, ptr_data_tx, ptr_data_rx, len, 1000); // 默认50ms超时
 			// 阻塞模式不会调用回调函数,传输完成后直接拉高片选结束
 			HAL_GPIO_WritePin(spi_ins->GPIOx, spi_ins->cs_pin, GPIO_PIN_SET);
-			*spi_ins->cs_pin_state =
-					spi_ins->cs_state  =
-					HAL_GPIO_ReadPin(spi_ins->GPIOx, spi_ins->cs_pin);
+			// *spi_ins->cs_pin_state =
+			// 		spi_ins->cs_state  =
+			// 		HAL_GPIO_ReadPin(spi_ins->GPIOx, spi_ins->cs_pin);
 			break;
 			//    default:
 			//        while (1)
@@ -183,14 +183,14 @@ void HAL_SPI_RxCpltCallback(SPI_HandleTypeDef *hspi)
 		if (spi_instances[i]->spi_handle == hspi && // 显然同一时间一条总线只能有一个从机在接收数据
 		    HAL_GPIO_ReadPin(spi_instances[i]->GPIOx, spi_instances[i]->cs_pin) == GPIO_PIN_RESET)
 		{
-			if (spi_instances[i]->cs_flag != 0)
-			{
-				// 先拉高片选,结束传输,在判断是否有回调函数,如果有则调用回调函数
+			// if (spi_instances[i]->cs_flag != 0)
+			// {
+			// 	// 先拉高片选,结束传输,在判断是否有回调函数,如果有则调用回调函数
 				HAL_GPIO_WritePin(spi_instances[i]->GPIOx, spi_instances[i]->cs_pin, GPIO_PIN_SET);
-				*spi_instances[i]->cs_pin_state =
-						spi_instances[i]->cs_state  =
-						HAL_GPIO_ReadPin(spi_instances[i]->GPIOx, spi_instances[i]->cs_pin);
-			}
+			// 	*spi_instances[i]->cs_pin_state =
+			// 			spi_instances[i]->cs_state  =
+			// 			HAL_GPIO_ReadPin(spi_instances[i]->GPIOx, spi_instances[i]->cs_pin);
+			// }
 			// @todo 后续添加holdon模式,由用户自行决定何时释放片选,允许进行连续传输
 			if (spi_instances[i]->callback != NULL)
 			{ // 回调函数不为空, 则调用回调函数

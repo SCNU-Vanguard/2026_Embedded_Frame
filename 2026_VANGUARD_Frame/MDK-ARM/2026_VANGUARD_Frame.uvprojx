@@ -134,10 +134,10 @@
             <RunIndependent>0</RunIndependent>
             <UpdateFlashBeforeDebugging>1</UpdateFlashBeforeDebugging>
             <Capability>1</Capability>
-            <DriverSelection>4099</DriverSelection>
+            <DriverSelection>4100</DriverSelection>
           </Flash1>
           <bUseTDR>0</bUseTDR>
-          <Flash2>BIN\CMSIS_AGDI.dll</Flash2>
+          <Flash2>Segger\JL2CM3.dll</Flash2>
           <Flash3>"" ()</Flash3>
           <Flash4></Flash4>
           <pFcarmOut></pFcarmOut>
@@ -340,7 +340,7 @@
               <MiscControls></MiscControls>
               <Define>USE_PWR_LDO_SUPPLY,USE_HAL_DRIVER,STM32H723xx</Define>
               <Undefine></Undefine>
-              <IncludePath>../Core/Inc;../Drivers/STM32H7xx_HAL_Driver/Inc;../Drivers/STM32H7xx_HAL_Driver/Inc/Legacy;../Drivers/CMSIS/Device/ST/STM32H7xx/Include;../Drivers/CMSIS/Include;../Middlewares/Third_Party/FreeRTOS/Source/include;../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2;../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM4F;../Middlewares/ST/ARM/DSP/Inc;../bsp/DWT;../bsp/USART;../bsp/CAN;../bsp/I2C;../bsp/SPI;../bsp/FLASH;../bsp/TIM;../bsp/PWM;../bsp/ADC;../bsp/GPIO;../module/buzzer;../module/imu;../module/led;../module/vofa;../module/led/WS2812;../module/motor;../module/remote;../module/defense_center;../module/message_center;../algorithm;../algorithm/controller;../algorithm/controller/PID;../module/motor/DJI_motor;../module/motor/DM_motor;../algorithm/basic_function;../application/chassis;../application/communication;../application/gimbal;../application/shoot;..\algorithm\filter;..\algorithm\filter\AHRS;..\algorithm\filter\AHRS\madgwick;..\algorithm\filter\AHRS\mahony;..\algorithm\filter\EKF;..\algorithm\filter\kalman;..\Middlewares\ST\ARM\DSP\Lib</IncludePath>
+              <IncludePath>../Core/Inc;../Drivers/STM32H7xx_HAL_Driver/Inc;../Drivers/STM32H7xx_HAL_Driver/Inc/Legacy;../Drivers/CMSIS/Device/ST/STM32H7xx/Include;../Drivers/CMSIS/Include;../Middlewares/Third_Party/FreeRTOS/Source/include;../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2;../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM4F;../Middlewares/ST/ARM/DSP/Inc;../bsp/DWT;../bsp/USART;../bsp/CAN;../bsp/I2C;../bsp/SPI;../bsp/FLASH;../bsp/TIM;../bsp/PWM;../bsp/ADC;../bsp/GPIO;../module/buzzer;../module/imu;../module/led;../module/vofa;../module/led/WS2812;../module/motor;../module/remote;../module/defense_center;../module/message_center;../algorithm;../algorithm/controller;../algorithm/controller/PID;../module/motor/DJI_motor;../module/motor/DM_motor;../algorithm/basic_function;../application/chassis;../application/communication;../application/gimbal;../application/shoot;../algorithm/filter;../algorithm/filter/AHRS;../algorithm/filter/AHRS/madgwick;../algorithm/filter/AHRS/mahony;../algorithm/filter/EKF;../algorithm/filter/kalman;../Middlewares/ST/ARM/DSP/Lib;../application;..\application\alarm_system;..\application\INS</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -2179,6 +2179,46 @@
               <FileName>shoot_task.h</FileName>
               <FileType>5</FileType>
               <FilePath>..\application\shoot\shoot_task.h</FilePath>
+            </File>
+            <File>
+              <FileName>daemon.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\application\alarm_system\daemon.c</FilePath>
+            </File>
+            <File>
+              <FileName>daemon.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\application\alarm_system\daemon.h</FilePath>
+            </File>
+            <File>
+              <FileName>daemon_task.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\application\alarm_system\daemon_task.c</FilePath>
+            </File>
+            <File>
+              <FileName>daemon_task.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\application\alarm_system\daemon_task.h</FilePath>
+            </File>
+            <File>
+              <FileName>INS.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\application\INS\INS.c</FilePath>
+            </File>
+            <File>
+              <FileName>INS.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\application\INS\INS.h</FilePath>
+            </File>
+            <File>
+              <FileName>INS_task.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\application\INS\INS_task.c</FilePath>
+            </File>
+            <File>
+              <FileName>INS_task.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\application\INS\INS_task.h</FilePath>
             </File>
           </Files>
         </Group>

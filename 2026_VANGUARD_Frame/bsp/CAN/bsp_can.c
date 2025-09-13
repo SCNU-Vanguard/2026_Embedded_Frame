@@ -18,7 +18,7 @@
 /* can instance ptrs storage, used for recv callback */
 // 在CAN产生接收中断会遍历数组,选出hfdcan和rxid与发生中断的实例相同的那个,调用其回调函数
 // @todo: 后续为每个CAN总线单独添加一个can_instance指针数组,提高回调查找的性能
-static CAN_t *can_instances[CAN_MX_REGISTER_CNT] = {NULL};
+static CAN_instance_t *can_instances[CAN_MX_REGISTER_CNT] = {NULL};
 static uint8_t idx; // 全局CAN实例索引,每次有新的模块注册会自增
 
 /* ----------------two static function called by CAN_Register()-------------------- */
@@ -35,7 +35,7 @@ static uint8_t idx; // 全局CAN实例索引,每次有新的模块注册会自�
  *
  * @param _instance can instance owned by specific module
  */
-static void CAN_Add_Filter(CAN_t *_instance)
+static void CAN_Add_Filter(CAN_instance_t *_instance)
 {
 	FDCAN_FilterTypeDef can_filter_conf;
 	static uint8_t can1_filter_idx = 0, can2_filter_idx = 42, can3_filter_idx = 84; // 0-41给can1用,42-83给can2用,84-127给can3用
@@ -58,7 +58,7 @@ static void CAN_Add_Filter(CAN_t *_instance)
  * @note 此函数会启动CAN1和CAN2,开启CAN1和CAN2的FIFO0 & FIFO1溢出通知
  *
  */
-static void CAN_Service_Init( )
+static void CAN_Service_Init( void )
 {
 	HAL_FDCAN_Start(&hfdcan1);
 	HAL_FDCAN_ActivateNotification(&hfdcan1, FDCAN_IT_RX_FIFO0_NEW_MESSAGE, 0);
@@ -83,7 +83,7 @@ static void CAN_Service_Init( )
 
 /* ----------------------- two extern callable function -----------------------*/
 
-CAN_t *CAN_Register(can_init_config_t *config)
+CAN_instance_t *CAN_Register(can_init_config_t *config)
 {
 	if (!idx)
 	{
@@ -101,8 +101,8 @@ CAN_t *CAN_Register(can_init_config_t *config)
 		}
 	}
 
-	CAN_t *instance = (CAN_t *) malloc(sizeof(CAN_t)); // 分配空间
-	memset(instance, 0, sizeof(CAN_t));                                                                     // 分配的空间未必是0,所以要先清空
+	CAN_instance_t *instance = (CAN_instance_t *) malloc(sizeof(CAN_instance_t)); // 分配空间
+	memset(instance, 0, sizeof(CAN_instance_t));                                                                     // 分配的空间未必是0,所以要先清空
 	// 进行发送报文的配置
 	instance->tx_header.Identifier          = config->tx_id; // 发送id
 	instance->tx_header.IdType              = FDCAN_STANDARD_ID;															// 标准ID
@@ -128,7 +128,7 @@ CAN_t *CAN_Register(can_init_config_t *config)
 
 /* @todo 目前似乎封装过度,应该添加一个指向tx_buff的指针,tx_buff不应该由CAN instance保存 */
 /* 如果让CANinstance保存txbuff,会增加一次复制的开销 */
-uint8_t CAN_Transmit(CAN_t *_instance, float timeout)
+uint8_t CAN_Transmit(CAN_instance_t *_instance, float timeout)
 {
 	static uint32_t busy_count;
 	static volatile float wait_time __attribute__((unused)); // for cancel warning
@@ -168,7 +168,7 @@ uint8_t CAN_Transmit_Once(FDCAN_HandleTypeDef *can_handle, uint32_t StdId, uint8
 		CAN_Service_Init( ); // 判断是否进行过初始化,先进行硬件初始化
 	}
 
-	static CAN_t tempTX_instance         = {0};
+	static CAN_instance_t tempTX_instance         = {0};
 	tempTX_instance.tx_header.DataLength = FDCAN_DLC_BYTES_8;
 
 	tempTX_instance.can_handle           = can_handle;
@@ -179,7 +179,7 @@ uint8_t CAN_Transmit_Once(FDCAN_HandleTypeDef *can_handle, uint32_t StdId, uint8
 	return 1; // 发送成功
 }
 
-void CAN_Set_DLC(CAN_t *_instance, uint8_t length)
+void CAN_Set_DLC(CAN_instance_t *_instance, uint8_t length)
 {
 	// 发送长度错误!检查调用参数是否出错,或出现野指针/越界访问
 	if (length > 8 || length == 0) // 安全检查
