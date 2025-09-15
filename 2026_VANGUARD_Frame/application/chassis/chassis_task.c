@@ -53,8 +53,6 @@ uint32_t chassis_cnt;
 
 static void Chassis_Task( void *argument )
 {
-	Chassis_Init();	
-
 	uint32_t time = osKernelGetTickCount( );
 
 	for( ; ; )

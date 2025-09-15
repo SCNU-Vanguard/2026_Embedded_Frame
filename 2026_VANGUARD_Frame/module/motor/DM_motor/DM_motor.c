@@ -328,6 +328,11 @@ DM_motor_t *DM_Motor_Init(motor_init_config_t *config)
 	DM_motor_t *instance = (DM_motor_t *) malloc(sizeof(DM_motor_t));
 	memset(instance, 0, sizeof(DM_motor_t));
 
+	if(instance == NULL)
+	{
+		return NULL;
+	}
+	
 	instance->motor_type     = config->motor_type;
 	instance->motor_settings = config->controller_setting_init_config;
 
@@ -360,8 +365,8 @@ DM_motor_t *DM_Motor_Init(motor_init_config_t *config)
 
 	instance->error_code = DM_ERROR_NONE;
 
-	DM_Motor_ENABLE(instance);
-	DWT_Delay(0.1);
+//	DM_Motor_ENABLE(instance);
+//	DWT_Delay(0.1);
 	dm_motor_instances[idx++] = instance;
 
 	return instance;

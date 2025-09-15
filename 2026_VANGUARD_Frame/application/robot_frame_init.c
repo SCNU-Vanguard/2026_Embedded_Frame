@@ -22,6 +22,13 @@
 #include "INS_task.h"
 #include "procotol_task.h"
 
+#include "chassis.h"
+#include "gimbal.h"
+#include "shoot.h"
+#include "daemon.h"
+#include "INS.h"
+#include "procotol.h"
+
 #include "bmi088.h"
 #include "ws2812.h"
 #include "buzzer.h"
@@ -48,6 +55,8 @@ static void Frame_Device_Init(void)
 
 	VOFA_Register(&huart7);
 	// BMI088_Init(&hspi2,0);
+	
+	Chassis_Init();
 }
 
 static void Frame_Task_Init(void)

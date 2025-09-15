@@ -17,6 +17,11 @@
  */
 PID_t *PID_Init(PID_t *config)
 {
+	if(config == NULL)
+	{
+		return NULL;
+	}
+	
 	PID_t *pid = (PID_t *) malloc(sizeof(PID_t));
 	memset(pid, 0, sizeof(PID_t));
 
