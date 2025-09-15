@@ -331,8 +331,8 @@ DM_motor_t *DM_Motor_Init(motor_init_config_t *config)
 	instance->motor_type     = config->motor_type;
 	instance->motor_settings = config->controller_setting_init_config;
 
-	instance->motor_controller.current_PID = PID_Init(
-	                                                  config->controller_param_init_config.current_PID);
+	instance->motor_controller.torque_PID = PID_Init(
+	                                                  config->controller_param_init_config.torque_PID);
 	instance->motor_controller.speed_PID = PID_Init(
 	                                                config->controller_param_init_config.speed_PID);
 	instance->motor_controller.angle_PID = PID_Init(
@@ -340,7 +340,7 @@ DM_motor_t *DM_Motor_Init(motor_init_config_t *config)
 
 	instance->motor_controller.other_angle_feedback_ptr = config->controller_param_init_config.other_angle_feedback_ptr;
 	instance->motor_controller.other_speed_feedback_ptr = config->controller_param_init_config.other_speed_feedback_ptr;
-	instance->motor_controller.current_feedforward_ptr  = config->controller_param_init_config.current_feedforward_ptr;
+	instance->motor_controller.torque_feedforward_ptr  = config->controller_param_init_config.torque_feedforward_ptr;
 	instance->motor_controller.speed_feedforward_ptr    = config->controller_param_init_config.speed_feedforward_ptr;
 
 	instance->dm_tx_id = config->can_init_config.tx_id;
@@ -491,7 +491,7 @@ void DM_Motor_Control(void)
 		// 计算扭矩环,目前只要启用了扭矩环就计算,不管外层闭环是什么,并且扭矩只有电机自身传感器的反馈
 		if (motor_setting->feedforward_flag & TORQUE_FEEDFORWARD)
 		{
-			pid_ref += *motor_controller->current_feedforward_ptr;
+			pid_ref += *motor_controller->torque_feedforward_ptr;
 		}
 		if (motor_setting->close_loop_type & TORQUE_LOOP)
 		{

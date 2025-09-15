@@ -43,6 +43,7 @@ typedef enum
 	BMI088_LOAD_PRE_CALI_MODE,        // 使用预设标定参数,
 } bmi088_calibrate_mode_e;
 
+#pragma pack(1) // 按1字节对齐
 /* BMI088数据*/
 typedef struct
 {
@@ -50,6 +51,7 @@ typedef struct
 	float acc[3];      // 加速度计数据,xyz
 	float temperature; // 温度
 } bmi088_data_t;
+#pragma pack()
 
 /* BMI088实例结构体定义 */
 typedef struct

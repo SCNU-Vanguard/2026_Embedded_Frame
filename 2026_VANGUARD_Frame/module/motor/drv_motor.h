@@ -104,21 +104,6 @@ typedef enum
 	FEEDBACK_DIRECTION_REVERSE = 1
 } feedback_reverse_flag_e;
 
-/* 电机控制设置,包括闭环类型,反转标志和反馈来源 */
-typedef struct
-{
-	closeloop_type_e outer_loop_type;    		// 最外层的闭环,未设置时默认为最高级的闭环
-	closeloop_type_e close_loop_type;             // 使用几个闭环(串级)
-
-	motion_reverse_flag_e motor_reverse_flag;             // 电机转向是否反转(不改变原数据)
-	feedback_reverse_flag_e feedback_reverse_flag;        // 反馈数据是否反向(不改变原数据)
-
-	feedback_type_e angle_feedback_source;       	// 角度反馈类型
-	feedback_type_e speed_feedback_source;       	// 速度反馈类型
-
-	feedfoward_type_e feedforward_flag;           // 前馈类型
-} motor_control_setting_t;
-
 typedef enum
 {
 	MOTOR_DISABLE = 0,
@@ -132,6 +117,7 @@ typedef enum
 	M3508,
 	M2006,
 	DM4310,
+	DM8009P,
 } motor_type_e;
 
 typedef enum
@@ -157,6 +143,21 @@ typedef enum
 	TORQUE_LOOP_CONTRO = 0, //扭矩开环控制
 	ANGLE_LOOP_CONTRO  = 1,  //位置闭环控制(由电机支持)
 } motor_control_type_e;
+
+/* 电机控制设置,包括闭环类型,反转标志和反馈来源 */
+typedef struct
+{
+	closeloop_type_e outer_loop_type;    		// 最外层的闭环,未设置时默认为最高级的闭环
+	closeloop_type_e close_loop_type;             // 使用几个闭环(串级)
+
+	motion_reverse_flag_e motor_reverse_flag;             // 电机转向是否反转(不改变原数据)
+	feedback_reverse_flag_e feedback_reverse_flag;        // 反馈数据是否反向(不改变原数据)
+
+	feedback_type_e angle_feedback_source;       	// 角度反馈类型
+	feedback_type_e speed_feedback_source;       	// 速度反馈类型
+
+	feedfoward_type_e feedforward_flag;           // 前馈类型
+} motor_control_setting_t;
 
 /* 用于初始化CAN电机的结构体,各类电机通用 */
 typedef struct

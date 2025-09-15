@@ -36,7 +36,7 @@ typedef struct
 extern ws2812_init_config_t ws2812_config;
 extern ws2812_instance_t *ws2812_instance;
 
-ws2812_instance_t *WS2812_Init(ws2812_init_config_t *config);
+ws2812_instance_t *WS2812_Register(ws2812_init_config_t *config);
 
 void WS2812_Control_Three(ws2812_instance_t *ws2812, uint8_t r, uint8_t g, uint8_t b);
 

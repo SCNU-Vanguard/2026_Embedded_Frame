@@ -18,4 +18,6 @@
 #define RPM_2_ANGLE_PER_SEC 6.0f       //rpm to °/s ×360°/60sec
 #define RPM_2_RAD_PER_SEC 0.104719755f //rpm to rad/s ×2pi/60sec
 
+#define BMI088_Frame 1
+
 #endif /* __ROBOT_FRAME_CONFIG_H__ */

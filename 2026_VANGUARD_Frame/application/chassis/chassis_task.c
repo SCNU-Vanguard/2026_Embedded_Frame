@@ -22,6 +22,8 @@
 
 #include "message_center.h"
 
+#include "DM_motor.h"
+
 #define CHASSIS_TASK_PERIOD 1 // ms
 
 osThreadId_t robot_cmd_task_handel;
@@ -47,13 +49,25 @@ void Chassis_Task_Init( void )
 
 uint32_t chassis_task_diff;
 
+uint32_t chassis_cnt;
+
 static void Chassis_Task( void *argument )
 {
+	Chassis_Init();	
+
 	uint32_t time = osKernelGetTickCount( );
 
 	for( ; ; )
 	{
-
+		chassis_cnt++;
+		if((chassis_cnt % 1000) == 0)
+		{
+			DM_Motor_ENABLE(NULL);
+		}
+		else if((chassis_cnt % 2000) == 0)
+		{
+			DM_Motor_DISABLE(NULL);
+		}
 		
 		chassis_task_diff = osKernelGetTickCount( ) - time;
 		time = osKernelGetTickCount( );

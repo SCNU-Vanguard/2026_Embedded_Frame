@@ -113,7 +113,7 @@ void MX_FREERTOS_Init(void) {
   * @param  argument: Not used
   * @retval None
   */
-uint8_t init_cnt = 0;
+uint32_t beat = 0;
 /* USER CODE END Header_StartDefaultTask */
 void StartDefaultTask(void *argument)
 {
@@ -124,6 +124,11 @@ void StartDefaultTask(void *argument)
   /* Infinite loop */
   for(;;)
   {
+		beat++;
+		if((beat % 30000) == 0)
+		{
+			Buzzer_Play(Warming_sound);
+		}
     osDelay(1);
   }
   /* USER CODE END StartDefaultTask */

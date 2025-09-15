@@ -69,7 +69,7 @@ void SPI_Transmit(SPI_t *spi_ins, uint8_t *ptr_data, uint8_t len)
 			HAL_SPI_Transmit_IT(spi_ins->spi_handle, ptr_data, len);
 			break;
 		case SPI_BLOCK_MODE:
-			HAL_SPI_Transmit(spi_ins->spi_handle, ptr_data, len, 2500); // 默认50ms超时
+			HAL_SPI_Transmit(spi_ins->spi_handle, ptr_data, len, 1000); // 默认50ms超时
 			// 阻塞模式不会调用回调函数,传输完成后直接拉高片选结束
 			// if (spi_ins->cs_flag != 0)
 			// {
@@ -104,7 +104,7 @@ void SPI_Receive(SPI_t *spi_ins, uint8_t *ptr_data, uint8_t len)
 			break;
 		default:
 			while (1); // error mode! 请查看是否正确设置模式，或出现指针越界导致模式被异常修改的情况
-			//        break;
+			break;
 	}
 }
 
@@ -127,7 +127,10 @@ void SPI_Transmit_Receive(SPI_t *spi_ins, uint8_t *ptr_data_rx, uint8_t *ptr_dat
 	// 	};
 	// }
 	// 拉低片选,开始传输
-	HAL_GPIO_WritePin(spi_ins->GPIOx, spi_ins->cs_pin, GPIO_PIN_RESET);
+	if(spi_ins->cs_flag == 0)
+	{
+		HAL_GPIO_WritePin(spi_ins->GPIOx, spi_ins->cs_pin, GPIO_PIN_RESET);
+	}
 	// *spi_ins->cs_pin_state =
 	// 		spi_ins->cs_state  =
 	// 		HAL_GPIO_ReadPin(spi_ins->GPIOx, spi_ins->cs_pin);
@@ -142,15 +145,17 @@ void SPI_Transmit_Receive(SPI_t *spi_ins, uint8_t *ptr_data_rx, uint8_t *ptr_dat
 		case SPI_BLOCK_MODE:
 			HAL_SPI_TransmitReceive(spi_ins->spi_handle, ptr_data_tx, ptr_data_rx, len, 1000); // 默认50ms超时
 			// 阻塞模式不会调用回调函数,传输完成后直接拉高片选结束
-			HAL_GPIO_WritePin(spi_ins->GPIOx, spi_ins->cs_pin, GPIO_PIN_SET);
+				if(spi_ins->cs_flag == 0)
+				{
+					HAL_GPIO_WritePin(spi_ins->GPIOx, spi_ins->cs_pin, GPIO_PIN_SET);
+				}
 			// *spi_ins->cs_pin_state =
 			// 		spi_ins->cs_state  =
 			// 		HAL_GPIO_ReadPin(spi_ins->GPIOx, spi_ins->cs_pin);
 			break;
-			//    default:
-			//        while (1)
-			//            ; // error mode! 请查看是否正确设置模式，或出现指针越界导致模式被异常修改的情况
-			//        break;
+		default:
+		    while (1); // error mode! 请查看是否正确设置模式，或出现指针越界导致模式被异常修改的情况
+		    break;
 	}
 }
 

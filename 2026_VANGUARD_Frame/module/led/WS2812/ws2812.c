@@ -18,7 +18,7 @@
 ws2812_init_config_t ws2812_config;
 ws2812_instance_t *ws2812_instance;
 
-ws2812_instance_t *WS2812_Init(ws2812_init_config_t *config)
+ws2812_instance_t *WS2812_Register(ws2812_init_config_t *config)
 {
 	ws2812_instance_t *instance = (ws2812_instance_t *) malloc(sizeof(ws2812_instance_t));
 	memset(instance, 0, sizeof(ws2812_instance_t));

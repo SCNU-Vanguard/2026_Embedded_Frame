@@ -32,6 +32,12 @@ typedef enum
     SPI_DMA_MODE,
 } spi_tx_rx_mode_e;
 
+typedef enum
+{
+    SPI_CS_AUTO = 0,
+    SPI_CS_EXTERN = 1,
+} spi_cs_mode_e;
+
 /* SPI实例结构体定义 */
 typedef struct spi_instance_temp
 {
@@ -39,7 +45,7 @@ typedef struct spi_instance_temp
     GPIO_TypeDef *GPIOx;           // 片选信号对应的GPIO,如GPIOA,GPIOB等等
     uint16_t cs_pin;               // 片选信号对应的引脚号,GPIO_PIN_1,GPIO_PIN_2等等
 
-		uint8_t cs_flag;
+	spi_cs_mode_e cs_flag;
     spi_tx_rx_mode_e spi_work_mode; // 传输工作模式
     uint8_t rx_size;               // 本次接收的数据长度
     uint8_t *rx_buffer;            // 本次接收的数据缓冲区

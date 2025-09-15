@@ -134,10 +134,10 @@
             <RunIndependent>0</RunIndependent>
             <UpdateFlashBeforeDebugging>1</UpdateFlashBeforeDebugging>
             <Capability>1</Capability>
-            <DriverSelection>4100</DriverSelection>
+            <DriverSelection>4099</DriverSelection>
           </Flash1>
           <bUseTDR>0</bUseTDR>
-          <Flash2>Segger\JL2CM3.dll</Flash2>
+          <Flash2>BIN\CMSIS_AGDI.dll</Flash2>
           <Flash3>"" ()</Flash3>
           <Flash4></Flash4>
           <pFcarmOut></pFcarmOut>
@@ -340,7 +340,7 @@
               <MiscControls></MiscControls>
               <Define>USE_PWR_LDO_SUPPLY,USE_HAL_DRIVER,STM32H723xx</Define>
               <Undefine></Undefine>
-              <IncludePath>../Core/Inc;../Drivers/STM32H7xx_HAL_Driver/Inc;../Drivers/STM32H7xx_HAL_Driver/Inc/Legacy;../Drivers/CMSIS/Device/ST/STM32H7xx/Include;../Drivers/CMSIS/Include;../Middlewares/Third_Party/FreeRTOS/Source/include;../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2;../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM4F;../Middlewares/ST/ARM/DSP/Inc;../bsp/DWT;../bsp/USART;../bsp/CAN;../bsp/I2C;../bsp/SPI;../bsp/FLASH;../bsp/TIM;../bsp/PWM;../bsp/ADC;../bsp/GPIO;../module/buzzer;../module/imu;../module/led;../module/vofa;../module/led/WS2812;../module/motor;../module/remote;../module/defense_center;../module/message_center;../algorithm;../algorithm/controller;../algorithm/controller/PID;../module/motor/DJI_motor;../module/motor/DM_motor;../algorithm/basic_function;../application/chassis;../application/communication;../application/gimbal;../application/shoot;../algorithm/filter;../algorithm/filter/AHRS;../algorithm/filter/AHRS/madgwick;../algorithm/filter/AHRS/mahony;../algorithm/filter/EKF;../algorithm/filter/kalman;../Middlewares/ST/ARM/DSP/Lib;../application;..\application\alarm_system;..\application\INS</IncludePath>
+              <IncludePath>../Core/Inc;../Drivers/STM32H7xx_HAL_Driver/Inc;../Drivers/STM32H7xx_HAL_Driver/Inc/Legacy;../Drivers/CMSIS/Device/ST/STM32H7xx/Include;../Drivers/CMSIS/Include;../Middlewares/Third_Party/FreeRTOS/Source/include;../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2;../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM4F;../Middlewares/ST/ARM/DSP/Inc;../bsp/DWT;../bsp/USART;../bsp/CAN;../bsp/I2C;../bsp/SPI;../bsp/FLASH;../bsp/TIM;../bsp/PWM;../bsp/ADC;../bsp/GPIO;../module/buzzer;../module/imu;../module/led;../module/vofa;../module/led/WS2812;../module/motor;../module/remote;../module/defense_center;../module/message_center;../algorithm;../algorithm/controller;../algorithm/controller/PID;../module/motor/DJI_motor;../module/motor/DM_motor;../algorithm/basic_function;../application/chassis;../application/communication_bond;../application/gimbal;../application/shoot;../algorithm/filter;../algorithm/filter/AHRS;../algorithm/filter/AHRS/madgwick;../algorithm/filter/AHRS/mahony;../algorithm/filter/EKF;../algorithm/filter/kalman;../Middlewares/ST/ARM/DSP/Lib;../application;../application/alarm_system;../application/INS;../module/imu/BMI088</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -408,6 +408,62 @@
               <FileName>freertos.c</FileName>
               <FileType>1</FileType>
               <FilePath>../Core/Src/freertos.c</FilePath>
+              <FileOption>
+                <CommonProperty>
+                  <UseCPPCompiler>2</UseCPPCompiler>
+                  <RVCTCodeConst>0</RVCTCodeConst>
+                  <RVCTZI>0</RVCTZI>
+                  <RVCTOtherData>0</RVCTOtherData>
+                  <ModuleSelection>0</ModuleSelection>
+                  <IncludeInBuild>1</IncludeInBuild>
+                  <AlwaysBuild>2</AlwaysBuild>
+                  <GenerateAssemblyFile>2</GenerateAssemblyFile>
+                  <AssembleAssemblyFile>2</AssembleAssemblyFile>
+                  <PublicsOnly>2</PublicsOnly>
+                  <StopOnExitCode>11</StopOnExitCode>
+                  <CustomArgument></CustomArgument>
+                  <IncludeLibraryModules></IncludeLibraryModules>
+                  <ComprImg>1</ComprImg>
+                </CommonProperty>
+                <FileArmAds>
+                  <Cads>
+                    <interw>2</interw>
+                    <Optim>0</Optim>
+                    <oTime>2</oTime>
+                    <SplitLS>2</SplitLS>
+                    <OneElfS>2</OneElfS>
+                    <Strict>2</Strict>
+                    <EnumInt>2</EnumInt>
+                    <PlainCh>2</PlainCh>
+                    <Ropi>2</Ropi>
+                    <Rwpi>2</Rwpi>
+                    <wLevel>0</wLevel>
+                    <uThumb>2</uThumb>
+                    <uSurpInc>2</uSurpInc>
+                    <uC99>2</uC99>
+                    <uGnu>2</uGnu>
+                    <useXO>2</useXO>
+                    <v6Lang>0</v6Lang>
+                    <v6LangP>0</v6LangP>
+                    <vShortEn>2</vShortEn>
+                    <vShortWch>2</vShortWch>
+                    <v6Lto>2</v6Lto>
+                    <v6WtE>2</v6WtE>
+                    <v6Rtti>2</v6Rtti>
+                    <VariousControls>
+                      <MiscControls></MiscControls>
+                      <Define></Define>
+                      <Undefine></Undefine>
+                      <IncludePath></IncludePath>
+                    </VariousControls>
+                  </Cads>
+                </FileArmAds>
+              </FileOption>
+            </File>
+            <File>
+              <FileName>dma.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>../Core/Src/dma.c</FilePath>
               <FileOption>
                 <CommonProperty>
                   <UseCPPCompiler>2</UseCPPCompiler>
@@ -2220,6 +2276,26 @@
               <FileType>5</FileType>
               <FilePath>..\application\INS\INS_task.h</FilePath>
             </File>
+            <File>
+              <FileName>procotol.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\application\communication_bond\procotol.c</FilePath>
+            </File>
+            <File>
+              <FileName>procotol.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\application\communication_bond\procotol.h</FilePath>
+            </File>
+            <File>
+              <FileName>procotol_task.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\application\communication_bond\procotol_task.c</FilePath>
+            </File>
+            <File>
+              <FileName>procotol_task.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\application\communication_bond\procotol_task.h</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -2229,6 +2305,36 @@
               <FileName>arm_cortexM7lfdp_math.lib</FileName>
               <FileType>4</FileType>
               <FilePath>..\Middlewares\ST\ARM\DSP\Lib\arm_cortexM7lfdp_math.lib</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>BMI088</GroupName>
+          <Files>
+            <File>
+              <FileName>BMI088driver.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\module\imu\BMI088\BMI088driver.c</FilePath>
+            </File>
+            <File>
+              <FileName>BMI088driver.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\module\imu\BMI088\BMI088driver.h</FilePath>
+            </File>
+            <File>
+              <FileName>BMI088Middleware.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\module\imu\BMI088\BMI088Middleware.c</FilePath>
+            </File>
+            <File>
+              <FileName>BMI088Middleware.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\module\imu\BMI088\BMI088Middleware.h</FilePath>
+            </File>
+            <File>
+              <FileName>BMI088reg.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\module\imu\BMI088\BMI088reg.h</FilePath>
             </File>
           </Files>
         </Group>
