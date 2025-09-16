@@ -49,9 +49,9 @@ motor_init_config_t DM_right_back_motor_init = {
 	.motor_type = DM8009P,
 
 	.can_init_config = {
-        .can_handle = &hfdcan1,
+		.can_handle = &hfdcan1,
 		.tx_id = 0x00,
-        .rx_id = 0x10,
+		.rx_id = 0x10,
 	},
 
 	.motor_control_type = TORQUE_LOOP_CONTRO,
@@ -89,9 +89,9 @@ motor_init_config_t DM_right_front_motor_init = {
 	.motor_type = DM8009P,
 
 	.can_init_config = {
-        .can_handle = &hfdcan1,
+		.can_handle = &hfdcan1,
 		.tx_id = 0x01,
-        .rx_id = 0x11,
+		.rx_id = 0x11,
 	},
 
 	.motor_control_type = TORQUE_LOOP_CONTRO,
@@ -129,9 +129,9 @@ motor_init_config_t DM_left_front_motor_init = {
 	.motor_type = DM8009P,
 
 	.can_init_config = {
-        .can_handle = &hfdcan1,
+		.can_handle = &hfdcan1,
 		.tx_id = 0x02,
-        .rx_id = 0x12,
+		.rx_id = 0x12,
 	},
 
 	.motor_control_type = TORQUE_LOOP_CONTRO,
@@ -169,9 +169,9 @@ motor_init_config_t DM_left_back_motor_init = {
 	.motor_type = DM8009P,
 
 	.can_init_config = {
-        .can_handle = &hfdcan1,
+		.can_handle = &hfdcan1,
 		.tx_id = 0x03,
-        .rx_id = 0x13,
+		.rx_id = 0x13,
 	},
 
 	.motor_control_type = TORQUE_LOOP_CONTRO,
@@ -184,8 +184,8 @@ DM_motor_t *DM_left_back_motor_instance;
 
 void Chassis_Init(void)
 {
-    DM_right_front_motor_instance = DM_Motor_Init(&DM_right_front_motor_init);
-//    DM_right_back_motor_instance  = DM_Motor_Init(&DM_right_back_motor_init);
-//    DM_left_front_motor_instance  = DM_Motor_Init(&DM_left_front_motor_init);
-//    DM_left_back_motor_instance   = DM_Motor_Init(&DM_left_back_motor_init);
+	DM_right_front_motor_instance = DM_Motor_Init(&DM_right_front_motor_init);
+	DM_right_back_motor_instance  = DM_Motor_Init(&DM_right_back_motor_init);
+	DM_left_front_motor_instance  = DM_Motor_Init(&DM_left_front_motor_init);
+	DM_left_back_motor_instance   = DM_Motor_Init(&DM_left_back_motor_init);
 }

@@ -43,7 +43,7 @@ float init_time;
 
 static void Frame_MCU_Init(void)
 {
-	DWT_Delay(480);
+	DWT_Init(480);
 }
 
 static void Frame_Device_Init(void)

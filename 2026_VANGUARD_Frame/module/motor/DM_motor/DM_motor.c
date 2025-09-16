@@ -365,8 +365,10 @@ DM_motor_t *DM_Motor_Init(motor_init_config_t *config)
 
 	instance->error_code = DM_ERROR_NONE;
 
-//	DM_Motor_ENABLE(instance);
-//	DWT_Delay(0.1);
+	DWT_GetDeltaT(&instance->feed_cnt);
+	
+	DM_Motor_ENABLE(instance);
+	DWT_Delay(0.1);
 	dm_motor_instances[idx++] = instance;
 
 	return instance;

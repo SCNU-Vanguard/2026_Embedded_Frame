@@ -48,6 +48,7 @@ typedef struct
 	FDCAN_HandleTypeDef *can_handle;              // can句柄
 	uint32_t tx_id;                             // 发送id
 	uint32_t rx_id;                             // 接收id
+	uint32_t can_mode;
 	void (*can_module_callback)(CAN_instance_t *); // 处理接收数据的回调函数
 	void *id;                                   // 拥有can实例的模块地址,用于区分不同的模块(如果有需要的话),如果不需要可以不传入
 } can_init_config_t;

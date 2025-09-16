@@ -42,7 +42,7 @@ static void CAN_Add_Filter(CAN_instance_t *_instance)
 
 	can_filter_conf.IdType       = FDCAN_STANDARD_ID;                       //标准ID
 	can_filter_conf.FilterIndex  = (_instance->can_handle == &hfdcan1) ? (can1_filter_idx++) : ((_instance->can_handle == &hfdcan2) ? (can2_filter_idx++) : (can3_filter_idx++));                                  //滤波器索引                   
-	can_filter_conf.FilterType   = FDCAN_FILTER_DUAL;                   //允许接收两个ID TODO: 后续可以优化使其能充分利用第二个ID位置
+	can_filter_conf.FilterType   = FDCAN_FILTER_MASK;                   //允许接收两个ID TODO: 后续可以优化使其能充分利用第二个ID位置
 	can_filter_conf.FilterConfig = (_instance->rx_id & 1) ? FDCAN_FILTER_TO_RXFIFO0 : FDCAN_FILTER_TO_RXFIFO1;           //过滤器0关联到FIFO0  
 	can_filter_conf.FilterID1    = 0x000;                               //32位ID接收ID1
 	can_filter_conf.FilterID2    = _instance->rx_id;                    //接收ID2
@@ -110,7 +110,7 @@ CAN_instance_t *CAN_Register(can_init_config_t *config)
 	instance->tx_header.DataLength          = FDCAN_DLC_BYTES_8;														// 发送数据长度
 	instance->tx_header.ErrorStateIndicator = FDCAN_ESI_ACTIVE;										        // 设置错误状态指示
 	instance->tx_header.BitRateSwitch       = FDCAN_BRS_OFF;															// 不开启可变波特率
-	instance->tx_header.FDFormat            = FDCAN_CLASSIC_CAN;															// 普通CAN格式
+	instance->tx_header.FDFormat            = config->can_mode;															// 普通CAN格式
 	instance->tx_header.TxEventFifoControl  = FDCAN_NO_TX_EVENTS;										        // 用于发送事件FIFO控制, 不存储
 	instance->tx_header.MessageMarker       = 0x00;
 	// 设置回调函数和接收发送id
@@ -198,18 +198,19 @@ void CAN_Set_DLC(CAN_instance_t *_instance, uint8_t length)
  */
 static void CANFIFOxCallback(FDCAN_HandleTypeDef *_hfdcan, uint32_t fifox)
 {
-	static FDCAN_RxHeaderTypeDef rxconf; // 同上
-	uint8_t can_rx_buff[8];
+	static FDCAN_RxHeaderTypeDef rx_config_header; // 同上
+	static uint8_t can_rx_buff[64];
 	while (HAL_FDCAN_GetRxFifoFillLevel(_hfdcan, fifox)) // FIFO不为空,有可能在其他中断时有多帧数据进入
 	{
-		HAL_FDCAN_GetRxMessage(_hfdcan, fifox, &rxconf, can_rx_buff); // 从FIFO中获取数据
+		memset(can_rx_buff, 0, sizeof(can_rx_buff));
+		HAL_FDCAN_GetRxMessage(_hfdcan, fifox, &rx_config_header, can_rx_buff); // 从FIFO中获取数据
 		for (size_t i = 0 ; i < idx ; ++i)
 		{ // 两者相等说明这是要找的实例
-			if (_hfdcan == can_instances[i]->can_handle && rxconf.Identifier == can_instances[i]->rx_id)
+			if (_hfdcan == can_instances[i]->can_handle && rx_config_header.Identifier == can_instances[i]->rx_id)
 			{
 				if (can_instances[i]->can_module_callback != NULL) // 回调函数不为空就调用
 				{
-					can_instances[i]->rx_len = rxconf.DataLength >> 16;                      // 保存接收到的数据长度
+					can_instances[i]->rx_len = rx_config_header.DataLength;                      // 保存接收到的数据长度
 					memcpy(can_instances[i]->rx_buff, can_rx_buff, can_instances[i]->rx_len); // 消息拷贝到对应实例
 					can_instances[i]->can_module_callback(can_instances[i]);     // 触发回调进行数据解析和处理
 				}

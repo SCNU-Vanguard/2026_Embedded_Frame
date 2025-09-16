@@ -49,23 +49,14 @@ void Chassis_Task_Init( void )
 
 uint32_t chassis_task_diff;
 
-uint32_t chassis_cnt;
-
 static void Chassis_Task( void *argument )
 {
 	uint32_t time = osKernelGetTickCount( );
 
 	for( ; ; )
 	{
-		chassis_cnt++;
-		if((chassis_cnt % 1000) == 0)
-		{
-			DM_Motor_ENABLE(NULL);
-		}
-		else if((chassis_cnt % 2000) == 0)
-		{
-			DM_Motor_DISABLE(NULL);
-		}
+		
+		DM_Motor_DISABLE(NULL);
 		
 		chassis_task_diff = osKernelGetTickCount( ) - time;
 		time = osKernelGetTickCount( );
