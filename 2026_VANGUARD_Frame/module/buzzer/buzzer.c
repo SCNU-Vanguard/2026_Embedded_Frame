@@ -431,7 +431,7 @@ void Buzzer_Silence(void)
  * @param delay 延时
  * @return  void
  */
-void Buzzer_One_Note(uint16_t Note, float delay)
+void Buzzer_One_Note(uint16_t Note, float delay, uint8_t mode)
 {
 	// 如果蜂鸣器未注册，则注册
 	if (buzzer == NULL)
@@ -447,7 +447,16 @@ void Buzzer_One_Note(uint16_t Note, float delay)
 #endif
 	buzzer_one_note_flag = 1;
 	buzzer_one_note_time = delay;
-	osThreadResume(Buzzer_Handle); // 恢复线程
+	if(mode == 1)
+	{
+		DWT_Delay(buzzer_one_note_time);
+		Buzzer_Silence( );
+		buzzer_one_note_flag = 0;
+	}
+	else
+	{
+		osThreadResume(Buzzer_Handle); // 恢复线程
+	}
 }
 
 /**

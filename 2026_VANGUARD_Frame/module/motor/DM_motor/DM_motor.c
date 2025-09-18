@@ -13,7 +13,7 @@
 #include "bsp_dwt.h"
 
 static uint8_t idx;
-static DM_motor_t *dm_motor_instances[DM_MOTOR_CNT];
+static DM_motor_instance_t *dm_motor_instances[DM_MOTOR_CNT];
 
 #define LIMIT_MIN_MAX(x, min, max) (x) = (((x) <= (min)) ? (min) : (((x) >= (max)) ? (max) : (x)))
 
@@ -65,19 +65,19 @@ float uint_to_float(int x_int, float x_min, float x_max, int bits)
 	return ((float) x_int) * span / ((float) ((1 << bits) - 1)) + offset;
 }
 
-static void DM_Motor_Set_Mode(DM_motor_mode_e cmd, DM_motor_t *motor)
+static void DM_Motor_Set_Mode(DM_motor_mode_e cmd, DM_motor_instance_t *motor)
 {
 	memset(motor->motor_can_instance->tx_buff, 0xff, 7); // 发送电机指令的时候前面7bytes都是0xff
 	motor->motor_can_instance->tx_buff[7] = (uint8_t) cmd; // 最后一位是命令id
 	CAN_Transmit(motor->motor_can_instance, 10);
 }
 
-void DM_Motor_Set_Zeropoint(DM_motor_t *motor)
+void DM_Motor_Set_Zeropoint(DM_motor_instance_t *motor)
 {
 	DM_Motor_Set_Mode(DM_CMD_ZERO_POSITION, motor);
 }
 
-void DM_Motor_Start(DM_motor_t *motor)
+void DM_Motor_Start(DM_motor_instance_t *motor)
 {
 	if (motor == NULL)
 	{
@@ -92,7 +92,7 @@ void DM_Motor_Start(DM_motor_t *motor)
 	}
 }
 
-void DM_Motor_Stop(DM_motor_t *motor)
+void DM_Motor_Stop(DM_motor_instance_t *motor)
 {
 	if (motor == NULL)
 	{
@@ -107,7 +107,7 @@ void DM_Motor_Stop(DM_motor_t *motor)
 	}
 }
 
-void DM_Motor_ENABLE(DM_motor_t *motor)
+void DM_Motor_ENABLE(DM_motor_instance_t *motor)
 {
 	if (motor == NULL)
 	{
@@ -122,7 +122,7 @@ void DM_Motor_ENABLE(DM_motor_t *motor)
 	}
 }
 
-void DM_Motor_DISABLE(DM_motor_t *motor)
+void DM_Motor_DISABLE(DM_motor_instance_t *motor)
 {
 	if (motor == NULL)
 	{
@@ -137,12 +137,12 @@ void DM_Motor_DISABLE(DM_motor_t *motor)
 	}
 }
 
-void DM_Motor_Clear_Error(DM_motor_t *motor)
+void DM_Motor_Clear_Error(DM_motor_instance_t *motor)
 {
 	DM_Motor_Set_Mode(DM_CMD_CLEAR_ERROR, motor);
 }
 
-void DM_Motor_SetTar(DM_motor_t *motor, float val)
+void DM_Motor_SetTar(DM_motor_instance_t *motor, float val)
 {
 	motor->motor_controller.pid_ref = val;
 }
@@ -174,7 +174,7 @@ void DM_Motor_SetTar(DM_motor_t *motor, float val)
  * @details:    	通过CAN总线向电机发送MIT模式下的控制帧。
  ************************************************************************
  **/
-void DM_MIT_Ctrl(DM_motor_t *motor,
+void DM_MIT_Ctrl(DM_motor_instance_t *motor,
                  float pos,
                  float vel,
                  float kp,
@@ -220,7 +220,7 @@ void DM_MIT_Ctrl(DM_motor_t *motor,
  * @details:    	通过CAN总线向电机发送位置速度控制命令
  ************************************************************************
  **/
-void DM_Pos_Speed_Ctrl(DM_motor_t *motor, float pos, float vel)
+void DM_Pos_Speed_Ctrl(DM_motor_instance_t *motor, float pos, float vel)
 {
 	uint8_t *pbuf, *vbuf;
 
@@ -255,7 +255,7 @@ void DM_Pos_Speed_Ctrl(DM_motor_t *motor, float pos, float vel)
  * @details:    	通过CAN总线向电机发送速度控制命令
  ************************************************************************
  **/
-void DM_Speed_Ctrl(DM_motor_t *motor, float vel)
+void DM_Speed_Ctrl(DM_motor_instance_t *motor, float vel)
 {
 	uint8_t *vbuf;
 
@@ -276,7 +276,7 @@ static void DM_Motor_Decode(CAN_instance_t *motor_can)
 
 	uint16_t tmp; // 用于暂存解析值,稍后转换成float数据,避免多次创建临时变量
 	uint8_t *rxbuff                   = motor_can->rx_buff;
-	DM_motor_t *motor                 = (DM_motor_t *) motor_can->id;
+	DM_motor_instance_t *motor                 = (DM_motor_instance_t *) motor_can->id;
 	DM_motor_callback_t *receive_data = &(motor->receive_data); // 将can实例中保存的id转换成电机实例的指针
 
 	velocity = receive_data->velocity;
@@ -306,7 +306,7 @@ static void DM_Motor_Decode(CAN_instance_t *motor_can)
 
 static void DM_Motor_Lost_Callback(void *motor_ptr)
 {
-	DM_motor_t *motor = (DM_motor_t *) motor_ptr;
+	DM_motor_instance_t *motor = (DM_motor_instance_t *) motor_ptr;
 	motor->error_code |= DM_MOTOR_LOST_ERROR;
 }
 
@@ -323,10 +323,10 @@ static void DM_Motor_Lost_Callback(void *motor_ptr)
 //    .RTR = CAN_RTR_DATA ,
 //    .DLC = 8 , };
 
-DM_motor_t *DM_Motor_Init(motor_init_config_t *config)
+DM_motor_instance_t *DM_Motor_Init(motor_init_config_t *config)
 {
-	DM_motor_t *instance = (DM_motor_t *) malloc(sizeof(DM_motor_t));
-	memset(instance, 0, sizeof(DM_motor_t));
+	DM_motor_instance_t *instance = (DM_motor_instance_t *) malloc(sizeof(DM_motor_instance_t));
+	memset(instance, 0, sizeof(DM_motor_instance_t));
 
 	if(instance == NULL)
 	{
@@ -367,14 +367,14 @@ DM_motor_t *DM_Motor_Init(motor_init_config_t *config)
 
 	DWT_GetDeltaT(&instance->feed_cnt);
 	
-	DM_Motor_ENABLE(instance);
+	DM_Motor_Stop(instance);
 	DWT_Delay(0.1);
 	dm_motor_instances[idx++] = instance;
 
 	return instance;
 }
 
-uint8_t DM_Motor_Error_Judge(DM_motor_t *motor)
+uint8_t DM_Motor_Error_Judge(DM_motor_instance_t *motor)
 {
 	uint8_t error_cnt;
 
@@ -428,7 +428,7 @@ uint8_t DM_Motor_Error_Judge(DM_motor_t *motor)
 void DM_Motor_Control(void)
 {
 	// 直接保存一次指针引用从而减小访存的开销,同样可以提高可读性
-	DM_motor_t *motor;
+	DM_motor_instance_t *motor;
 	motor_control_setting_t *motor_setting; // 电机控制参数
 	motor_controller_t *motor_controller;   // 电机控制器
 	DM_motor_callback_t *receive_data;     // 电机测量值

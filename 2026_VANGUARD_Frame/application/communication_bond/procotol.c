@@ -31,6 +31,6 @@ void VOFA_Display_IMU(void)
 
     vofa_data_view[6] = imu_data.temperature;
 
-    VOFA_Send_Data(vofa_data_view, 7);
-    // VOFA_JustFloat(vofa_data_view, 7);
+    //VOFA_Send_Data(vofa_data_view, 7);
+    VOFA_JustFloat(vofa_data_view, 7);
 }

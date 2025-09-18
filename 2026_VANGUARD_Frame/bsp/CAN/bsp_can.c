@@ -210,7 +210,7 @@ static void CANFIFOxCallback(FDCAN_HandleTypeDef *_hfdcan, uint32_t fifox)
 			{
 				if (can_instances[i]->can_module_callback != NULL) // 回调函数不为空就调用
 				{
-					can_instances[i]->rx_len = rx_config_header.DataLength;                      // 保存接收到的数据长度
+					can_instances[i]->rx_len = rx_config_header.DataLength;                   // 保存接收到的数据长度 TODO（GUATAI）:若接收出错可以考虑排查这里的处理是否有问题
 					memcpy(can_instances[i]->rx_buff, can_rx_buff, can_instances[i]->rx_len); // 消息拷贝到对应实例
 					can_instances[i]->can_module_callback(can_instances[i]);     // 触发回调进行数据解析和处理
 				}

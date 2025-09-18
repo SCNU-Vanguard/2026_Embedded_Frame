@@ -340,7 +340,7 @@
               <MiscControls></MiscControls>
               <Define>USE_PWR_LDO_SUPPLY,USE_HAL_DRIVER,STM32H723xx</Define>
               <Undefine></Undefine>
-              <IncludePath>../Core/Inc;../Drivers/STM32H7xx_HAL_Driver/Inc;../Drivers/STM32H7xx_HAL_Driver/Inc/Legacy;../Drivers/CMSIS/Device/ST/STM32H7xx/Include;../Drivers/CMSIS/Include;../Middlewares/Third_Party/FreeRTOS/Source/include;../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2;../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM4F;../Middlewares/ST/ARM/DSP/Inc;../bsp/DWT;../bsp/USART;../bsp/CAN;../bsp/I2C;../bsp/SPI;../bsp/FLASH;../bsp/TIM;../bsp/PWM;../bsp/ADC;../bsp/GPIO;../module/buzzer;../module/imu;../module/led;../module/vofa;../module/led/WS2812;../module/motor;../module/remote;../module/defense_center;../module/message_center;../algorithm;../algorithm/controller;../algorithm/controller/PID;../module/motor/DJI_motor;../module/motor/DM_motor;../algorithm/basic_function;../application/chassis;../application/communication_bond;../application/gimbal;../application/shoot;../algorithm/filter;../algorithm/filter/AHRS;../algorithm/filter/AHRS/madgwick;../algorithm/filter/AHRS/mahony;../algorithm/filter/EKF;../algorithm/filter/kalman;../Middlewares/ST/ARM/DSP/Lib;../application;../application/alarm_system;../application/INS;../module/imu/BMI088</IncludePath>
+              <IncludePath>../Core/Inc;../Drivers/STM32H7xx_HAL_Driver/Inc;../Drivers/STM32H7xx_HAL_Driver/Inc/Legacy;../Drivers/CMSIS/Device/ST/STM32H7xx/Include;../Drivers/CMSIS/Include;../Middlewares/Third_Party/FreeRTOS/Source/include;../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2;../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM4F;../Middlewares/ST/ARM/DSP/Inc;../bsp/DWT;../bsp/USART;../bsp/CAN;../bsp/I2C;../bsp/SPI;../bsp/FLASH;../bsp/TIM;../bsp/PWM;../bsp/ADC;../bsp/GPIO;../module/buzzer;../module/imu;../module/led;../module/vofa;../module/led/WS2812;../module/motor;../module/remote;../module/defense_center;../module/message_center;../algorithm;../algorithm/controller;../algorithm/controller/PID;../module/motor/DJI_motor;../module/motor/DM_motor;../algorithm/basic_function;../application/chassis;../application/communication_bond;../application/gimbal;../application/shoot;../algorithm/filter;../algorithm/filter/AHRS;../algorithm/filter/AHRS/madgwick;../algorithm/filter/AHRS/mahony;../algorithm/filter/EKF;../algorithm/filter/kalman;../Middlewares/ST/ARM/DSP/Lib;../application;../application/alarm_system;../application/INS;../module/imu/BMI088;../module/remote/WFLY;../module/remote/DT7</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -2027,16 +2027,6 @@
               <FilePath>..\module\imu\bmi088_reg.h</FilePath>
             </File>
             <File>
-              <FileName>remote_control.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\module\remote\remote_control.c</FilePath>
-            </File>
-            <File>
-              <FileName>remote_control.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>..\module\remote\remote_control.h</FilePath>
-            </File>
-            <File>
               <FileName>drv_motor.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\module\motor\drv_motor.c</FilePath>
@@ -2065,6 +2055,16 @@
               <FileName>DM_motor.h</FileName>
               <FileType>5</FileType>
               <FilePath>..\module\motor\DM_motor\DM_motor.h</FilePath>
+            </File>
+            <File>
+              <FileName>remote_control.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\module\remote\DT7\remote_control.c</FilePath>
+            </File>
+            <File>
+              <FileName>remote_control.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\module\remote\DT7\remote_control.h</FilePath>
             </File>
           </Files>
         </Group>

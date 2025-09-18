@@ -21,7 +21,6 @@ extern "C" {
 #include <stdint.h>
 #include "main.h"
 
-//TODO(GUATAI):有💩
 #define TIME_ELAPSE(dt, code)                     	\
 				do                                        	\
 				{                                         	\

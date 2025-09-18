@@ -60,14 +60,14 @@ typedef struct
 	bmi088_work_mode_e work_mode;
 	bmi088_calibrate_mode_e cali_mode;
 	// SPI接口
-	SPI_t *spi_gyro; // 注意,SPIInstnace内部也有一个GPIOInstance,用于控制片选CS
-	SPI_t *spi_acc;  // 注意,SPIInstnace内部也有一个GPIOInstance,用于控制片选CS
+	SPI_instance_t *spi_gyro; // 注意,SPIInstnace内部也有一个GPIOInstance,用于控制片选CS
+	SPI_instance_t *spi_acc;  // 注意,SPIInstnace内部也有一个GPIOInstance,用于控制片选CS
 	// EXTI GPIO,如果BMI088工作在中断模式,则需要配置中断引脚(有数据产生时触发解算)
 	GPIO_instance_t *gyro_int;
 	GPIO_instance_t *acc_int;
 	// 温度控制
 	PID_t *heat_pid;     // 恒温PID
-	PWM_t *heat_pwm;     // 加热PWM
+	PWM_instance_t *heat_pwm;     // 加热PWM
 	float ambient_temperature; // 陀螺仪环境温度
 	// RAW数据
 	uint8_t gyro_raw[6];

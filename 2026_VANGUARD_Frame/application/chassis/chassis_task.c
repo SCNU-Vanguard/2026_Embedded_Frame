@@ -56,8 +56,6 @@ static void Chassis_Task( void *argument )
 	for( ; ; )
 	{
 		
-		DM_Motor_DISABLE(NULL);
-		
 		chassis_task_diff = osKernelGetTickCount( ) - time;
 		time = osKernelGetTickCount( );
 		osDelayUntil( time + CHASSIS_TASK_PERIOD );

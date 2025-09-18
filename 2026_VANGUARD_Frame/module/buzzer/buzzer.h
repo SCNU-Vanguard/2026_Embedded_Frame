@@ -33,7 +33,7 @@ typedef enum
 
 typedef struct
 {
-	PWM_t *buzzer_pwm;
+	PWM_instance_t *buzzer_pwm;
 	const char *sound;
 	const char *_next_tune;
 	uint8_t _note_mode;    // 音符模式
@@ -73,7 +73,7 @@ void Buzzer_Stop(void);
 
 void Buzzer_Silence(void);
 
-void Buzzer_One_Note(uint16_t Note, float delay);
+void Buzzer_One_Note(uint16_t Note, float delay, uint8_t mode);
 
 void Buzzer_Task(void *argument);
 

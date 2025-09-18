@@ -20,7 +20,7 @@
 uint8_t send_buf[MAX_BUFFER_SIZE];
 uint16_t cnt = 0;
 
-USART_t *vofa_usart_instance;
+USART_instance_t *vofa_usart_instance;
 
 float vofa_data_view[20] = {0};
 
@@ -64,21 +64,54 @@ void VOFA_FireWater(const char *format, ...)
     va_end(args);
 }
 
-// 输入个数和数组地址
+// uint8_t tempData[MAX_BUFFER_SIZE] = {0};
+
+// // 输入个数和数组地址
+// void VOFA_JustFloat(float *_data, uint8_t _num)
+// {
+//     uint8_t temp_end[4] = {0, 0, 0x80, 0x7F};
+//     float temp_copy[_num];
+
+//     memcpy(&temp_copy, _data, sizeof(float) * _num);
+
+//     memcpy(tempData, (uint8_t *)&temp_copy, sizeof(temp_copy));
+//     memcpy(&tempData[_num * 4], &temp_end[0], 4);
+
+//     //....在此替换你的串口发送函数...........
+//     VOFA_Transmit( tempData, (_num + 1) * 4, USART_TRANSFER_DMA);
+//     //......................................
+// }
+
+typedef union
+{
+    float float_t;
+    uint8_t uint8_t[4];
+} send_float;
+
+uint8_t send_data[MAX_BUFFER_SIZE]; //定义通过串口传出去的数组，数量是所传数据的字节数加上4个字节的尾巴
+
 void VOFA_JustFloat(float *_data, uint8_t _num)
 {
-    uint8_t tempData[100];
-    uint8_t temp_end[4] = {0, 0, 0x80, 0x7F};
-    float temp_copy[_num];
+    static uint8_t i = 0;
+    send_float temp[_num];			//定义缓冲区数组
+    
+    for (i = 0; i < _num; i++)
+    {
+        temp[i].float_t = _data[i]; //将所传数据移到缓冲区数组
+    }
+    for (i = 0; i < _num; i++)
+    {
+        send_data[4 * i] = temp[i].uint8_t[0];
+        send_data[4 * i + 1] = temp[i].uint8_t[1];
+        send_data[4 * i + 2] = temp[i].uint8_t[2];
+        send_data[4 * i + 3] = temp[i].uint8_t[3]; //将缓冲区数组内的浮点型数据转成4个字节的无符号整型，之后传到要通过串口传出的数组里
+    }
+    send_data[4 * _num] = 0x00;
+    send_data[4 * _num + 1] = 0x00;
+    send_data[4 * _num + 2] = 0x80;
+    send_data[4 * _num + 3] = 0x7f; //加上协议要求的4个尾巴
 
-    memcpy(&temp_copy, _data, sizeof(float) * _num);
-
-    memcpy(tempData, (uint8_t *)&temp_copy, sizeof(temp_copy));
-    memcpy(&tempData[_num * 4], &temp_end[0], 4);
-
-    //....在此替换你的串口发送函数...........
-    VOFA_Transmit( tempData, (_num + 1) * 4, USART_TRANSFER_DMA);
-    //......................................
+    VOFA_Transmit((uint8_t *)send_data, 4 * _num + 4, USART_TRANSFER_DMA);
 }
 
 /**

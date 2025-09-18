@@ -14,17 +14,17 @@
 #include "bsp_iic.h"
 
 static uint8_t idx                         = 0; // 配合中断以及初始化
-static IIC_t *iic_instance[IIC_DEVICE_CNT] = {NULL};
+static IIC_instance_t *iic_instance[IIC_DEVICE_CNT] = {NULL};
 
-IIC_t *IIC_Register(iic_init_config_t *conf)
+IIC_instance_t *IIC_Register(iic_init_config_t *conf)
 {
 	if (idx >= MX_IIC_SLAVE_CNT) // 超过最大实例数
 		while (1)                // 酌情增加允许的实例上限,也有可能是内存泄漏
 			;
 	// 申请到的空间未必是0, 所以需要手动初始化
-	IIC_t *instance = (IIC_t *) malloc(sizeof(IIC_t));
-	instance        = (IIC_t *) malloc(sizeof(IIC_t));
-	memset(instance, 0, sizeof(IIC_t));
+	IIC_instance_t *instance = (IIC_instance_t *) malloc(sizeof(IIC_instance_t));
+	instance        = (IIC_instance_t *) malloc(sizeof(IIC_instance_t));
+	memset(instance, 0, sizeof(IIC_instance_t));
 
 	instance->dev_address = conf->dev_address << 1; // 地址左移一位,最低位为读写位
 	instance->callback    = conf->callback;
@@ -36,7 +36,7 @@ IIC_t *IIC_Register(iic_init_config_t *conf)
 	return instance;
 }
 
-void IIC_Set_Mode(IIC_t *iic, iic_work_mode_e mode)
+void IIC_Set_Mode(IIC_instance_t *iic, iic_work_mode_e mode)
 { // HAL自带重入保护,不需要手动终止或等待传输完成
 	if (iic->work_mode != mode)
 	{
@@ -44,7 +44,7 @@ void IIC_Set_Mode(IIC_t *iic, iic_work_mode_e mode)
 	}
 }
 
-void IIC_Transmit(IIC_t *iic, uint8_t *data, uint16_t size, iic_seq_mode_e seq_mode)
+void IIC_Transmit(IIC_instance_t *iic, uint8_t *data, uint16_t size, iic_seq_mode_e seq_mode)
 {
 	if (seq_mode != IIC_SEQ_RELEASE && seq_mode != IIC_SEQ_HOLDON)
 		while (1); // 未知传输模式, 程序停止
@@ -74,7 +74,7 @@ void IIC_Transmit(IIC_t *iic, uint8_t *data, uint16_t size, iic_seq_mode_e seq_m
 	}
 }
 
-void IIC_Receive(IIC_t *iic, uint8_t *data, uint16_t size, iic_seq_mode_e seq_mode)
+void IIC_Receive(IIC_instance_t *iic, uint8_t *data, uint16_t size, iic_seq_mode_e seq_mode)
 {
 	if (seq_mode != IIC_SEQ_RELEASE && seq_mode != IIC_SEQ_HOLDON)
 		while (1); // 未知传输模式, 程序停止,请检查指针越界
@@ -108,7 +108,7 @@ void IIC_Receive(IIC_t *iic, uint8_t *data, uint16_t size, iic_seq_mode_e seq_mo
 	}
 }
 
-void IIC_Access_Mem(IIC_t *iic, uint16_t mem_addr, uint8_t *data, uint16_t size, iic_mem_mode_e mem_mode, uint8_t mem8bit_flag)
+void IIC_Access_Mem(IIC_instance_t *iic, uint16_t mem_addr, uint8_t *data, uint16_t size, iic_mem_mode_e mem_mode, uint8_t mem8bit_flag)
 {
 	uint16_t bit_flag = mem8bit_flag ? I2C_MEMADD_SIZE_8BIT : I2C_MEMADD_SIZE_16BIT;
 	if (mem_mode == IIC_WRITE_MEM)

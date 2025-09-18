@@ -110,7 +110,7 @@ typedef struct
 	float dm_offset_control;
 	DM_error_e error_code;
 	uint32_t error_beat;
-} DM_motor_t;
+} DM_motor_instance_t;
 
 typedef enum
 {
@@ -120,35 +120,35 @@ typedef enum
 	DM_CMD_CLEAR_ERROR   = 0xFB 	// 清除电机过热错误
 } DM_motor_mode_e;
 
-void DM_Motor_Set_Zeropoint(DM_motor_t *motor);
+void DM_Motor_Set_Zeropoint(DM_motor_instance_t *motor);
 
-void DM_Motor_Start(DM_motor_t *motor);
+void DM_Motor_Start(DM_motor_instance_t *motor);
 
-void DM_Motor_Stop(DM_motor_t *motor);
+void DM_Motor_Stop(DM_motor_instance_t *motor);
 
-void DM_Motor_Clear_Error(DM_motor_t *motor);
+void DM_Motor_Clear_Error(DM_motor_instance_t *motor);
 
-void DM_Motor_SetTar(DM_motor_t *motor, float val);
+void DM_Motor_SetTar(DM_motor_instance_t *motor, float val);
 
 void DM_Motor_Control(void);
 
-void DM_MIT_Ctrl(DM_motor_t *motor,
+void DM_MIT_Ctrl(DM_motor_instance_t *motor,
                  float pos,
                  float vel,
                  float kp,
                  float kd,
                  float torq);
 
-void DM_Pos_Speed_Ctrl(DM_motor_t *motor, float pos, float vel);
+void DM_Pos_Speed_Ctrl(DM_motor_instance_t *motor, float pos, float vel);
 
-void DM_Speed_Ctrl(DM_motor_t *motor, float vel);
+void DM_Speed_Ctrl(DM_motor_instance_t *motor, float vel);
 
-void DM_Motor_ENABLE(DM_motor_t *motor);
+void DM_Motor_ENABLE(DM_motor_instance_t *motor);
 
-void DM_Motor_DISABLE(DM_motor_t *motor);
+void DM_Motor_DISABLE(DM_motor_instance_t *motor);
 
-uint8_t DM_Motor_Error_Judge(DM_motor_t *motor);
+uint8_t DM_Motor_Error_Judge(DM_motor_instance_t *motor);
 
-DM_motor_t *DM_Motor_Init(motor_init_config_t *config);
+DM_motor_instance_t *DM_Motor_Init(motor_init_config_t *config);
 
 #endif /* __DM_MOTOR_H__ */

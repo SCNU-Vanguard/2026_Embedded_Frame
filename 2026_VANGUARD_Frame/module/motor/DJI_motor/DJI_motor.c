@@ -195,6 +195,11 @@ DJI_motor_instance_t *DJI_Motor_Init(motor_init_config_t *config)
 	DJI_motor_instance_t *instance = (DJI_motor_instance_t *) malloc(sizeof(DJI_motor_instance_t));
 	memset(instance, 0, sizeof(DJI_motor_instance_t));
 
+	if(instance == NULL)
+	{
+		return NULL;
+	}
+
 	// motor basic setting 电机基本设置
 	instance->motor_type     = config->motor_type;                     // 6020 or 2006 or 3508
 	instance->motor_settings = config->controller_setting_init_config; // 正反转,闭环类型等

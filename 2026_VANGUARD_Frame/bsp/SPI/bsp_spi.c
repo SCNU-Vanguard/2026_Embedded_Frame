@@ -13,11 +13,11 @@
 #include "bsp_spi.h"
 
 /* 所有的spi instance保存于此,用于callback时判断中断来源*/
-static SPI_t *spi_instances[SPI_DEVICE_CNT] = {NULL};
+static SPI_instance_t *spi_instances[SPI_DEVICE_CNT] = {NULL};
 static uint8_t idx                          = 0;                         // 配合中断以及初始化
 uint8_t SPI_Device_On_Going[SPI_DEVICE_CNT] = {1}; // 用于判断当前spi是否正在传输,防止多个模块同时使用一个spi总线 (0: 正在传输, 1: 未传输)
 
-SPI_t *SPI_Register(spi_init_config_t *conf)
+SPI_instance_t *SPI_Register(spi_init_config_t *conf)
 {
 	if (idx >= MX_SPI_BUS_SLAVE_CNT)
 	{ // 超过最大实例数
@@ -26,8 +26,8 @@ SPI_t *SPI_Register(spi_init_config_t *conf)
 			;
 		}
 	}
-	SPI_t *instance = (SPI_t *) malloc(sizeof(SPI_t));
-	memset(instance, 0, sizeof(SPI_t));
+	SPI_instance_t *instance = (SPI_instance_t *) malloc(sizeof(SPI_instance_t));
+	memset(instance, 0, sizeof(SPI_instance_t));
 
 	instance->spi_handle    = conf->spi_handle;
 	instance->GPIOx         = conf->GPIOx;
@@ -53,7 +53,7 @@ SPI_t *SPI_Register(spi_init_config_t *conf)
 	return instance;
 }
 
-void SPI_Transmit(SPI_t *spi_ins, uint8_t *ptr_data, uint8_t len)
+void SPI_Transmit(SPI_instance_t *spi_ins, uint8_t *ptr_data, uint8_t len)
 {
 	// if (spi_ins->cs_flag != 0)
 	// {
@@ -82,7 +82,7 @@ void SPI_Transmit(SPI_t *spi_ins, uint8_t *ptr_data, uint8_t len)
 	}
 }
 
-void SPI_Receive(SPI_t *spi_ins, uint8_t *ptr_data, uint8_t len)
+void SPI_Receive(SPI_instance_t *spi_ins, uint8_t *ptr_data, uint8_t len)
 {
 	// 用于稍后回调使用
 	spi_ins->rx_size   = len;
@@ -108,7 +108,7 @@ void SPI_Receive(SPI_t *spi_ins, uint8_t *ptr_data, uint8_t len)
 	}
 }
 
-void SPI_Transmit_Receive(SPI_t *spi_ins, uint8_t *ptr_data_rx, uint8_t *ptr_data_tx, uint8_t len)
+void SPI_Transmit_Receive(SPI_instance_t *spi_ins, uint8_t *ptr_data_rx, uint8_t *ptr_data_tx, uint8_t len)
 {
 	// 用于稍后回调使用,请保证ptr_data_rx在回调函数被调用之前仍然在作用域内,否则析构之后的行为是未定义的!!!
 	spi_ins->rx_size   = len;
@@ -127,7 +127,7 @@ void SPI_Transmit_Receive(SPI_t *spi_ins, uint8_t *ptr_data_rx, uint8_t *ptr_dat
 	// 	};
 	// }
 	// 拉低片选,开始传输
-	if(spi_ins->cs_flag == 0)
+	if(spi_ins->cs_flag == SPI_CS_AUTO)
 	{
 		HAL_GPIO_WritePin(spi_ins->GPIOx, spi_ins->cs_pin, GPIO_PIN_RESET);
 	}
@@ -143,9 +143,9 @@ void SPI_Transmit_Receive(SPI_t *spi_ins, uint8_t *ptr_data_rx, uint8_t *ptr_dat
 			HAL_SPI_TransmitReceive_IT(spi_ins->spi_handle, ptr_data_tx, ptr_data_rx, len);
 			break;
 		case SPI_BLOCK_MODE:
-			HAL_SPI_TransmitReceive(spi_ins->spi_handle, ptr_data_tx, ptr_data_rx, len, 1000); // 默认50ms超时
+			HAL_SPI_TransmitReceive(spi_ins->spi_handle, ptr_data_tx, ptr_data_rx, len, 50); // 默认50ms超时
 			// 阻塞模式不会调用回调函数,传输完成后直接拉高片选结束
-				if(spi_ins->cs_flag == 0)
+				if(spi_ins->cs_flag == SPI_CS_AUTO)
 				{
 					HAL_GPIO_WritePin(spi_ins->GPIOx, spi_ins->cs_pin, GPIO_PIN_SET);
 				}
@@ -159,7 +159,7 @@ void SPI_Transmit_Receive(SPI_t *spi_ins, uint8_t *ptr_data_rx, uint8_t *ptr_dat
 	}
 }
 
-void SPI_Set_Mode(SPI_t *spi_ins, spi_tx_rx_mode_e spi_mode)
+void SPI_Set_Mode(SPI_instance_t *spi_ins, spi_tx_rx_mode_e spi_mode)
 {
 	if (spi_mode != SPI_DMA_MODE && spi_mode != SPI_IT_MODE && spi_mode != SPI_BLOCK_MODE)
 	{

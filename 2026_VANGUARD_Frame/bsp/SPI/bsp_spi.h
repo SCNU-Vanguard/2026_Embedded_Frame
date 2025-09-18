@@ -53,10 +53,10 @@ typedef struct spi_instance_temp
     uint8_t * cs_pin_state;        // 片选信号状态,用于中断模式下的片选控制
     void (*callback)(struct spi_instance_temp *); // 接收回调函数
     void *id;                                // 模块指针
-} SPI_t;
+} SPI_instance_t;
 
 /* 接收回调函数定义,包含SPI的module按照此格式构建回调函数 */
-typedef void (*spi_rx_callback)(SPI_t *);
+typedef void (*spi_rx_callback)(SPI_instance_t *);
 
 // @todo: 这里可以将GPIO_TypeDef *GPIOx; uint16_t cs_pin合并为bsp_gpio以简化代码实现
 /* SPI初始化配置,其实基本和SPIIstance一模一样,为了代码风格统一因此再次定义 */
@@ -76,9 +76,9 @@ typedef struct
  * @brief 注册一个spi instance
  *
  * @param conf 传入spi配置
- * @return SPI_t* 返回一个spi实例指针,之后通过该指针操作spi外设
+ * @return SPI_instance_t* 返回一个spi实例指针,之后通过该指针操作spi外设
  */
-SPI_t *SPI_Register(spi_init_config_t *conf);
+SPI_instance_t *SPI_Register(spi_init_config_t *conf);
 
 /**
  * @brief 通过spi向对应从机发送数据
@@ -88,7 +88,7 @@ SPI_t *SPI_Register(spi_init_config_t *conf);
  * @param ptr_data 要发送的数据
  * @param len 待发送的数据长度
  */
-void SPI_Transmit(SPI_t *spi_ins, uint8_t *ptr_data, uint8_t len);
+void SPI_Transmit(SPI_instance_t *spi_ins, uint8_t *ptr_data, uint8_t len);
 
 /**
  * @brief 通过spi从从机获取数据
@@ -98,7 +98,7 @@ void SPI_Transmit(SPI_t *spi_ins, uint8_t *ptr_data, uint8_t len);
  * @param ptr_data 接受数据buffer的首地址
  * @param len 待接收的长度
  */
-void SPI_Receive(SPI_t *spi_ins, uint8_t *ptr_data, uint8_t len);
+void SPI_Receive(SPI_instance_t *spi_ins, uint8_t *ptr_data, uint8_t len);
 
 /**
  * @brief 通过spi利用移位寄存器同时收发数据
@@ -110,7 +110,7 @@ void SPI_Receive(SPI_t *spi_ins, uint8_t *ptr_data, uint8_t len);
  * @param ptr_data_tx 发送数据地址
  * @param len 接收&发送的长度
  */
-void SPI_Transmit_Receive(SPI_t *spi_ins, uint8_t *ptr_data_rx, uint8_t *ptr_data_tx, uint8_t len);
+void SPI_Transmit_Receive(SPI_instance_t *spi_ins, uint8_t *ptr_data_rx, uint8_t *ptr_data_tx, uint8_t len);
 
 /**
  * @brief 设定spi收发的工作模式
@@ -120,7 +120,7 @@ void SPI_Transmit_Receive(SPI_t *spi_ins, uint8_t *ptr_data_rx, uint8_t *ptr_dat
  * 
  * @todo 是否直接将mode作为transmit/recv的参数,而不是作为spi实例的属性?两者各有优劣
  */
-void SPI_Set_Mode(SPI_t *spi_ins, spi_tx_rx_mode_e spi_mode);
+void SPI_Set_Mode(SPI_instance_t *spi_ins, spi_tx_rx_mode_e spi_mode);
 
 #ifdef __cplusplus
 }

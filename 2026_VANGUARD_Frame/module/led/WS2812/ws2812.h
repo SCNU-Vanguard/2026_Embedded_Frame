@@ -25,7 +25,7 @@
 
 typedef struct
 {
-	SPI_t *ws2812_spi;
+	SPI_instance_t *ws2812_spi;
 } ws2812_instance_t;
 
 typedef struct

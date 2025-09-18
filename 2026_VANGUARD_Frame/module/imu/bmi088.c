@@ -13,6 +13,12 @@
 
 #include "user_lib.h"
 
+#define BMI088_BSP_COM 1
+#define BMI088_AUTO_CS 1
+#define BMI088_EXTI 0
+
+#define BMI088_Cali 0
+
 bmi088_init_config_t bmi088_init_h7 = {
 	.heat_pid_config = {
 		.kp = 80.0f,
@@ -20,53 +26,72 @@ bmi088_init_config_t bmi088_init_h7 = {
 		.kd = 0,
 		.integral_limit = 200.0f,
 		.output_limit = 2000.0f,
-},
-.heat_pwm_config = {
+	},
+	.heat_pwm_config = {
 		.htim = &htim3,
 		.channel = TIM_CHANNEL_4,
 		.dutyratio = 0,
 		.period = 5000 - 1,
-},
+	},
 
-.spi_acc_config = {
+	.spi_acc_config = {
 		.GPIOx = GPIOC,
 		.cs_pin = GPIO_PIN_0,
 		.spi_handle = &hspi2,
+#if BMI088_AUTO_CS
+		.cs_flag = SPI_CS_AUTO,
+#else
 		.cs_flag = SPI_CS_EXTERN,
-},
-.spi_gyro_config = {
+#endif
+	},
+	.spi_gyro_config = {
 		.GPIOx = GPIOC,
 		.cs_pin = GPIO_PIN_3,
 		.spi_handle = &hspi2,
+#if BMI088_AUTO_CS
+		.cs_flag = SPI_CS_AUTO,
+#else
 		.cs_flag = SPI_CS_EXTERN,
-},
+#endif
+	},
 
-.acc_int_config = {
+	.acc_int_config = {
 		.GPIOx = GPIOE,
 		.GPIO_Pin = GPIO_PIN_10,
 		.exti_mode = GPIO_EXTI_MODE_RISING,
 		.gpio_model_callback = NULL,
-},
-.gyro_int_config = {
+	},
+	.gyro_int_config = {
 		.GPIOx = GPIOE,
 		.GPIO_Pin = GPIO_PIN_12,
 		.exti_mode = GPIO_EXTI_MODE_RISING,
 		.gpio_model_callback = NULL,
-},
+	},
 
-.cali_mode = BMI088_LOAD_PRE_CALI_MODE,
-.work_mode = BMI088_BLOCK_PERIODIC_MODE,
+#if BMI088_Cali
+	.cali_mode = BMI088_CALIBRATE_ONLINE_MODE,
+#else
+	.cali_mode = BMI088_LOAD_PRE_CALI_MODE,
+#endif
+#if BMI088_EXTI
+	.work_mode = BMI088_BLOCK_TRIGGER_MODE,
+#else
+	.work_mode = BMI088_BLOCK_PERIODIC_MODE,
+#endif
 };
 
-bmi088_instance_t *bmi088_h7 = NULL;
+bmi088_instance_t *bmi088_h7  = NULL;
 SPI_HandleTypeDef *BMI088_SPI = &hspi2;
 // ---------------------------以下私有函数,用于读写BMI088寄存器封装,blocking--------------------------------//
+#if BMI088_BSP_COM
+#else
 static uint8_t BMI088_Read_Write(uint8_t tx_data)
 {
 	uint8_t rx_data = 0;
 	HAL_SPI_TransmitReceive(BMI088_SPI, &tx_data, &rx_data, 1, 1000);
 	return rx_data;
 }
+#endif
 
 /**
  * @brief 读取BMI088寄存器Accel. BMI088要求在不释放CS的情况下连续读取
@@ -78,48 +103,71 @@ static uint8_t BMI088_Read_Write(uint8_t tx_data)
  */
 static void BMI088_Accel_Read(bmi088_instance_t *bmi088, uint8_t reg, uint8_t *dataptr, uint8_t len)
 {
-	// if (len > 6)
-	// {
-	// 	while (1);
-	// }
-
-	// HAL_GPIO_WritePin(bmi088->spi_acc->GPIOx, bmi088->spi_acc->cs_pin, GPIO_PIN_RESET);		
-	
-	// // 一次读取最多6个字节,加上两个dummy data    第一个字节的第一个位是读写位,1为读,0为写,1-7bit是寄存器地址
-	// static uint8_t tx[8] = {0x80,0x55,0x55,0x55,0x55,0x55,0x55,0x55}; // 读取,第一个字节为0x80|reg ,第二个是dummy data,后面的没用都是dummy write
-	// static uint8_t rx[8] = {0}; // 前两个字节是dummy data,第三个开始是真正的数据
-	// tx[0] = 0x80 | reg;   // 静态变量每次进来还是上次的值,所以要每次都要给tx[0]赋值0x80
-	// SPI_Transmit_Receive(bmi088->spi_acc, rx, tx, len + 2);
-	
-	// HAL_GPIO_WritePin(bmi088->spi_acc->GPIOx, bmi088->spi_acc->cs_pin, GPIO_PIN_SET);	
-	
-	// memcpy(dataptr, rx + 2, len); // @todo : memcpy有额外开销,后续可以考虑优化,在SPI中加入接口或模式,使得在一次传输结束后不释放CS,直接接着传输
-	if(len == 1)
+#if BMI088_BSP_COM
+	if (len > 6)
 	{
-		HAL_GPIO_WritePin(bmi088->spi_acc->GPIOx, bmi088->spi_acc->cs_pin, GPIO_PIN_RESET);
+		while (1);
+	}
 
-		BMI088_Read_Write(0x80 | reg);
-		BMI088_Read_Write(0x55);
-		*dataptr = BMI088_Read_Write(0x55);
+#if BMI088_AUTO_CS
+#else
+	HAL_GPIO_WritePin(bmi088->spi_acc->GPIOx, bmi088->spi_acc->cs_pin, GPIO_PIN_RESET);
+#endif
 
-		HAL_GPIO_WritePin(bmi088->spi_acc->GPIOx, bmi088->spi_acc->cs_pin, GPIO_PIN_SET);
+	// 一次读取最多6个字节,加上两个dummy data    第一个字节的第一个位是读写位,1为读,0为写,1-7bit是寄存器地址
+	static uint8_t tx[8] = {0x80, 0x55, 0x55, 0x55, 0x55, 0x55, 0x55, 0x55}; // 读取,第一个字节为0x80|reg ,第二个是dummy data,后面的没用都是dummy write
+	static uint8_t rx[8] = {0}; // 前两个字节是dummy data,第三个开始是真正的数据
+	tx[0]                = 0x80 | reg;   // 静态变量每次进来还是上次的值,所以要每次都要给tx[0]赋值0x80
+	SPI_Transmit_Receive(bmi088->spi_acc, rx, tx, len + 2);
+
+#if BMI088_AUTO_CS
+#else
+	HAL_GPIO_WritePin(bmi088->spi_acc->GPIOx, bmi088->spi_acc->cs_pin, GPIO_PIN_SET);
+#endif
+
+	memcpy(dataptr, rx + 2, len); // @todo : memcpy有额外开销,后续可以考虑优化,在SPI中加入接口或模式,使得在一次传输结束后不释放CS,直接接着传输
+#else
+	if (len == 1)
+	{
+
+#if BMI088_AUTO_CS
+#else
+	HAL_GPIO_WritePin(bmi088->spi_acc->GPIOx, bmi088->spi_acc->cs_pin, GPIO_PIN_RESET);
+#endif
+
+	BMI088_Read_Write(0x80 | reg);
+	BMI088_Read_Write(0x55);
+	*dataptr = BMI088_Read_Write(0x55);
+
+#if BMI088_AUTO_CS
+#else
+	HAL_GPIO_WritePin(bmi088->spi_acc->GPIOx, bmi088->spi_acc->cs_pin, GPIO_PIN_SET);
+#endif
 	}
 	else
 	{
-		HAL_GPIO_WritePin(bmi088->spi_acc->GPIOx, bmi088->spi_acc->cs_pin, GPIO_PIN_RESET);
 
-		BMI088_Read_Write(0x80 | reg);
-		BMI088_Read_Write(0x80 | reg);
+#if BMI088_AUTO_CS
+#else
+	HAL_GPIO_WritePin(bmi088->spi_acc->GPIOx, bmi088->spi_acc->cs_pin, GPIO_PIN_RESET);
+#endif
 
-		while(len != 0)
-		{
-			*dataptr = BMI088_Read_Write(0x55);
-			dataptr++;
-			len--;
-		}
+	BMI088_Read_Write(0x80 | reg);
+	BMI088_Read_Write(0x80 | reg);
 
-		HAL_GPIO_WritePin(bmi088->spi_acc->GPIOx, bmi088->spi_acc->cs_pin, GPIO_PIN_SET);
-	}	
+	while (len != 0)
+	{
+		*dataptr = BMI088_Read_Write(0x55);
+		dataptr++;
+		len--;
+	}
+
+#if BMI088_AUTO_CS
+#else
+	HAL_GPIO_WritePin(bmi088->spi_acc->GPIOx, bmi088->spi_acc->cs_pin, GPIO_PIN_SET);
+#endif
+	}
+#endif
 }
 
 /**
@@ -132,46 +180,69 @@ static void BMI088_Accel_Read(bmi088_instance_t *bmi088, uint8_t reg, uint8_t *d
  */
 static void BMI088_Gyro_Read(bmi088_instance_t *bmi088, uint8_t reg, uint8_t *dataptr, uint8_t len)
 {
-	// if (len > 6)
-	// {
-	// 	while (1);
-	// }
-
-	// HAL_GPIO_WritePin(bmi088->spi_gyro->GPIOx, bmi088->spi_gyro->cs_pin, GPIO_PIN_RESET);	
-	
-	// // 一次读取最多6个字节,加上一个dummy data  ,第一个字节的第一个位是读写位,1为读,0为写,1-7bit是寄存器地址
-	// static uint8_t tx[8] = {0x80,0x55,0x55,0x55,0x55,0x55,0x55,0x55}; // 读取,第一个字节为0x80 | reg ,之后是dummy data
-	// static uint8_t rx[8] = {0};          // 第一个是dummy data,第三个开始是真正的数据
-	// tx[0] = 0x80 | reg;
-	// SPI_Transmit_Receive(bmi088->spi_gyro, rx, tx, len + 1);
-	
-	// HAL_GPIO_WritePin(bmi088->spi_gyro->GPIOx, bmi088->spi_gyro->cs_pin, GPIO_PIN_SET);
-	
-	// memcpy(dataptr, rx + 1, len); // @todo : memcpy有额外开销,后续可以考虑优化,在SPI中加入接口或模式,使得在一次传输结束后不释放CS,直接接着传输
-	if(len == 1)
+#if BMI088_BSP_COM
+	if (len > 6)
 	{
-		HAL_GPIO_WritePin(bmi088->spi_gyro->GPIOx, bmi088->spi_gyro->cs_pin, GPIO_PIN_RESET);
+		while (1);
+	}
 
-		BMI088_Read_Write(0x80 | reg);
-		*dataptr = BMI088_Read_Write(0x55);
+#if BMI088_AUTO_CS
+#else
+	HAL_GPIO_WritePin(bmi088->spi_gyro->GPIOx, bmi088->spi_gyro->cs_pin, GPIO_PIN_RESET);
+#endif
 
-		HAL_GPIO_WritePin(bmi088->spi_gyro->GPIOx, bmi088->spi_gyro->cs_pin, GPIO_PIN_SET);
+	// 一次读取最多6个字节,加上一个dummy data  ,第一个字节的第一个位是读写位,1为读,0为写,1-7bit是寄存器地址
+	static uint8_t tx[8] = {0x80, 0x55, 0x55, 0x55, 0x55, 0x55, 0x55, 0x55}; // 读取,第一个字节为0x80 | reg ,之后是dummy data
+	static uint8_t rx[8] = {0};          // 第一个是dummy data,第三个开始是真正的数据
+	tx[0]                = 0x80 | reg;
+	SPI_Transmit_Receive(bmi088->spi_gyro, rx, tx, len + 1);
+
+#if BMI088_AUTO_CS
+#else
+	HAL_GPIO_WritePin(bmi088->spi_gyro->GPIOx, bmi088->spi_gyro->cs_pin, GPIO_PIN_SET);
+#endif
+
+	memcpy(dataptr, rx + 1, len); // @todo : memcpy有额外开销,后续可以考虑优化,在SPI中加入接口或模式,使得在一次传输结束后不释放CS,直接接着传输
+#else
+	if (len == 1)
+	{
+
+#if BMI088_AUTO_CS
+#else
+	HAL_GPIO_WritePin(bmi088->spi_gyro->GPIOx, bmi088->spi_gyro->cs_pin, GPIO_PIN_RESET);
+#endif
+
+	BMI088_Read_Write(0x80 | reg);
+	*dataptr = BMI088_Read_Write(0x55);
+
+#if BMI088_AUTO_CS
+#else
+	HAL_GPIO_WritePin(bmi088->spi_gyro->GPIOx, bmi088->spi_gyro->cs_pin, GPIO_PIN_SET);
+#endif
 	}
 	else
 	{
-		HAL_GPIO_WritePin(bmi088->spi_gyro->GPIOx, bmi088->spi_gyro->cs_pin, GPIO_PIN_RESET);
 
-		BMI088_Read_Write(0x80 | reg);
+#if BMI088_AUTO_CS
+#else
+	HAL_GPIO_WritePin(bmi088->spi_gyro->GPIOx, bmi088->spi_gyro->cs_pin, GPIO_PIN_RESET);
+#endif
 
-		while(len != 0)
-		{
-			*dataptr = BMI088_Read_Write(0x55);
-			dataptr++;
-			len--;
-		}
+	BMI088_Read_Write(0x80 | reg);
 
-		HAL_GPIO_WritePin(bmi088->spi_gyro->GPIOx, bmi088->spi_gyro->cs_pin, GPIO_PIN_SET);
-	}	
+	while (len != 0)
+	{
+		*dataptr = BMI088_Read_Write(0x55);
+		dataptr++;
+		len--;
+	}
+
+#if BMI088_AUTO_CS
+#else
+	HAL_GPIO_WritePin(bmi088->spi_gyro->GPIOx, bmi088->spi_gyro->cs_pin, GPIO_PIN_SET);
+#endif
+	}
+#endif
 }
 
 /**
@@ -241,44 +312,44 @@ static uint8_t BMI088_Accel_Init(bmi088_instance_t *bmi088)
 	uint8_t WhoAmI_check = 0;
 
 	BMI088_Accel_Read(bmi088, BMI088_ACC_CHIP_ID, &WhoAmI_check, 1); // dummy read,
-	HAL_Delay(1);
-	// DWT_Delay(0.001f);
+	// HAL_Delay(1);
+	DWT_Delay(0.001f);
 	BMI088_Accel_Read(bmi088, BMI088_ACC_CHIP_ID, &WhoAmI_check, 1); // dummy read,
-	HAL_Delay(1);
-	// DWT_Delay(0.001f);
+	// HAL_Delay(1);
+	DWT_Delay(0.001f);
 
 	BMI088_Accel_Write_SingleReg(bmi088, BMI088_ACC_SOFTRESET, BMI088_ACC_SOFTRESET_VALUE); // 软复位
 	HAL_Delay(80);
 	// DWT_Delay(0.08f);
 
 	BMI088_Accel_Read(bmi088, BMI088_ACC_CHIP_ID, &WhoAmI_check, 1); // dummy read,
-	HAL_Delay(1);
-	// DWT_Delay(0.001f);
+	// HAL_Delay(1);
+	DWT_Delay(0.001f);
 	BMI088_Accel_Read(bmi088, BMI088_ACC_CHIP_ID, &WhoAmI_check, 1); // dummy read,
-	HAL_Delay(1);
-	// DWT_Delay(0.001f);
-	
+	// HAL_Delay(1);
+	DWT_Delay(0.001f);
+
 	// 检查ID,如果不是0x1E(bmi088 whoami寄存器值),则返回错误
-//	BMI088_Accel_Read(bmi088, BMI088_ACC_CHIP_ID, &WhoAmI_check, 1);
+	//	BMI088_Accel_Read(bmi088, BMI088_ACC_CHIP_ID, &WhoAmI_check, 1);
 	if (WhoAmI_check != BMI088_ACC_CHIP_ID_VALUE)
 		return BMI088_NO_SENSOR;
-//	DWT_Delay(0.001f);
+	//	DWT_Delay(0.001f);
 	// 初始化寄存器,提高可读性
 	uint8_t reg               = 0, data = 0;
 	BMI088_ERORR_CODE_e error = 0;
-	data = sizeof(bmi088_accel_init_table) / sizeof(bmi088_accel_init_table[0]);
+	data                      = sizeof(bmi088_accel_init_table) / sizeof(bmi088_accel_init_table[0]);
 	// 使用sizeof而不是magic number,这样如果修改了数组大小,不用修改这里的代码;或者使用宏定义
 	for (uint8_t i = 0 ; i < sizeof(bmi088_accel_init_table) / sizeof(bmi088_accel_init_table[0]) ; i++)
 	{
 		reg  = bmi088_accel_init_table[i][BMI088REG];
 		data = bmi088_accel_init_table[i][BMI088DATA];
 		BMI088_Accel_Write_SingleReg(bmi088, reg, data); // 写入寄存器
-		HAL_Delay(1);
-		// DWT_Delay(0.001f);
+		//HAL_Delay(1);
+		DWT_Delay(0.001f);
 
 		BMI088_Accel_Read(bmi088, reg, &data, 1); // 写完之后立刻读回检查
-		HAL_Delay(1);
-		// DWT_Delay(0.001f);
+		//HAL_Delay(1);
+		DWT_Delay(0.001f);
 
 		if (data != bmi088_accel_init_table[i][BMI088DATA])
 			error |= bmi088_accel_init_table[i][BMI088ERROR];
@@ -316,11 +387,11 @@ static uint8_t BMI088_Gyro_Init(bmi088_instance_t *bmi088)
 	uint8_t WhoAmI_check = 0;
 
 	BMI088_Gyro_Read(bmi088, BMI088_GYRO_CHIP_ID, &WhoAmI_check, 1); // dummy read,
-	HAL_Delay(1);
-	// DWT_Delay(0.001f);
+	// HAL_Delay(1);
+	DWT_Delay(0.001f);
 	BMI088_Gyro_Read(bmi088, BMI088_GYRO_CHIP_ID, &WhoAmI_check, 1); // dummy read,
-	HAL_Delay(1);
-	// DWT_Delay(0.001f);
+	// HAL_Delay(1);
+	DWT_Delay(0.001f);
 
 	// 后续添加reset和通信检查?
 	// code to go here ...
@@ -329,17 +400,17 @@ static uint8_t BMI088_Gyro_Init(bmi088_instance_t *bmi088)
 	// DWT_Delay(0.08f);
 
 	BMI088_Gyro_Read(bmi088, BMI088_GYRO_CHIP_ID, &WhoAmI_check, 1); // dummy read,
-	HAL_Delay(1);
-	// DWT_Delay(0.001f);
+	// HAL_Delay(1);
+	DWT_Delay(0.001f);
 	BMI088_Gyro_Read(bmi088, BMI088_GYRO_CHIP_ID, &WhoAmI_check, 1); // dummy read,
-	HAL_Delay(1);
-	// DWT_Delay(0.001f);
+	// HAL_Delay(1);
+	DWT_Delay(0.001f);
 
 	// 检查ID,如果不是0x0F(bmi088 whoami寄存器值),则返回错误
-//	BMI088_Gyro_Read(bmi088, BMI088_GYRO_CHIP_ID, &WhoAmI_check, 1);
+	//	BMI088_Gyro_Read(bmi088, BMI088_GYRO_CHIP_ID, &WhoAmI_check, 1);
 	if (WhoAmI_check != BMI088_GYRO_CHIP_ID_VALUE)
 		return BMI088_NO_SENSOR;
-//	DWT_Delay(0.001f);
+	//	DWT_Delay(0.001f);
 
 	// 初始化寄存器,提高可读性
 	uint8_t reg               = 0, data = 0;
@@ -350,11 +421,11 @@ static uint8_t BMI088_Gyro_Init(bmi088_instance_t *bmi088)
 		reg  = bmi088_gyro_init_table[i][BMI088REG];
 		data = bmi088_gyro_init_table[i][BMI088DATA];
 		BMI088_Gyro_Write_SingleReg(bmi088, reg, data); // 写入寄存器
-		HAL_Delay(1);
-		// DWT_Delay(0.001f);
+		//HAL_Delay(1);
+		DWT_Delay(0.001f);
 		BMI088_Gyro_Read(bmi088, reg, &data, 1); // 写完之后立刻读回对应寄存器检查是否写入成功
-		HAL_Delay(1);
-		// DWT_Delay(0.001f);
+		//HAL_Delay(1);
+		DWT_Delay(0.001f);
 		if (data != bmi088_gyro_init_table[i][BMI088DATA])
 			error |= bmi088_gyro_init_table[i][BMI088ERROR];
 		//{i--;} 可以设置retry次数,尝试重新写入.如果retry次数用完了,则返回error
@@ -432,7 +503,7 @@ void BMI088_Temp_Control(bmi088_instance_t *bmi088)
 
 // -------------------------以下为私有函数,private用于IT模式下的中断处理---------------------------------//
 
-static void BMI088_Accel_SPI_Finish_Callback(SPI_t *spi)
+static void BMI088_Accel_SPI_Finish_Callback(SPI_instance_t *spi)
 {
 	static bmi088_instance_t *bmi088;
 	static uint16_t callback_time = 0;
@@ -465,9 +536,9 @@ static void BMI088_Accel_SPI_Finish_Callback(SPI_t *spi)
 	callback_time++;
 }
 
-osThreadId_t instaskHandle; // 本来是全局变量直接extern
+extern osThreadId_t INS_task_handel; // 本来是全局变量直接extern
 
-static void BMI088_Gyro_SPI_Finish_Callback(SPI_t *spi)
+static void BMI088_Gyro_SPI_Finish_Callback(SPI_instance_t *spi)
 {
 	static bmi088_instance_t *bmi088 = NULL;
 	bmi088                           = (bmi088_instance_t *) (spi->id);
@@ -491,7 +562,7 @@ static void BMI088_Gyro_SPI_Finish_Callback(SPI_t *spi)
 	}
 	// end
 	bmi088->update_flag.imu_ready = 1;
-	osThreadFlagsSet(instaskHandle, IMU_READY_FLAG); // 通知主线程IMU数据准备完毕（以陀螺仪中断为准 1000Hz）
+	osThreadFlagsSet(INS_task_handel, IMU_READY_FLAG); // 通知主线程IMU数据准备完毕（以陀螺仪中断为准 1000Hz）
 }
 
 static void BMI088_Accel_INT_Callback(GPIO_instance_t *gpio)
@@ -549,19 +620,19 @@ uint8_t BMI088_Acquire(bmi088_instance_t *bmi088, bmi088_data_t *data_store)
 		static uint8_t buf[6] = {0}; // 最多读取6个byte(gyro/acc,temp是2)
 		// 读取accel的x轴数据首地址,bmi088内部自增读取地址 // 3* sizeof(int16_t)
 		BMI088_Accel_Read(bmi088, BMI088_ACCEL_XOUT_L, buf, 6);
-		for (uint8_t i       = 0 ; i < 3 ; i++)
+		for (uint8_t i = 0 ; i < 3 ; i++)
 		{
 			data_store->acc[i] = bmi088->BMI088_ACCEL_SEN * (float) (int16_t) (((buf[2 * i + 1]) << 8) | buf[2 * i]);
 		}
-		
+
 		BMI088_Gyro_Read(bmi088, BMI088_GYRO_X_L, buf, 6); // 连续读取3个(3*2=6)轴的角速度
-		for (uint8_t i        = 0 ; i < 3 ; i++)
+		for (uint8_t i = 0 ; i < 3 ; i++)
 		{
 			data_store->gyro[i] = bmi088->BMI088_GYRO_SEN * (float) (int16_t) (((buf[2 * i + 1]) << 8) | buf[2 * i]);
 		}
 
 		BMI088_Accel_Read(bmi088, BMI088_TEMP_M, buf, 2); // 读温度,温度传感器在accel上
-		
+
 		data_store->temperature = (float) ((int16_t) ((buf[0] << 3) | (buf[1] >> 5))) * BMI088_TEMP_FACTOR + BMI088_TEMP_OFFSET;
 		// 更新BMI088自身结构体数据
 		for (uint8_t i = 0 ; i < 3 ; i++)
@@ -704,7 +775,7 @@ void BMI088_Calibrate_IMU(bmi088_instance_t *_bmi088)
 				g_norm_diff = g_norm_max - g_norm_min;
 				for (uint8_t j = 0 ; j < 3 ; j++)
 				{
-					gyro_diff[j] += (gyro_max[j] + gyro_min[j]) / 2.0f;
+					gyro_diff[j] = gyro_max[j] + gyro_min[j];
 				}
 				if (g_norm_diff > 0.5f || gyro_diff[0] > 0.15f || gyro_diff[1] > 0.15f || gyro_diff[2] > 0.15f)
 				{
@@ -713,7 +784,7 @@ void BMI088_Calibrate_IMU(bmi088_instance_t *_bmi088)
 				DWT_Delay(0.0005f);
 				if (cali_time_count % 1000 == 0)
 				{
-					Buzzer_One_Note(1047, 0.2f);
+					Buzzer_One_Note(1047, 0.2f, 1);
 				}
 				cali_time_count++;
 			}
@@ -722,7 +793,14 @@ void BMI088_Calibrate_IMU(bmi088_instance_t *_bmi088)
 			{
 				_bmi088->gyro_offset[i] /= cail_time; // 计算偏移量
 			}
-		} while (g_norm_diff > 0.5f || fabsf(_bmi088->g_norm - 9.8f) > 0.5f || gyro_diff[0] > 0.15f || gyro_diff[1] > 0.15f || gyro_diff[2] > 0.15f || fabsf(_bmi088->gyro_offset[0]) > 0.01f || fabsf(_bmi088->gyro_offset[1]) > 0.01f || fabsf(_bmi088->gyro_offset[2]) > 0.01f);
+		} while (g_norm_diff > 0.5f || 
+						 fabsf(_bmi088->g_norm - 9.8f) > 0.5f || 
+						 gyro_diff[0] > 0.15f || 
+						 gyro_diff[1] > 0.15f || 
+						 gyro_diff[2] > 0.15f || 
+						 fabsf(_bmi088->gyro_offset[0]) > 0.01f || 
+						 fabsf(_bmi088->gyro_offset[1]) > 0.01f || 
+						 fabsf(_bmi088->gyro_offset[2]) > 0.01f);
 
 		_bmi088->accel_scale = 9.81f / _bmi088->g_norm; // 计算加速度计的缩放系数
 
@@ -732,14 +810,14 @@ void BMI088_Calibrate_IMU(bmi088_instance_t *_bmi088)
 			BMI088_Acquire(_bmi088, &bmi088_data);
 			for (uint8_t j = 0 ; j < 3 ; j++)
 			{
-				_bmi088->acc_offset[j] += bmi088_data.acc[j]; // 逐渐减小偏移量
+				_bmi088->acc_offset[j] = bmi088_data.acc[j] * _bmi088->accel_scale * 0.25f + _bmi088->acc_offset[j] * 0.75f; // 逐渐减小偏移量
 			}
 
 			DWT_Delay(0.0005f);
 
 			if (cali_time_count % 1000 == 0)
 			{
-				Buzzer_One_Note(1047, 0.2f);
+				Buzzer_One_Note(1047, 0.2f, 1);
 			}
 			cali_time_count++;
 		}
@@ -748,7 +826,7 @@ void BMI088_Calibrate_IMU(bmi088_instance_t *_bmi088)
 		// {
 		// 	if (cali_time_count % 1000 == 0)
 		// 	{
-		// 		Buzzer_One_Note(1047, 0.2f);
+		// 		Buzzer_One_Note(1047, 0.2f,0);
 		// 	}
 		// 	bmi088_data_t bmi088_data = {0};
 		// 	BMI088_Acquire(_bmi088, &bmi088_data);
@@ -818,13 +896,13 @@ bmi088_instance_t *BMI088_Register(bmi088_init_config_t *config)
 	do
 	{
 		static uint8_t error_count = 0;
-		error = BMI088_NO_ERROR;
+		error                      = BMI088_NO_ERROR;
 		error |= BMI088_Accel_Init(bmi088_instance);
 		error |= BMI088_Gyro_Init(bmi088_instance);
 		error_count++;
-		if(error_count == 10)
+		if (error_count == 10)
 		{
-			Buzzer_Play(Err_sound);
+//			Buzzer_Play(Err_sound);
 			break;
 		}
 	} while (error != 0);

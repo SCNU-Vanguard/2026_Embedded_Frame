@@ -16,12 +16,17 @@
 
 #include "bmi088.h"
 
+#include "bsp_dwt.h"
+
 #include "BMI088driver.h"
 
 bmi088_data_t imu_data;
 
+// float imu_time;
+
 void INS_Data_Update(void)
 {
 	// BMI088_Read(&BMI088);
-  BMI088_Acquire(bmi088_h7, &imu_data);   
+  BMI088_Acquire(bmi088_h7, &imu_data);
+  // TIME_ELAPSE(imu_time, BMI088_Acquire(bmi088_h7, &imu_data););   
 }

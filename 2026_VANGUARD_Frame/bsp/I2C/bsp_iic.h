@@ -60,7 +60,7 @@ typedef struct iic_temp_s
 	void (*callback)(struct iic_temp_s *); // 接收完成后的回调函数
 
 	void *id; // 用于标识i2c instance
-} IIC_t;
+} IIC_instance_t;
 
 /* I2C 初始化结构体配置 */
 typedef struct
@@ -68,7 +68,7 @@ typedef struct
 	I2C_HandleTypeDef *handle;       // i2c handle
 	uint8_t dev_address;             // 暂时只支持7位地址(还有一位是读写位),注意不需要左移
 	iic_work_mode_e work_mode;       // 工作模式
-	void (*callback)(IIC_t *); // 接收完成后的回调函数
+	void (*callback)(IIC_instance_t *); // 接收完成后的回调函数
 	void *id;                        // 用于标识i2c instance
 } iic_init_config_t;
 
@@ -76,9 +76,9 @@ typedef struct
  * @brief IIC初始化
  *
  * @param conf 初始化配置
- * @return IIC_t*
+ * @return IIC_instance_t*
  */
-IIC_t *IIC_Register(iic_init_config_t *conf);
+IIC_instance_t *IIC_Register(iic_init_config_t *conf);
 
 /**
  * @brief IIC设置工作模式
@@ -86,7 +86,7 @@ IIC_t *IIC_Register(iic_init_config_t *conf);
  * @param iic 要设置的iic实例
  * @param mode 工作模式
  */
-void IIC_Set_Mode(IIC_t *iic, iic_work_mode_e mode);
+void IIC_Set_Mode(IIC_instance_t *iic, iic_work_mode_e mode);
 
 /**
  * @brief IIC发送数据
@@ -98,7 +98,7 @@ void IIC_Set_Mode(IIC_t *iic, iic_work_mode_e mode);
  * @note 注意,如果发送结构体,那么该结构体在声明时务必使用#pragma pack(1)进行对齐,并在声明结束后使用#pragma pack()恢复对齐
  *
  */
-void IIC_Transmit(IIC_t *iic, uint8_t *data, uint16_t size, iic_seq_mode_e mode);
+void IIC_Transmit(IIC_instance_t *iic, uint8_t *data, uint16_t size, iic_seq_mode_e mode);
 
 /**
  * @brief IIC接收数据
@@ -110,7 +110,7 @@ void IIC_Transmit(IIC_t *iic, uint8_t *data, uint16_t size, iic_seq_mode_e mode)
  * @note 注意,如果直接将接收数据memcpy到目标结构体或通过强制类型转换进行逐字节写入,
  *       那么该结构体在声明时务必使用#pragma pack(1)进行对齐,并在声明结束后使用#pragma pack()恢复对齐
  */
-void IIC_Receive(IIC_t *iic, uint8_t *data, uint16_t size, iic_seq_mode_e mode);
+void IIC_Receive(IIC_instance_t *iic, uint8_t *data, uint16_t size, iic_seq_mode_e mode);
 
 /**
  * @brief IIC读取从机寄存器(内存),只支持阻塞模式,超时默认为1ms
@@ -122,7 +122,7 @@ void IIC_Receive(IIC_t *iic, uint8_t *data, uint16_t size, iic_seq_mode_e mode);
  * @param mode 写入或读取模式: IIC_READ_MEM or IIC_WRITE_MEM
  * @param mem8bit_flag 从机内存地址是否为8位
  */
-void IIC_Access_Mem(IIC_t *iic, uint16_t mem_addr, uint8_t *data, uint16_t size, iic_mem_mode_e mode, uint8_t mem8bit_flag);
+void IIC_Access_Mem(IIC_instance_t *iic, uint16_t mem_addr, uint8_t *data, uint16_t size, iic_mem_mode_e mode, uint8_t mem8bit_flag);
 
 #ifdef __cplusplus
 }
