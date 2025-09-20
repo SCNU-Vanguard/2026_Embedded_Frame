@@ -32,6 +32,8 @@
 #include "bmi088.h"
 #include "ws2812.h"
 #include "buzzer.h"
+#include "remote_control.h"
+#include "wfly_control.h"
 #include "vofa.h"
 
 #include "bsp_dwt.h"
@@ -52,10 +54,12 @@ static void Frame_Device_Init(void)
 	ws2812_instance = WS2812_Register(&ws2812_config);
 
 	bmi088_h7 = BMI088_Register(&bmi088_init_h7);
+	// BMI088_Init(&hspi2,0);
 
 	VOFA_Register(&huart7);
-	// BMI088_Init(&hspi2,0);
 	
+	WFLY_SBUS_Init(&huart5);
+
 	Chassis_Init();
 }
 
@@ -85,9 +89,13 @@ static void Frame_Task_Init(void)
 
 void Robot_Frame_Init(void)
 {
+	// __disable_irq( );
+
 	Frame_MCU_Init( );
 
 	Frame_Device_Init( );
 
 	Frame_Task_Init( );
+
+	// __enable_irq( );
 }

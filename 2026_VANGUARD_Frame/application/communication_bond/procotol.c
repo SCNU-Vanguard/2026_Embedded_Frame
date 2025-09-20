@@ -16,6 +16,7 @@
 
 #include "vofa.h"
 #include "bmi088.h"
+#include "wfly_control.h"
 
 extern bmi088_data_t imu_data;
 
@@ -33,4 +34,9 @@ void VOFA_Display_IMU(void)
 
     //VOFA_Send_Data(vofa_data_view, 7);
     VOFA_JustFloat(vofa_data_view, 7);
+}
+
+void RC_Receive_Control(void)
+{
+    wfly_to_rc(&wfly_instance, wfly_buff);
 }

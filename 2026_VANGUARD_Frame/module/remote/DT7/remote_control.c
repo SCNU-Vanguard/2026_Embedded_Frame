@@ -9,8 +9,6 @@
  ******************************************************************************
  */
 
-#include <stdlib.h>
-#include <string.h>
 #include "remote_control.h"
 
 #include "defense_center.h"
