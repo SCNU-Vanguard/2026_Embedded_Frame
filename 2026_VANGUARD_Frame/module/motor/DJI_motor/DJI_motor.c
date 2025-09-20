@@ -12,6 +12,9 @@
 
 #include "bsp_dwt.h"
 
+#define GM6020_VOLTAGE 1
+#define GM6020_CURRENT 1
+
 static uint8_t idx = 0; // register idx,是该文件的全局电机索引,在注册时使用
 /* DJI电机的实例,此处仅保存指针,内存的分配将通过电机实例初始化时通过malloc()进行 */
 static DJI_motor_instance_t *dji_motor_instances[DJI_MOTOR_CNT] = {NULL}; // 会在control任务中遍历该指针数组进行pid计算
@@ -101,12 +104,20 @@ static void Motor_Sender_Grouping(DJI_motor_instance_t *motor, can_init_config_t
 			if (motor_id < 4)
 			{
 				motor_send_num = motor_id;
+#if GM6020_VOLTAGE
+				motor_grouping = config->can_handle == &hfdcan1 ? 0 : (config->can_handle == &hfdcan2 ? 3 : 6);
+#elif GM6020_CURRENT 				
 				motor_grouping = config->can_handle == &hfdcan1 ? 9 : (config->can_handle == &hfdcan2 ? 10 : 11);
+#endif
 			}
 			else
 			{
 				motor_send_num = motor_id - 4;
+#if GM6020_VOLTAGE
+				motor_grouping = config->can_handle == &hfdcan1 ? 2 : (config->can_handle == &hfdcan2 ? 5 : 8);
+#elif GM6020_CURRENT				
 				motor_grouping = config->can_handle == &hfdcan1 ? 12 : (config->can_handle == &hfdcan2 ? 13 : 14);
+#endif				
 			}
 
 			config->rx_id                      = 0x204 + motor_id + 1; // 把ID+1,进行分组设置
@@ -478,7 +489,7 @@ void DJI_Motor_Control(void)
 	/* ------------------------------handler------------------------------------*/
 
 	// 遍历flag,检查是否要发送这一帧报文TODO(GUATAI):后续应解耦，能够由开发者来选择何时发送，来达到每个模块不同控制频率的需求
-	for (size_t i = 0 ; i < 6 ; ++i)
+	for (size_t i = 0 ; i < 15 ; ++i)
 	{
 		if (sender_enable_flag[i])
 		{

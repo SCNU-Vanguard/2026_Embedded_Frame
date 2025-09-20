@@ -685,7 +685,7 @@ void DM_Motor_Control(void)
 				            motor->transmit_data.position_des,
 				            motor->transmit_data.velocity_des,
 				            motor->transmit_data.Kp,
-				            motor->transmit_data.Kp,
+				            motor->transmit_data.Kd,
 				            motor->transmit_data.torque_des);
 			}
 			if (motor->motor_settings.outer_loop_type == SPEED_LOOP)
@@ -706,7 +706,7 @@ void DM_Motor_Control(void)
 				            motor->transmit_data.position_des,
 				            motor->transmit_data.velocity_des,
 				            motor->transmit_data.Kp,
-				            motor->transmit_data.Kp,
+				            motor->transmit_data.Kd,
 				            motor->transmit_data.torque_des);
 			}
 			if (motor->motor_settings.outer_loop_type == TORQUE_LOOP)
@@ -727,7 +727,7 @@ void DM_Motor_Control(void)
 				            motor->transmit_data.position_des,
 				            motor->transmit_data.velocity_des,
 				            motor->transmit_data.Kp,
-				            motor->transmit_data.Kp,
+				            motor->transmit_data.Kd,
 				            motor->transmit_data.torque_des);
 			}
 		}
