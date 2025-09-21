@@ -50,41 +50,58 @@ static void Frame_MCU_Init(void)
 
 static void Frame_Device_Init(void)
 {
+/******************************module模块初始化*****************************/
+
 	Buzzer_Register( );
 	ws2812_instance = WS2812_Register(&ws2812_config);
 
 	bmi088_h7 = BMI088_Register(&bmi088_init_h7);
 	// BMI088_Init(&hspi2,0);
 
-	VOFA_Register(&huart7);
+	VOFA_Register();
 	
-	WFLY_SBUS_Init(&huart5);
+	WFLY_SBUS_Register();
+
+/******************************module模块初始化*****************************/
+
+/******************************application组件初始化*****************************/
 
 	Chassis_Init();
+
+/******************************application组件初始化*****************************/
 }
 
 static void Frame_Task_Init(void)
 {
-	TIME_ELAPSE(init_time, Buzzer_Task_Init( );
+
+/******************************测试任务初始化时间*****************************/
+
+	// TIME_ELAPSE(init_time, Buzzer_Task_Init( );
+	// Chassis_Task_Init( );
+	// Gimbal_Task_Init( );
+	// Shoot_Task_Init( );
+    // INS_Task_Init( );
+	// Procotol_Task_Init();
+	// )
+	// ;
+
+/******************************测试任务初始化时间*****************************/
+
+/******************************任务初始化*****************************/
+
+	Buzzer_Task_Init( );
+
 	Chassis_Task_Init( );
+
 	Gimbal_Task_Init( );
+
 	Shoot_Task_Init( );
-    INS_Task_Init( );
-	Procotol_Task_Init();
-	)
-	;
 
-	//    Buzzer_Task_Init( );
+	INS_Task_Init( );
 
-	//    Chassis_Task_Init( );
+	Procotol_Task_Init( );
 
-	//    Gimbal_Task_Init( );
-
-	//    Shoot_Task_Init( );
-
-	//    INS_Task_Init( );
-
-	//    Procotol_Task_Init( );
+/******************************任务初始化*****************************/
 }
 
 void Robot_Frame_Init(void)

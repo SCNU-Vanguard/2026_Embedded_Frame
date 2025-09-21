@@ -68,7 +68,7 @@ typedef struct
 extern uint8_t wfly_buff[BUFF_RC_WFLY_SIZE];
 extern wfly_t wfly_instance;
 
-extern void WFLY_SBUS_Init(UART_HandleTypeDef *sbus_usart_handle);
-extern void wfly_to_rc(wfly_t *remoter, uint8_t *buf);
+extern void WFLY_SBUS_Register(void);
+// extern void wfly_to_rc(wfly_t *remoter, uint8_t *buf);
 
 #endif /*__WFLY_CONTROL_H__*/

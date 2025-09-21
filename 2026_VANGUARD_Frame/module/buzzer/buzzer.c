@@ -54,6 +54,8 @@ const char Init_sound[]  = "T240L8 O5fgh";
 const char Err_sound[]   = "T120L8 O5c O4g O5c O4g O5c O4g";
 const char Ready_sound[]    = "T120L16 O5cde O6d 07h";
 const char Warming_sound[] = "T240 O6 L16 G L16 G L16 G P16 L8 G.";
+const char Heartbeat_sound[] = "T240L16 O5c P16 c P16 c P16 c P16 c P16 c P16 c P16 c P16 c";
+const char Super_Mario_sound[] = "T150L16 O5e e P16 e P16 c e P16 g P8p P8g P16c P16g P16e P16a P16b P8p P8b P16a# P16a P16g2 L4g L4c H8g H8e H8c H8d H4b L4g2";
 
 /**
  * @brief :  蜂鸣器注册

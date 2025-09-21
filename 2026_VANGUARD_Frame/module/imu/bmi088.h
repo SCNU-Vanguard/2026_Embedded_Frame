@@ -22,12 +22,15 @@
 #define IMU_READY_FLAG (1 << 0)
 
 // 陀螺仪校准数据，开启陀螺仪校准后可从INS中获取
-#define BMI088_PRE_CALI_GYRO_X_OFFSET -0.000909539289f
-#define BMI088_PRE_CALI_GYRO_Y_OFFSET 0.00354450056f
-#define BMI088_PRE_CALI_GYRO_Z_OFFSET 0.000225723968f
-#define G_NORM 9.80665f // 重力加速度
+#define GYRO_X_OFFSET 0.00375400437f
+#define GYRO_Y_OFFSET 0.00082983874f
+#define GYRO_Z_OFFSET 0.00085203279f
+#define ACCEL_X_OFFSET -0.18929249f
+#define ACCEL_Y_OFFSET -0.19040909f
+#define ACCEL_Z_OFFSET 0.0f
+#define G_NORM 9.85604572f // 重力加速度
 // 陀螺仪默认环境温度
-#define BMI088_AMBIENT_TEMPERATURE 25.0f
+#define BMI088_AMBIENT_TEMPERATURE 36.5f
 
 // bmi088工作模式枚举
 typedef enum
@@ -73,16 +76,17 @@ typedef struct
 	uint8_t gyro_raw[6];
 	uint8_t acc_raw[6];
 	uint8_t temp_raw[2];
-	float last_gyro[3]; // 上次陀螺仪数据,xyz
 	// IMU数据
-	float gyro[3];     // 陀螺仪数据,xyz
+	float gyro[3];     // 陀螺仪数据,
+	float last_gyro[3]; // 上次陀螺仪数据,xyz
 	float acc[3];      // 加速度计数据,xyz
 	float temperature; // 温度
-	float g_norm;
-	float accel_scale;
+	float cali_temperature;
 	// 标定数据
+	float accel_scale;
 	float gyro_offset[3]; // 陀螺仪零偏
 	float acc_offset[3];  // 加速度计零偏
+	float g_norm;
 	// 传感器灵敏度,用于计算实际值(reg.h中定义)
 	float BMI088_ACCEL_SEN;
 	float BMI088_GYRO_SEN;
@@ -137,7 +141,7 @@ bmi088_instance_t *BMI088_Register(bmi088_init_config_t *config);
  * @param bmi088 BMI088实例指针
  * @return bmi088_data_t 读取到的数据
  */
-uint8_t BMI088_Acquire(bmi088_instance_t *bmi088, bmi088_data_t *data_store);
+uint8_t BMI088_Read_All(bmi088_instance_t *bmi088, bmi088_data_t *data_store);
 
 uint8_t BMI088_Acquire_IT_Status(bmi088_instance_t *bmi088);
 

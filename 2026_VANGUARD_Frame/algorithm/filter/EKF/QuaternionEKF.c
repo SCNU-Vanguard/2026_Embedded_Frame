@@ -11,8 +11,51 @@
  *     1
  *  ———————
  *  as + 1
+ * 
  ******************************************************************************
  */
+//根据代码，`IMU_QuaternionEKF_Init` 函数用于初始化四元数扩展卡尔曼滤波器 (EKF)，其参数对滤波器的性能有重要影响。以下是各个初始化参数的作用及调整建议：
+//
+//### 1. `process_noise1` (quaternion process noise)
+//- **作用**: 表示姿态（四元数）的过程噪声强度。较大的值意味着系统对姿态变化更敏感，但也会引入更多噪声；较小的值则会使滤波器更平滑，但响应速度变慢。
+//- **调整建议**:
+//  - 如果姿态估计过于滞后或不够灵敏，可以适当增大该值。
+//  - 如果姿态估计波动较大或不稳定，可以减小该值。
+//
+//### 2. `process_noise2` (gyro bias process noise)
+//- **作用**: 表示陀螺仪偏置的过程噪声强度。较大的值意味着滤波器对陀螺仪偏置的变化更敏感，有助于更快地修正偏置误差；较小的值则会使滤波器对偏置变化反应较慢。
+//- **调整建议**:
+//  - 如果陀螺仪偏置收敛过慢，可以适当增大该值。
+//  - 如果陀螺仪偏置估计波动较大，可以减小该值。
+//
+//### 3. `measure_noise` (accel measure noise)
+//- **作用**: 表示加速度计测量噪声的强度。较大的值意味着滤波器对加速度计测量的信任度较低，主要依赖于预测模型；较小的值则表示更信任加速度计的测量结果。
+//- **调整建议**:
+//  - 如果加速度计数据质量较差或环境干扰大，可以增大该值。
+//  - 如果加速度计数据较为可靠，可以减小该值以提高融合精度。
+//
+//### 4. `lambda` (fading coefficient)
+//- **作用**: 指数遗忘因子，用于防止协方差矩阵过度收敛。较大的值意味着更快速地遗忘历史信息，适应性强但稳定性稍差；较小的值则相反。
+//- **调整建议**:
+//  - 如果滤波器容易发散，可以增大该值以增强稳定性。
+//  - 如果滤波器收敛过快导致适应性不足，可以减小该值。
+//
+//### 5. `lpf` (lowpass filter coefficient)
+//- **作用**: 低通滤波器系数，用于平滑加速度计数据，减少高频噪声的影响。
+//- **调整建议**:
+//  - 如果加速度计数据存在较多高频噪声，可以增大该值以增强滤波效果。
+//  - 如果需要更高的响应速度，可以减小该值。
+//
+//### 示例调整方法
+//假设你发现姿态估计不够灵敏且存在滞后现象：
+//- 可以尝试将 `process_noise1` 和 `process_noise2` 稍微增大，例如从默认的 `10` 和 `0.001` 分别调整为 `15` 和 `0.002`。
+//- 同时，如果加速度计数据质量较好，可以适当减小 `measure_noise`，例如从默认的 `1000000 * 10` 调整为 `1000000 * 8`。
+//
+//如果你发现滤波器容易发散：
+//- 可以增大 `lambda` 的值，例如从默认的 `0.9996` 调整为 `0.9998`。
+//- 同时，可以适当增大 `lpf` 的值以增强低通滤波效果，减少高频噪声的影响。
+//
+//通过逐步调整这些参数，并结合实际测试结果进行优化，可以找到最适合你应用场景的参数组合。
 #include "QuaternionEKF.h"
 
 QEKF_INS_t QEKF_INS;
@@ -23,12 +66,12 @@ const float IMU_QuaternionEKF_F[36] = {1, 0, 0, 0, 0, 0,
                                        0, 0, 0, 1, 0, 0,
                                        0, 0, 0, 0, 1, 0,
                                        0, 0, 0, 0, 0, 1};
-float IMU_QuaternionEKF_P[36] = {1, 0.1, 0.1, 0.1, 0.1, 0.1,
-                                 0.1, 1, 0.1, 0.1, 0.1, 0.1,
-                                 0.1, 0.1, 1, 0.1, 0.1, 0.1,
-                                 0.1, 0.1, 0.1, 1, 0.1, 0.1,
-                                 0.1, 0.1, 0.1, 0.1, 1, 0.1,
-                                 0.1, 0.1, 0.1, 0.1, 0.1, 1};
+float IMU_QuaternionEKF_P[36] = {100000, 0.1, 0.1, 0.1, 0.1, 0.1,
+                                 0.1, 100000, 0.1, 0.1, 0.1, 0.1,
+                                 0.1, 0.1, 100000, 0.1, 0.1, 0.1,
+                                 0.1, 0.1, 0.1, 100000, 0.1, 0.1,
+                                 0.1, 0.1, 0.1, 0.1, 100, 0.1,
+                                 0.1, 0.1, 0.1, 0.1, 0.1, 100};
 float IMU_QuaternionEKF_K[18];
 float IMU_QuaternionEKF_H[18];
 
@@ -46,20 +89,22 @@ static void IMU_QuaternionEKF_xhatUpdate(KalmanFilter_t *kf);
  * @param[in] lambda         fading coefficient          0.9996
  * @param[in] lpf            lowpass filter coefficient  0
  */
-void IMU_QuaternionEKF_Init(float process_noise1, float process_noise2, float measure_noise, float lambda, float lpf)
+void IMU_QuaternionEKF_Init(float* init_quaternion,float process_noise1, float process_noise2, float measure_noise, float lambda, float lpf)
 {
     QEKF_INS.Initialized = 1;
     QEKF_INS.Q1 = process_noise1;
     QEKF_INS.Q2 = process_noise2;
     QEKF_INS.R = measure_noise;
-    QEKF_INS.ChiSquareTestThreshold = 1e-8;
+    QEKF_INS.ChiSquareTestThreshold = 1e-8;//1e-8;
     QEKF_INS.ConvergeFlag = 0;
     QEKF_INS.ErrorCount = 0;
     QEKF_INS.UpdateCount = 0;
+
     if (lambda > 1)
     {
         lambda = 1;
     }
+
     QEKF_INS.lambda = lambda;
     QEKF_INS.accLPFcoef = lpf;
 
@@ -68,10 +113,15 @@ void IMU_QuaternionEKF_Init(float process_noise1, float process_noise2, float me
     Matrix_Init(&QEKF_INS.ChiSquare, 1, 1, (float *)QEKF_INS.ChiSquare_Data);
 
     // 姿态初始化
-    QEKF_INS.IMU_QuaternionEKF.xhat_data[0] = 1;
-    QEKF_INS.IMU_QuaternionEKF.xhat_data[1] = 0;
-    QEKF_INS.IMU_QuaternionEKF.xhat_data[2] = 0;
-    QEKF_INS.IMU_QuaternionEKF.xhat_data[3] = 0;
+    for(int i = 0; i < 4; i++)
+    {
+        QEKF_INS.IMU_QuaternionEKF.xhat_data[i] = init_quaternion[i];
+    }
+
+//    QEKF_INS.IMU_QuaternionEKF.xhat_data[0] = 1;
+//    QEKF_INS.IMU_QuaternionEKF.xhat_data[1] = 0;
+//    QEKF_INS.IMU_QuaternionEKF.xhat_data[2] = 0;
+//    QEKF_INS.IMU_QuaternionEKF.xhat_data[3] = 0;
 
     // 自定义函数初始化,用于扩展或增加kf的基础功能
     QEKF_INS.IMU_QuaternionEKF.User_Func0_f = IMU_QuaternionEKF_Observe;
@@ -98,10 +148,6 @@ void IMU_QuaternionEKF_Update(float gx, float gy, float gz, float ax, float ay, 
     // 0.5(Ohm-Ohm^bias)*deltaT,用于更新工作点处的状态转移F矩阵
     static float halfgxdt, halfgydt, halfgzdt;
     static float accelInvNorm;
-    if (!QEKF_INS.Initialized)
-    {
-        IMU_QuaternionEKF_Init(10, 0.001, 1000000 * 10, 0.9996 * 0 + 1, 0);
-    }
 
     /*   F, number with * represent vals to be set
      0      1*     2*     3*     4     5
@@ -155,7 +201,7 @@ void IMU_QuaternionEKF_Update(float gx, float gy, float gz, float ax, float ay, 
 
     // set z,单位化重力加速度向量
     accelInvNorm = invSqrt(QEKF_INS.Accel[0] * QEKF_INS.Accel[0] + QEKF_INS.Accel[1] * QEKF_INS.Accel[1] + QEKF_INS.Accel[2] * QEKF_INS.Accel[2]);
-    for (uint8_t i = 0; i < 3; i++)
+    for (uint8_t i = 0; i < 3; ++i)
     {
         QEKF_INS.IMU_QuaternionEKF.MeasuredVector[i] = QEKF_INS.Accel[i] * accelInvNorm; // 用加速度向量更新量测值
     }
@@ -198,22 +244,40 @@ void IMU_QuaternionEKF_Update(float gx, float gy, float gz, float ax, float ay, 
     QEKF_INS.q[3] = QEKF_INS.IMU_QuaternionEKF.FilteredValue[3];
     QEKF_INS.GyroBias[0] = QEKF_INS.IMU_QuaternionEKF.FilteredValue[4];
     QEKF_INS.GyroBias[1] = QEKF_INS.IMU_QuaternionEKF.FilteredValue[5];
-    QEKF_INS.GyroBias[2] = 0; // 大部分时候z轴通天,无法观测yaw的漂移
+    QEKF_INS.GyroBias[2] = 0.0f; // 大部分时候z轴通天,无法观测yaw的漂移
+
+//    // 利用四元数反解欧拉角
+//    QEKF_INS.Yaw = atan2f(2.0f * (QEKF_INS.q[0] * QEKF_INS.q[3] + QEKF_INS.q[1] * QEKF_INS.q[2]), 2.0f * (QEKF_INS.q[0] * QEKF_INS.q[0] + QEKF_INS.q[1] * QEKF_INS.q[1]) - 1.0f) * 57.295779513f;
+//    QEKF_INS.Pitch = atan2f(2.0f * (QEKF_INS.q[0] * QEKF_INS.q[1] + QEKF_INS.q[2] * QEKF_INS.q[3]), 2.0f * (QEKF_INS.q[0] * QEKF_INS.q[0] + QEKF_INS.q[3] * QEKF_INS.q[3]) - 1.0f) * 57.295779513f;
+//    QEKF_INS.Roll = asinf(-2.0f * (QEKF_INS.q[1] * QEKF_INS.q[3] - QEKF_INS.q[0] * QEKF_INS.q[2])) * 57.295779513f;
+//
+//
+//    // get Yaw total, yaw数据可能会超过360,处理一下方便其他功能使用(如小陀螺)
+//    if (QEKF_INS.Yaw - QEKF_INS.YawAngleLast > 180.0f)
+//    {
+//        QEKF_INS.YawRoundCount--;
+//    }
+//    else if (QEKF_INS.Yaw - QEKF_INS.YawAngleLast < -180.0f)
+//    {
+//        QEKF_INS.YawRoundCount++;
+//    }
 
     // 利用四元数反解欧拉角
-    QEKF_INS.Yaw = atan2f(2.0f * (QEKF_INS.q[0] * QEKF_INS.q[3] + QEKF_INS.q[1] * QEKF_INS.q[2]), 2.0f * (QEKF_INS.q[0] * QEKF_INS.q[0] + QEKF_INS.q[1] * QEKF_INS.q[1]) - 1.0f) * 57.295779513f;
-    QEKF_INS.Pitch = atan2f(2.0f * (QEKF_INS.q[0] * QEKF_INS.q[1] + QEKF_INS.q[2] * QEKF_INS.q[3]), 2.0f * (QEKF_INS.q[0] * QEKF_INS.q[0] + QEKF_INS.q[3] * QEKF_INS.q[3]) - 1.0f) * 57.295779513f;
-    QEKF_INS.Roll = asinf(-2.0f * (QEKF_INS.q[1] * QEKF_INS.q[3] - QEKF_INS.q[0] * QEKF_INS.q[2])) * 57.295779513f;
+       QEKF_INS.Yaw = atan2f(2.0f * (QEKF_INS.q[0] * QEKF_INS.q[3] + QEKF_INS.q[1] * QEKF_INS.q[2]), 2.0f * (QEKF_INS.q[0] * QEKF_INS.q[0] + QEKF_INS.q[1] * QEKF_INS.q[1]) - 1.0f);
+       QEKF_INS.Pitch = atan2f(2.0f * (QEKF_INS.q[0] * QEKF_INS.q[1] + QEKF_INS.q[2] * QEKF_INS.q[3]), 2.0f * (QEKF_INS.q[0] * QEKF_INS.q[0] + QEKF_INS.q[3] * QEKF_INS.q[3]) - 1.0f);
+       QEKF_INS.Roll = asinf(-2.0f * (QEKF_INS.q[1] * QEKF_INS.q[3] - QEKF_INS.q[0] * QEKF_INS.q[2]));
 
-    // get Yaw total, yaw数据可能会超过360,处理一下方便其他功能使用(如小陀螺)
-    if (QEKF_INS.Yaw - QEKF_INS.YawAngleLast > 180.0f)
-    {
-        QEKF_INS.YawRoundCount--;
-    }
-    else if (QEKF_INS.Yaw - QEKF_INS.YawAngleLast < -180.0f)
-    {
-        QEKF_INS.YawRoundCount++;
-    }
+
+       // get Yaw total, yaw数据可能会超过360,处理一下方便其他功能使用(如小陀螺)
+       if (QEKF_INS.Yaw - QEKF_INS.YawAngleLast > 3.1415926f)
+       {
+           QEKF_INS.YawRoundCount--;
+       }
+       else if (QEKF_INS.Yaw - QEKF_INS.YawAngleLast < -3.1415926f)
+       {
+           QEKF_INS.YawRoundCount++;
+       }
+
     QEKF_INS.YawTotalAngle = 360.0f * QEKF_INS.YawRoundCount + QEKF_INS.Yaw;
     QEKF_INS.YawAngleLast = QEKF_INS.Yaw;
     QEKF_INS.UpdateCount++; // 初始化低通滤波用,计数测试用
@@ -237,7 +301,7 @@ static void IMU_QuaternionEKF_F_Linearization_P_Fading(KalmanFilter_t *kf)
 
     // quaternion normalize
     qInvNorm = invSqrt(q0 * q0 + q1 * q1 + q2 * q2 + q3 * q3);
-    for (uint8_t i = 0; i < 4; i++)
+    for (uint8_t i = 0; i < 4; ++i)
     {
         kf->xhatminus_data[i] *= qInvNorm;
     }
@@ -351,7 +415,7 @@ static void IMU_QuaternionEKF_xhatUpdate(KalmanFilter_t *kf)
     kf->temp_vector_data[2] = q0 * q0 - q1 * q1 - q2 * q2 + q3 * q3; // temp_vector = h(xhat'(k))
 
     // 计算预测值和各个轴的方向余弦
-    for (uint8_t i = 0; i < 3; i++)
+    for (uint8_t i = 0; i < 3; ++i)
     {
         QEKF_INS.OrientationCosine[i] = acosf(fabsf(kf->temp_vector_data[i]));
     }
@@ -425,13 +489,13 @@ static void IMU_QuaternionEKF_xhatUpdate(KalmanFilter_t *kf)
     kf->MatStatus = Matrix_Multiply(&kf->temp_matrix, &kf->temp_matrix1, &kf->K);
 
     // implement adaptive
-    for (uint8_t i = 0; i < kf->K.numRows * kf->K.numCols; i++)
+    for (uint8_t i = 0; i < kf->K.numRows * kf->K.numCols; ++i)
     {
         kf->K_data[i] *= QEKF_INS.AdaptiveGainScale;
     }
-    for (uint8_t i = 4; i < 6; i++)
+    for (uint8_t i = 4; i < 6; ++i)
     {
-        for (uint8_t j = 0; j < 3; j++)
+        for (uint8_t j = 0; j < 3; ++j)
         {
             kf->K_data[i * 3 + j] *= QEKF_INS.OrientationCosine[i - 4] / 1.5707963f; // 1 rad
         }
@@ -441,10 +505,13 @@ static void IMU_QuaternionEKF_xhatUpdate(KalmanFilter_t *kf)
     kf->temp_vector.numCols = 1;
     kf->MatStatus = Matrix_Multiply(&kf->K, &kf->temp_vector1, &kf->temp_vector); // temp_vector = K(k)·(z(k) - H·xhat'(k))
 
+    // 修正yaw轴数据
+    kf->temp_vector.pData[3] = 0;
+
     // 零漂修正限幅,一般不会有过大的漂移
     if (QEKF_INS.ConvergeFlag)
     {
-        for (uint8_t i = 4; i < 6; i++)
+        for (uint8_t i = 4; i < 6; ++i)
         {
             if (kf->temp_vector.pData[i] > 1e-2f * QEKF_INS.dt)
             {
@@ -457,8 +524,8 @@ static void IMU_QuaternionEKF_xhatUpdate(KalmanFilter_t *kf)
         }
     }
 
-    // 不修正yaw轴数据
-    kf->temp_vector.pData[3] = 0;
+//    // 不修正yaw轴数据
+//    kf->temp_vector.pData[3] = 0;
     kf->MatStatus = Matrix_Add(&kf->xhatminus, &kf->temp_vector, &kf->xhat);
 }
 

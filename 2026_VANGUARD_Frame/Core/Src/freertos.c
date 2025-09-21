@@ -28,7 +28,6 @@
 #include "buzzer.h"
 #include "ws2812.h"
 
-#include "bmi088.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -125,10 +124,15 @@ void StartDefaultTask(void *argument)
   for(;;)
   {
 		beat++;
-		if((beat % 30000) == 0)
+		if((beat % 120000) == 0)
 		{
-			Buzzer_Play(Warming_sound);
+			Buzzer_Play(Super_Mario_sound);
 		}
+		else if((beat % 30000) == 0)
+		{
+			Buzzer_Play(Heartbeat_sound);
+		}
+		
     osDelay(1);
   }
   /* USER CODE END StartDefaultTask */

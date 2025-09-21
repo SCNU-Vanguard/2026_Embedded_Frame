@@ -20,6 +20,8 @@
 #include "INS_task.h"
 #include "INS.h"
 
+#include "bsp_dwt.h"
+
 #include "message_center.h"
 
 #define INS_TASK_PERIOD 1 // ms
@@ -48,11 +50,18 @@ uint32_t INS_task_diff;
 
 static void INS_Task( void *argument )
 {
+    INS_Init();
+    
+    static uint32_t INS_dwt_count = 0;
+    float ins_dt = 0.0f;
+
     uint32_t time = osKernelGetTickCount( );
 
     for( ; ; )
     {
-				INS_Data_Update(); 
+        ins_dt = DWT_GetDeltaT(&INS_dwt_count);
+
+        INS_Calculate(ins_dt);
 			
         INS_task_diff = osKernelGetTickCount( ) - time;
         time = osKernelGetTickCount( );

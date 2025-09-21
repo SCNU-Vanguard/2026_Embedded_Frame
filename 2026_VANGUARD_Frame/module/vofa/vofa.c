@@ -3,8 +3,10 @@
  * @brief	    vofa+发送数据（调参）
  * @history
  * 	版本			作者			编写日期			内容
- * 	v1.0		冯俊玮		2024/9/10		向上位机vofa+发送数据
- *  v1.1		GUATAI	    2025/8/12		邪恶bsp归一化
+ * 	v1.0		冯俊玮		 2024/9/10		 向上位机vofa+发送数据
+ *  v1.1		GUATAI	    2025/8/12	    邪恶bsp归一化
+ *  v1.2        GUATAI      2025/9/14       修复发送浮点数组bug
+ *  v1.3        GUATAI      2025/9/21       把简单的vofa函数变得复杂，功能不变让其晦涩难懂，当一个实在的cs
  */
 
 #include <stdlib.h>
@@ -17,6 +19,8 @@
 
 #define MAX_BUFFER_SIZE 128
 
+#define VOFA_USART_HANDLE &huart7
+
 uint8_t send_buf[MAX_BUFFER_SIZE];
 uint16_t cnt = 0;
 
@@ -24,11 +28,11 @@ USART_instance_t *vofa_usart_instance;
 
 float vofa_data_view[20] = {0};
 
-void VOFA_Register(UART_HandleTypeDef *vofa_usart_handle)
+void VOFA_Register(void)
 {
 	usart_init_config_t config;
 	config.module_callback = NULL; // 该模块不需要接收数据
-	config.usart_handle    = vofa_usart_handle;
+	config.usart_handle    = VOFA_USART_HANDLE;
 	config.recv_buff_size  = 1;
 
 	vofa_usart_instance = USART_Register(&config);
@@ -45,7 +49,6 @@ void VOFA_Register(UART_HandleTypeDef *vofa_usart_handle)
 void VOFA_Transmit(uint8_t *buf, uint16_t len,usart_transfer_e mode)
 {
 	USART_Send(vofa_usart_instance, buf, len, mode);
-	// HAL_UART_Transmit(&huart7, buf, len, 0xff);
 }
 
 // 按printf格式写，最后必须加\r\n

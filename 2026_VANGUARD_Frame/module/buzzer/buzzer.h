@@ -64,6 +64,8 @@ extern const char Init_sound[];
 extern const char Err_sound[];
 extern const char Ready_sound[];
 extern const char Warming_sound[];
+extern const char Heartbeat_sound[];
+extern const char Super_Mario_sound[];
 
 void Buzzer_Register(void);
 

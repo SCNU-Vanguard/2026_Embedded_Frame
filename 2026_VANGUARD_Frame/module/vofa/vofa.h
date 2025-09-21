@@ -14,7 +14,7 @@
 
 extern float vofa_data_view[20];
 
-extern void VOFA_Register(UART_HandleTypeDef *vofa_usart_handle);
+extern void VOFA_Register(void);
 extern void VOFA_Send_Data(float *buf, uint8_t len);
 extern void VOFA_FireWater(const char *format, ...);
 extern void VOFA_JustFloat(float *_data, uint8_t _num);

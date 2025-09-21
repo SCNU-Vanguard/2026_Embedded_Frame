@@ -2675,13 +2675,13 @@ Section Cross References
     bmi088.o(.text.BMI088_Temp_Control) refers to pid.o(.text.PID_Calculate) for PID_Calculate
     bmi088.o(.text.BMI088_Temp_Control) refers to bsp_pwm.o(.text.PWM_Set_DutyRatio) for PWM_Set_DutyRatio
     bmi088.o(.ARM.exidx.text.BMI088_Temp_Control) refers to bmi088.o(.text.BMI088_Temp_Control) for [Anonymous Symbol]
-    bmi088.o(.text.BMI088_Acquire) refers to bmi088.o(.bss..L_MergedGlobals) for .L_MergedGlobals
-    bmi088.o(.text.BMI088_Acquire) refers to bsp_spi.o(.text.SPI_Transmit_Receive) for SPI_Transmit_Receive
-    bmi088.o(.text.BMI088_Acquire) refers to bmi088.o(.data.BMI088_Gyro_Read.tx) for BMI088_Gyro_Read.tx
-    bmi088.o(.ARM.exidx.text.BMI088_Acquire) refers to bmi088.o(.text.BMI088_Acquire) for [Anonymous Symbol]
+    bmi088.o(.text.BMI088_Read_All) refers to bmi088.o(.bss..L_MergedGlobals) for .L_MergedGlobals
+    bmi088.o(.text.BMI088_Read_All) refers to bsp_spi.o(.text.SPI_Transmit_Receive) for SPI_Transmit_Receive
+    bmi088.o(.text.BMI088_Read_All) refers to bmi088.o(.data.BMI088_Gyro_Read.tx) for BMI088_Gyro_Read.tx
+    bmi088.o(.ARM.exidx.text.BMI088_Read_All) refers to bmi088.o(.text.BMI088_Read_All) for [Anonymous Symbol]
     bmi088.o(.ARM.exidx.text.BMI088_Acquire_IT_Status) refers to bmi088.o(.text.BMI088_Acquire_IT_Status) for [Anonymous Symbol]
     bmi088.o(.text.BMI088_Calibrate_IMU) refers to bmi088.o(.bss.BMI088_Calibrate_IMU.cali_time_count) for BMI088_Calibrate_IMU.cali_time_count
-    bmi088.o(.text.BMI088_Calibrate_IMU) refers to bmi088.o(.text.BMI088_Acquire) for BMI088_Acquire
+    bmi088.o(.text.BMI088_Calibrate_IMU) refers to bmi088.o(.text.BMI088_Read_All) for BMI088_Read_All
     bmi088.o(.text.BMI088_Calibrate_IMU) refers to bsp_dwt.o(.text.DWT_Delay) for DWT_Delay
     bmi088.o(.text.BMI088_Calibrate_IMU) refers to buzzer.o(.text.Buzzer_One_Note) for Buzzer_One_Note
     bmi088.o(.ARM.exidx.text.BMI088_Calibrate_IMU) refers to bmi088.o(.text.BMI088_Calibrate_IMU) for [Anonymous Symbol]
@@ -5070,8 +5070,8 @@ Removing Unused input sections from the image.
     Removing bmi088.o(.text), (0 bytes).
     Removing bmi088.o(.text.BMI088_Temp_Control), (208 bytes).
     Removing bmi088.o(.ARM.exidx.text.BMI088_Temp_Control), (8 bytes).
-    Removing bmi088.o(.text.BMI088_Acquire), (410 bytes).
-    Removing bmi088.o(.ARM.exidx.text.BMI088_Acquire), (8 bytes).
+    Removing bmi088.o(.text.BMI088_Read_All), (410 bytes).
+    Removing bmi088.o(.ARM.exidx.text.BMI088_Read_All), (8 bytes).
     Removing bmi088.o(.text.BMI088_Acquire_IT_Status), (32 bytes).
     Removing bmi088.o(.ARM.exidx.text.BMI088_Acquire_IT_Status), (8 bytes).
     Removing bmi088.o(.text.BMI088_Calibrate_IMU), (260 bytes).

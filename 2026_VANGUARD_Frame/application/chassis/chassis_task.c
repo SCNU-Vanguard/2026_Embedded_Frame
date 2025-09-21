@@ -76,6 +76,20 @@ static void Chassis_Task( void *argument )
 
 	for( ; ; )
 	{
+/******************************底盘测试达妙收发代码*****************************/
+
+		// static uint32_t chassis_cnt = 0;
+		// chassis_cnt++;
+		// if((chassis_cnt % 1500) == 0) // 100Hz
+		// {
+		// 	DM_Motor_ENABLE(NULL);
+		// }
+		// else if((chassis_cnt % 1000) == 0)
+		// {
+		// 	DM_Motor_DISABLE(NULL);
+		// }
+
+/******************************底盘测试达妙收发代码*****************************/
 		// 更新状态量
 		Chassis_Observer();
 		// 处理异常
