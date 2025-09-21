@@ -14,14 +14,14 @@
 
 #include <stdint.h>
 
-typedef struct 
+typedef struct
 {
-    /* data */
-}__attribute__((packed))shoot_behaviour_t;
+	/* data */
+}__attribute__((packed)) shoot_behaviour_t;
 
 typedef struct
 {
-    /* data */
-}__attribute__((packed))shoot_cmd_t;    
+	/* data */
+}__attribute__((packed)) shoot_cmd_t;
 
 #endif /* __SHOOT_H__ */

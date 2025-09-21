@@ -14,14 +14,14 @@
 
 #include <stdint.h>
 
-typedef struct 
+typedef struct
 {
-    /* data */
-}__attribute__((packed))gimbal_behaviour_t;
+	/* data */
+}__attribute__((packed)) gimbal_behaviour_t;
 
 typedef struct
 {
-    /* data */
-}__attribute__((packed))gimbal_cmd_t;    
+	/* data */
+}__attribute__((packed)) gimbal_cmd_t;
 
 #endif /* __GIMBAL_H__ */

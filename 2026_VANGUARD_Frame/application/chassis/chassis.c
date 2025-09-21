@@ -270,8 +270,8 @@ void Chassis_Init(void)
 	DM_right_back_motor_instance  = DM_Motor_Init(&DM_right_back_motor_init);
 	DM_left_front_motor_instance  = DM_Motor_Init(&DM_left_front_motor_init);
 	DM_left_back_motor_instance   = DM_Motor_Init(&DM_left_back_motor_init);
-	DJI_right_motor_instance     = DJI_Motor_Init(&DJI_right_motor_init);
-	DJI_left_motor_instance      = DJI_Motor_Init(&DJI_left_motor_init);
+	DJI_right_motor_instance      = DJI_Motor_Init(&DJI_right_motor_init);
+	DJI_left_motor_instance       = DJI_Motor_Init(&DJI_left_motor_init);
 }
 
 /******************************DJI电机底盘初始化实例*****************************/

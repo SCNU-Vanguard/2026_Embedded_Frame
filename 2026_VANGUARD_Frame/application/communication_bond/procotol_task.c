@@ -29,35 +29,34 @@ osThreadId_t procotol_task_handel;
 static publisher_t *procotol_publisher;
 static subscriber_t *procotol_subscriber;
 
-static void Procotol_Task( void *argument );
+static void Procotol_Task(void *argument);
 
-void Procotol_Task_Init( void )
+void Procotol_Task_Init(void)
 {
     const osThreadAttr_t attr = {
-            .name = "Procotol_Task",
-            .stack_size = 128 * 8,
-            .priority = ( osPriority_t )osPriorityRealtime4,
+        .name = "Procotol_Task",
+        .stack_size = 128 * 8,
+        .priority = (osPriority_t) osPriorityRealtime4,
     };
-    procotol_task_handel = osThreadNew( Procotol_Task, NULL, &attr );
+    procotol_task_handel = osThreadNew(Procotol_Task, NULL, &attr);
 
-    procotol_publisher = Publisher_Register("procotol_transmit_feed", 0);
+    procotol_publisher  = Publisher_Register("procotol_transmit_feed", 0);
     procotol_subscriber = Subscriber_Register("procotol_receive_cmd", 0);
 }
 
 uint32_t procotol_task_diff;
 
-static void Procotol_Task( void *argument )
+static void Procotol_Task(void *argument)
 {
     uint32_t time = osKernelGetTickCount( );
 
-    for( ; ; )
+    for (; ;)
     {
-        VOFA_Display_IMU();
-        RC_Receive_Control();
+        VOFA_Display_IMU( );
+        RC_Receive_Control( );
 
         procotol_task_diff = osKernelGetTickCount( ) - time;
-        time = osKernelGetTickCount( );
-        osDelayUntil( time + PROCOTOL_TASK_PERIOD );
+        time               = osKernelGetTickCount( );
+        osDelayUntil(time + PROCOTOL_TASK_PERIOD);
     }
 }
-

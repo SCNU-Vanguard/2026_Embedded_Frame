@@ -9,22 +9,23 @@
  *
  */
 
-#ifndef __PROCOTOL_H__ 
+#ifndef __PROCOTOL_H__
 #define __PROCOTOL_H__
 
 #include <stdint.h>
 
 typedef struct
 {
-    /* data */
-}__attribute__((packed))procotol_behaviour_t;
+	/* data */
+}__attribute__((packed)) procotol_behaviour_t;
 
 typedef struct
 {
-    /* data */
-}__attribute__((packed))procotol_cmd_t;
+	/* data */
+}__attribute__((packed)) procotol_cmd_t;
 
 void VOFA_Display_IMU(void);
+
 void RC_Receive_Control(void);
 
 #endif /* __PROCOTOL_H__ */

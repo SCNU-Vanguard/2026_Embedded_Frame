@@ -14,15 +14,15 @@
 
 #include <stdint.h>
 
-typedef struct 
+typedef struct
 {
-    /* data */
-}__attribute__((packed))chassis_behaviour_t;
+	/* data */
+}__attribute__((packed)) chassis_behaviour_t;
 
 typedef struct
 {
-    /* data */
-}__attribute__((packed))chassis_cmd_t;
+	/* data */
+}__attribute__((packed)) chassis_cmd_t;
 
 extern void Chassis_Init(void);
 

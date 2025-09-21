@@ -9,8 +9,8 @@
  *
  */
 
-#ifndef __PROCOTOL_TASK_H__ 
-#define __PROCOTOL_TASK_H__ 
+#ifndef __PROCOTOL_TASK_H__
+#define __PROCOTOL_TASK_H__
 
 #include <stdint.h>
 
