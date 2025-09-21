@@ -26,6 +26,23 @@
 
 #define CHASSIS_TASK_PERIOD 1 // ms
 
+#if INCLUDE_uxTaskGetStackHighWaterMark
+uint32_t chassis_high_water;
+#endif
+
+#ifndef __weak
+#define __weak __attribute__((weak))
+#endif /* __weak */
+
+__weak void Chassis_Publish(void);
+__weak void Chassis_Init(void);
+__weak void Chassis_Handle_Exception(void);
+__weak void Chassis_Set_Mode(void);
+__weak void Chassis_Observer(void);
+__weak void Chassis_Reference(void);
+__weak void Chassis_Console(void);
+__weak void Chassis_Send_Cmd(void);
+
 osThreadId_t robot_cmd_task_handel;
 
 static publisher_t *chassis_publisher;
@@ -51,13 +68,82 @@ uint32_t chassis_task_diff;
 
 static void Chassis_Task( void *argument )
 {
+	Chassis_Publish();
+
 	uint32_t time = osKernelGetTickCount( );
+
+	osDelay( 2 );
 
 	for( ; ; )
 	{
-		
+		// 更新状态量
+		Chassis_Observer();
+		// 处理异常
+		Chassis_Handle_Exception();
+		// 设置底盘模式
+		Chassis_Set_Mode();
+		// 更新目标量
+		Chassis_Reference();
+		// 计算控制量
+		Chassis_Console();
+		// 发送控制量
+		Chassis_Send_Cmd();
+
 		chassis_task_diff = osKernelGetTickCount( ) - time;
 		time = osKernelGetTickCount( );
 		osDelayUntil( time + CHASSIS_TASK_PERIOD );
+
+#if INCLUDE_uxTaskGetStackHighWaterMark
+		chassis_high_water = uxTaskGetStackHighWaterMark(NULL);
+#endif
 	}
+}
+
+__weak void Chassis_Publish(void)
+{
+	/*
+	 NOTE : 在其他文件中定义具体内容
+	*/
+}
+__weak void Chassis_Init(void)
+{
+	/*
+	 NOTE : 在其他文件中定义具体内容
+	*/
+}
+__weak void Chassis_Handle_Exception(void)
+{
+	/*
+	 NOTE : 在其他文件中定义具体内容
+	*/
+}
+__weak void Chassis_Set_Mode(void)
+{
+	/*
+	 NOTE : 在其他文件中定义具体内容
+	*/
+}
+__weak void Chassis_Observer(void)
+{
+	/*
+	 NOTE : 在其他文件中定义具体内容
+	*/
+}
+__weak void Chassis_Reference(void)
+{
+	/*
+	 NOTE : 在其他文件中定义具体内容
+	*/
+}
+__weak void Chassis_Console(void)
+{
+	/*
+	 NOTE : 在其他文件中定义具体内容
+	*/
+}
+__weak void Chassis_Send_Cmd(void)
+{
+	/*
+	 NOTE : 在其他文件中定义具体内容
+	*/
 }

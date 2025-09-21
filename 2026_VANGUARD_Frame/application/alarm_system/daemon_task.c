@@ -62,6 +62,8 @@ static void Daemon_Task( void *argument )
     }
 }
 
+/******************************蜂鸣器任务虚定义*****************************/
+
 osThreadId_t Buzzer_Handle;
 
 void Buzzer_Task(void *argument);
@@ -93,3 +95,5 @@ __weak void Buzzer_Task(void *argument)
   }
   /* USER CODE END _BuzzerTask */
 }
+
+/******************************蜂鸣器任务虚定义*****************************/

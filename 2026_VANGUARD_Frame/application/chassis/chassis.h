@@ -24,6 +24,6 @@ typedef struct
     /* data */
 }__attribute__((packed))chassis_cmd_t;
 
-void Chassis_Init(void);
+extern void Chassis_Init(void);
 
 #endif /* __CHASSIS_H__ */
