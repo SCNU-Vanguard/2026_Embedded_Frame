@@ -58,6 +58,7 @@
 extern FDCAN_HandleTypeDef hfdcan1;
 extern FDCAN_HandleTypeDef hfdcan2;
 extern FDCAN_HandleTypeDef hfdcan3;
+extern RNG_HandleTypeDef hrng;
 extern DMA_HandleTypeDef hdma_spi2_rx;
 extern DMA_HandleTypeDef hdma_spi2_tx;
 extern SPI_HandleTypeDef hspi2;
@@ -382,6 +383,20 @@ void TIM7_IRQHandler(void)
   /* USER CODE BEGIN TIM7_IRQn 1 */
 
   /* USER CODE END TIM7_IRQn 1 */
+}
+
+/**
+  * @brief This function handles RNG global interrupt.
+  */
+void RNG_IRQHandler(void)
+{
+  /* USER CODE BEGIN RNG_IRQn 0 */
+
+  /* USER CODE END RNG_IRQn 0 */
+  HAL_RNG_IRQHandler(&hrng);
+  /* USER CODE BEGIN RNG_IRQn 1 */
+
+  /* USER CODE END RNG_IRQn 1 */
 }
 
 /**

@@ -20,7 +20,6 @@
 
 // 用于遥控器数据读取,遥控器数据是一个大小为2的数组
 #define BUFF_RC_RECEIVE_SIZE 25
-#define BUFF_RC_WFLY_SIZE 52
 #define WFLY_SBUS_HEAD 0X0F
 #define WFLY_SBUS_END 0X00
 #define WFLY_RC_OFFSET 1024
@@ -65,10 +64,6 @@ typedef struct
 	} toggle;
 } wfly_t;
 
-extern uint8_t wfly_buff[BUFF_RC_WFLY_SIZE];
-extern wfly_t wfly_instance;
-
-extern void WFLY_SBUS_Register(void);
-// extern void wfly_to_rc(wfly_t *remoter, uint8_t *buf);
+extern wfly_t *WFLY_SBUS_Register(void);
 
 #endif /*__WFLY_CONTROL_H__*/

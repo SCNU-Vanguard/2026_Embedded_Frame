@@ -69,7 +69,7 @@ extern const char Super_Mario_sound[];
 
 void Buzzer_Register(void);
 
-void Buzzer_Play(const char *sound);
+void Buzzer_Play(const char *sound, uint8_t mode);
 
 void Buzzer_Stop(void);
 

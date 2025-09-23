@@ -43,9 +43,15 @@
 
 float init_time;
 
+wfly_t *rc_data;
+
 static void Frame_MCU_Init(void)
 {
+	__disable_irq( );
+
 	DWT_Init(480);
+
+	__enable_irq( );
 }
 
 static void Frame_Device_Init(void)
@@ -58,9 +64,9 @@ static void Frame_Device_Init(void)
 	bmi088_h7 = BMI088_Register(&bmi088_init_h7);
 	// BMI088_Init(&hspi2,0);
 
+	rc_data = WFLY_SBUS_Register( );
+	
 	VOFA_Register( );
-
-	WFLY_SBUS_Register( );
 
 	/******************************module模块初始化*****************************/
 

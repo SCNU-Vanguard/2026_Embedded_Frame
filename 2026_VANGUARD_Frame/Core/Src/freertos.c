@@ -25,9 +25,14 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+/******************************这里是塞💩的地方，请随便塞💩*****************************/
+#include "rng.h"
+#include "robot_frame_init.h"
 #include "buzzer.h"
 #include "ws2812.h"
+#include "wfly_control.h"
 
+/******************************这里是塞💩的地方，请随便塞💩*****************************/
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -112,26 +117,59 @@ void MX_FREERTOS_Init(void) {
   * @param  argument: Not used
   * @retval None
   */
+/******************************这里是塞💩的地方，请随便塞💩*****************************/ 
+extern wfly_t *rc_data;
 uint32_t beat = 0;
 /* USER CODE END Header_StartDefaultTask */
 void StartDefaultTask(void *argument)
 {
   /* USER CODE BEGIN StartDefaultTask */
 	WS2812_Control(ws2812_instance, GREEN_WS2812_COLOR);
-	Buzzer_Play(StartUP_sound);
-	
+	Buzzer_Play(StartUP_sound, 0);
+	osDelay(1500);
   /* Infinite loop */
   for(;;)
   {
+    static uint8_t music_lock = 0;
+    if(rc_data->online == 0)
+    {
+        if(music_lock == 0)
+        {
+            Buzzer_Play(No_RC_sound, 0);
+            music_lock = 1;
+        }
+    }
+    else if(rc_data->online == 1)
+    {
+        if(music_lock == 1)
+        {
+            Buzzer_Play(Yes_RC_sound, 0);
+            music_lock = 0;
+        }
+    }
+
 		beat++;
 		if((beat % 120000) == 0)
 		{
-			Buzzer_Play(Super_Mario_sound);
+			Buzzer_Play(Super_Mario_sound, 0);
 		}
 		else if((beat % 30000) == 0)
 		{
-			Buzzer_Play(Heartbeat_sound);
+			Buzzer_Play(Heartbeat_sound, 0);
 		}
+		else if((beat % 55555) == 0)
+		{
+			Buzzer_Play(Call_Airsupport_sound, 0);
+		}
+		
+//有💩		
+//    uint32_t rand_data = 0;
+//    HAL_RNG_GenerateRandomNumber(&hrng, (uint32_t*)&rand_data);
+//	
+//		if(rand_data == 0xFFFFFFFF)
+//		{
+//			Buzzer_Play(Call_Airsupport_sound, 0);
+//		}
 		
     osDelay(1);
   }
@@ -140,6 +178,6 @@ void StartDefaultTask(void *argument)
 
 /* Private application code --------------------------------------------------*/
 /* USER CODE BEGIN Application */
-
+/******************************这里是塞💩的地方，请随便塞💩*****************************/
 /* USER CODE END Application */
 
