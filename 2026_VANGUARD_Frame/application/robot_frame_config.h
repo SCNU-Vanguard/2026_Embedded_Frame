@@ -20,4 +20,24 @@
 
 #define BMI088_Frame 1
 
+// 可用底盘硬件类型
+#define CHASSIS_NONE            0  // 无底盘
+#define CHASSIS_MECANUM_WHEEL   1  // 麦克纳姆轮底盘
+#define CHASSIS_OMNI_WHEEL      2  // 全向轮底盘
+#define CHASSIS_STEERING_WHEEL  3  // 舵轮底盘
+#define CHASSIS_BALANCE         4  // 平衡底盘
+
+// 可用云台硬件类型
+#define GIMBAL_NONE                0  // 无云台
+#define GIMBAL_YAW_PITCH_DIRECT    1  // yaw-pitch电机直连云台
+
+// 可用的发射机构硬件类型
+#define SHOOT_NONE               0  // 无发射机构
+#define SHOOT_FRIC_TRIGGER       1  // 摩擦轮+拨弹盘发射机构
+
+#define CHASSIS_TYPE CHASSIS_BALANCE             // 选择底盘类型
+#define GIMBAL_TYPE GIMBAL_NONE                  // 选择云台类型
+#define SHOOT_TYPE SHOOT_NONE                    // 选择发射机构类型
+#define CONTROL_TYPE CHASSIS_AND_GIMBAL          // 选择控制类型
+
 #endif /* __ROBOT_FRAME_CONFIG_H__ */

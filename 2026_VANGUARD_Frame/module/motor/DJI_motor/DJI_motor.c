@@ -154,41 +154,41 @@ static void Decode_DJI_Motor(CAN_instance_t *_instance)
 	// _instance指针指向的id是对应电机instance的地址,通过强制转换为电机instance的指针,再通过->运算符访问电机的成员motor_measure,最后取地址获得指针
 	uint8_t *rxbuff               = _instance->rx_buff;
 	DJI_motor_instance_t *motor   = (DJI_motor_instance_t *) _instance->id;
-	DJI_motor_callback_t *measure = &motor->measure; // measure要多次使用,保存指针减小访存开销
+	DJI_motor_callback_t *receive_data = &motor->receive_data; // measure要多次使用,保存指针减小访存开销
 
 	Supervisor_Reload(motor->supervisor);
 	motor->dt = DWT_GetDeltaT(&motor->feed_cnt);
 
 	// 解析数据并对电流和速度进行滤波,电机的反馈报文具体格式见电机说明手册
-	measure->last_ecd = measure->ecd;
-	measure->ecd      = ((uint16_t) rxbuff[0]) << 8 | rxbuff[1];
-	measure->ecd      = ((measure->ecd >= measure->offset_ecd) ? (measure->ecd - measure->offset_ecd) : (measure->ecd + 8191 - measure->offset_ecd));
+	receive_data->last_ecd = receive_data->ecd;
+	receive_data->ecd      = ((uint16_t) rxbuff[0]) << 8 | rxbuff[1];
+	receive_data->ecd      = ((receive_data->ecd >= receive_data->offset_ecd) ? (receive_data->ecd - receive_data->offset_ecd) : (receive_data->ecd + 8191 - receive_data->offset_ecd));
 
-	measure->angle_single_round = ECD_ANGLE_COEF_DJI * (float) measure->ecd;
-	measure->speed_aps          = (1.0f - SPEED_SMOOTH_COEF) * measure->speed_aps +
+	receive_data->angle_single_round = ECD_ANGLE_COEF_DJI * (float) receive_data->ecd;
+	receive_data->speed_aps          = (1.0f - SPEED_SMOOTH_COEF) * receive_data->speed_aps +
 	                              RPM_2_ANGLE_PER_SEC * SPEED_SMOOTH_COEF * (float) ((int16_t)(rxbuff[2] << 8 | rxbuff[3]));
-	measure->real_current = (1.0f - CURRENT_SMOOTH_COEF) * measure->real_current +
+	receive_data->real_current = (1.0f - CURRENT_SMOOTH_COEF) * receive_data->real_current +
 	                        CURRENT_SMOOTH_COEF * (float) ((int16_t)(rxbuff[4] << 8 | rxbuff[5]));
-	measure->temperature = rxbuff[6];
+	receive_data->temperature = rxbuff[6];
 
-	int16_t err = measure->ecd - measure->last_ecd;
+	int16_t err = receive_data->ecd - receive_data->last_ecd;
 
 	if (err > 4096)
 	{
-		measure->total_round--;
-		measure->total_ecd += -8192 + err;
+		receive_data->total_round--;
+		receive_data->total_ecd += -8192 + err;
 	}
 	else if (err < -4096)
 	{
-		measure->total_round++;
-		measure->total_ecd += 8192 + err;
+		receive_data->total_round++;
+		receive_data->total_ecd += 8192 + err;
 	}
 	else
 	{
-		measure->total_ecd += err;
+		receive_data->total_ecd += err;
 	}
-	measure->total_angle = measure->total_round * 360 + measure->angle_single_round;
-	measure->total_rad   = (measure->total_ecd / 8192.0f) * 2 * PI;
+	receive_data->total_angle = receive_data->total_round * 360 + receive_data->angle_single_round;
+	receive_data->total_rad   = (receive_data->total_ecd / 8192.0f) * 2 * PI;
 
 	DJI_Motor_Error_Detection(motor);
 }
@@ -302,16 +302,16 @@ float DJI_Motor_GetVal(DJI_motor_instance_t *motor,
 		//原始数据
 		if (type == ORIGIN)
 		{
-			val = motor->measure.ecd;				//机械角度0~8191
+			val = motor->receive_data.ecd;				//机械角度0~8191
 		}
 		//弧度制数据
 		if (type == RAD)
 		{
-			val = (((float) motor->measure.ecd / 8192.0f) * 2 * PI);//弧度0~2PI
+			val = (((float) motor->receive_data.ecd / 8192.0f) * 2 * PI);//弧度0~2PI
 		}
 		if (type == DEGREE)
 		{
-			val = motor->measure.ecd / 8192.0f * 360.0f;	//角度0~360°
+			val = motor->receive_data.ecd / 8192.0f * 360.0f;	//角度0~360°
 		}
 	}
 	//速度转换
@@ -320,16 +320,16 @@ float DJI_Motor_GetVal(DJI_motor_instance_t *motor,
 		//原始数据
 		if (type == ORIGIN)
 		{
-			val = motor->measure.speed;				//RPM
+			val = motor->receive_data.speed;				//RPM
 		}
 		//弧度制数据
 		if (type == RAD)
 		{
-			val = motor->measure.speed * 2 * PI / 60.0f;      	//RPM->RAD/S
+			val = motor->receive_data.speed * 2 * PI / 60.0f;      	//RPM->RAD/S
 		}
 		if (type == DEGREE)
 		{
-			val = motor->measure.speed * 360.0f / 60.0f;      	//RPM-> **°/s
+			val = motor->receive_data.speed * 360.0f / 60.0f;      	//RPM-> **°/s
 		}
 	}
 	return val;
@@ -341,8 +341,8 @@ float DJI_Motor_GetVal(DJI_motor_instance_t *motor,
  *        	对于应用,可以将电机视为传递函数为1的设备,不需要关心底层的闭环
  * @param	电机结构体指针
  * @param	目标值
- * @param   ABS->absolute target;
- *          INCR->add from perious target
+ * @param   ABS->absolute target1;
+ *          INCR->add from perious target1
  * @retval 	无
  */
 // 设置参考值
@@ -381,7 +381,7 @@ void DJI_Motor_Control(void)
 		motor            = dji_motor_instances[i];
 		motor_setting    = &motor->motor_settings;
 		motor_controller = &motor->motor_controller;
-		receive_data     = &motor->measure;
+		receive_data     = &motor->receive_data;
 		pid_ref          = motor_controller->pid_ref; // 保存设定值,防止motor_controller->pid_ref在计算过程中被修改
 		// 多环目标值是上环输出为下环输入
 
@@ -472,13 +472,13 @@ void DJI_Motor_Control(void)
 
 		/* ------------------------------handler------------------------------------*/
 		// 获取最终输出
-		motor->target.current = (int16_t) pid_ref;
+		motor->transmit_data.current = (int16_t) pid_ref;
 
 		// 分组填入发送数据
 		group                                         = motor->sender_group;
 		num                                           = motor->message_num;
-		sender_assignment[group].tx_buff[2 * num]     = (uint8_t)(motor->target.current >> 8); // 低八位
-		sender_assignment[group].tx_buff[2 * num + 1] = (uint8_t)(motor->target.current & 0x00ff); // 高八位
+		sender_assignment[group].tx_buff[2 * num]     = (uint8_t)(motor->transmit_data.current >> 8); // 低八位
+		sender_assignment[group].tx_buff[2 * num + 1] = (uint8_t)(motor->transmit_data.current & 0x00ff); // 高八位
 
 		// 若该电机处于停止状态,直接将buff置零
 		if (motor->motor_state_flag == MOTOR_DISABLE)

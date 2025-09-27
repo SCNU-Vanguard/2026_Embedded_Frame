@@ -39,6 +39,8 @@
 #include "bsp_dwt.h"
 #include "bsp_usart.h"
 
+#include "balance_chassis.h"
+
 #include "BMI088driver.h"
 
 float init_time;
@@ -59,6 +61,7 @@ static void Frame_Device_Init(void)
 	/******************************module模块初始化*****************************/
 
 	Buzzer_Register( );
+	
 	ws2812_instance = WS2812_Register(&ws2812_config);
 
 	bmi088_h7 = BMI088_Register(&bmi088_init_h7);

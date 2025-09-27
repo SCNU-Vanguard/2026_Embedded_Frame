@@ -130,7 +130,7 @@ void DM_Motor_Clear_Error(DM_motor_instance_t *motor);
 
 void DM_Motor_SetTar(DM_motor_instance_t *motor, float val);
 
-void DM_Motor_Control(void);
+void DM_Motor_Control(DM_motor_instance_t *motor);
 
 void DM_MIT_Ctrl(DM_motor_instance_t *motor,
                  float pos,

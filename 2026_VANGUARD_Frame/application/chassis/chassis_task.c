@@ -24,6 +24,8 @@
 
 #include "DM_motor.h"
 
+#include "bsp_dwt.h"
+
 #define CHASSIS_TASK_PERIOD 1 // ms
 
 #if INCLUDE_uxTaskGetStackHighWaterMark
@@ -72,6 +74,8 @@ void Chassis_Task_Init(void)
 
 uint32_t chassis_task_diff;
 
+float total_time;
+
 static void Chassis_Task(void *argument)
 {
 	Chassis_Publish( );
@@ -84,30 +88,42 @@ static void Chassis_Task(void *argument)
 	{
 		/******************************底盘测试达妙收发代码*****************************/
 
-		// static uint32_t chassis_cnt = 0;
-		// chassis_cnt++;
-		// if((chassis_cnt % 1500) == 0) // 100Hz
-		// {
-		// 	DM_Motor_ENABLE(NULL);
-		// }
-		// else if((chassis_cnt % 1000) == 0)
-		// {
-		// 	DM_Motor_DISABLE(NULL);
-		// }
+		//		static uint32_t chassis_cnt = 0;
+		//		chassis_cnt++;
+		//		if((chassis_cnt % 1500) == 0) // 100Hz
+		//		{
+		//			DM_Motor_ENABLE(NULL);
+		//		}
+		//		else if((chassis_cnt % 1000) == 0)
+		//		{
+		//			DM_Motor_DISABLE(NULL);
+		//		}
 
 		/******************************底盘测试达妙收发代码*****************************/
-		// 更新状态量
-		Chassis_Observer( );
-		// 处理异常
+
+		/******************************底盘测试运行总时长代码*****************************/
+		TIME_ELAPSE(total_time, Chassis_Observer( );
 		Chassis_Handle_Exception( );
-		// 设置底盘模式
 		Chassis_Set_Mode( );
-		// 更新目标量
 		Chassis_Reference( );
-		// 计算控制量
 		Chassis_Console( );
-		// 发送控制量
 		Chassis_Send_Cmd( );
+		)
+		;
+
+		/******************************底盘测试运行总时长代码*****************************/
+		// // 更新状态量
+		// Chassis_Observer( );
+		// // 处理异常
+		// Chassis_Handle_Exception( );
+		// // 设置底盘模式
+		// Chassis_Set_Mode( );
+		// // 更新目标量
+		// Chassis_Reference( );
+		// // 计算控制量
+		// Chassis_Console( );
+		// // 发送控制量
+		// Chassis_Send_Cmd( );
 
 		chassis_task_diff = osKernelGetTickCount( ) - time;
 		time              = osKernelGetTickCount( );

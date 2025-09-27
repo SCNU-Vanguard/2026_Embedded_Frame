@@ -26,7 +26,7 @@
  * input=(fliter(error))(t)即f_out=(input-last_input)/T+input
  * 从而f_out+pid_out=out,对时间积分(out)=output,输出output
  * &&
- * ②输出：f_out=kf*Err_now
+ * ②输出：f_out=kf*err_now
  */
 
 // PID 优化环节使能标志位,通过位与可以判断启用的优化环节;也可以改成位域的形式
@@ -81,15 +81,15 @@ typedef struct
     float derivative_LPF_RC; // 微分滤波器系数
     float derivative_gama;   // 微分先行系数
 
-    float Err_pre;
-    float Err_last;
-    float Err_now;
+    float err_pre;
+    float err_last;
+    float err_now;
 
-    float Output_Max;
+    float output_max;
     float integral_limit; // 积分限幅
 
-    float Output;
-    float Output_last;
+    float output;
+    float output_last;
 
     ramp_function_source_t *ramp_target;
 } __attribute__((__packed__)) digital_PID_t;

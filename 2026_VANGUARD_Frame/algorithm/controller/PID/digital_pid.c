@@ -72,7 +72,7 @@ float Digital_PID_Position(digital_PID_t *hpid, float val_now, float target_now)
     hpid->target = target_now;
     hpid->measure = val_now;
 
-    hpid->Err_now = hpid->target - hpid->measure;
+    hpid->err_now = hpid->target - hpid->measure;
 
     hpid->dt = DWT_GetDeltaT(&hpid->DWT_cnt);
 
@@ -81,11 +81,11 @@ float Digital_PID_Position(digital_PID_t *hpid, float val_now, float target_now)
         F_Error_Handler(hpid);
     }
 
-    if (user_abs(hpid->Err_now) > hpid->dead_band)
+    if (user_abs(hpid->err_now) > hpid->dead_band)
     {
-        hpid->p_out = hpid->Kp * hpid->Err_now;
-        hpid->i_term = hpid->Ki * hpid->Err_now;
-        hpid->d_out = hpid->Kd * (hpid->Err_now - hpid->Err_last);
+        hpid->p_out = hpid->Kp * hpid->err_now;
+        hpid->i_term = hpid->Ki * hpid->err_now;
+        hpid->d_out = hpid->Kd * (hpid->err_now - hpid->err_last);
 
         if (hpid->improve & PID_TRAPEZOID_INTEGRAL)
         {
@@ -113,25 +113,25 @@ float Digital_PID_Position(digital_PID_t *hpid, float val_now, float target_now)
         }
         hpid->i_out += hpid->i_term;
 
-        hpid->Output = hpid->p_out + hpid->i_out + hpid->d_out;
+        hpid->output = hpid->p_out + hpid->i_out + hpid->d_out;
     }
     else
     {
-        hpid->Output = 0;
+        hpid->output = 0;
         hpid->i_term = 0;
     }
 
     F_Output_Limit(hpid);
 
-    hpid->Err_pre = hpid->Err_last;
-    hpid->Err_last = hpid->Err_now;
+    hpid->err_pre = hpid->err_last;
+    hpid->err_last = hpid->err_now;
 
-    hpid->Output_last = hpid->Output;
+    hpid->output_last = hpid->output;
 
     hpid->last_measure = hpid->measure;
     hpid->last_target = hpid->target;
 
-    return hpid->Output;
+    return hpid->output;
 }
 
 /*
@@ -180,14 +180,14 @@ float Digital_PID_Incrment(digital_PID_t *hpid, float val_now, float target_now)
     }
 
     hpid->fab_p = hpid->measure;
-    hpid->Err_now = hpid->ref_p - hpid->fab_p;
+    hpid->err_now = hpid->ref_p - hpid->fab_p;
 
     hpid->dt = DWT_GetDeltaT(&hpid->DWT_cnt);
 
-    if (user_abs(hpid->Err_now) > hpid->dead_band)
+    if (user_abs(hpid->err_now) > hpid->dead_band)
     {
-        hpid->p_out = hpid->Kp * (hpid->Err_now - hpid->Err_last);
-        hpid->i_out = hpid->Ki * (hpid->Err_now);
+        hpid->p_out = hpid->Kp * (hpid->err_now - hpid->err_last);
+        hpid->i_out = hpid->Ki * (hpid->err_now);
 
 		if(hpid->improve & PID_DERIVATIVE_ON_MEASUREMENT)
 		{
@@ -195,7 +195,7 @@ float Digital_PID_Incrment(digital_PID_t *hpid, float val_now, float target_now)
 		}
 		else
 		{
-			hpid->d_out = hpid->Kd * ( hpid->Err_now - 2 * hpid->Err_last + hpid->Err_pre );
+			hpid->d_out = hpid->Kd * ( hpid->err_now - 2 * hpid->err_last + hpid->err_pre );
 		}
 
 		if(hpid->improve & PID_DERIVATIVE_FILTER)
@@ -203,20 +203,20 @@ float Digital_PID_Incrment(digital_PID_t *hpid, float val_now, float target_now)
 			F_Derivative_Filter(hpid);
 		}
 
-        hpid->Output += hpid->p_out + hpid->i_out + hpid->d_out;
+        hpid->output += hpid->p_out + hpid->i_out + hpid->d_out;
 
         if (hpid->improve & PID_PROPORTIONAL_ON_MEASUREMENT)
         {
             F_Feedforward_Out(hpid);
         }
 
-        hpid->Output += hpid->f_out;
+        hpid->output += hpid->f_out;
 
         hpid->lost_cnt = 0;
     }
     else
     {
-        hpid->Output = hpid->Output_last;
+        hpid->output = hpid->output_last;
     }
 
     if (hpid->improve & PID_OUTPUT_FILTER)
@@ -228,15 +228,15 @@ float Digital_PID_Incrment(digital_PID_t *hpid, float val_now, float target_now)
 
     if (hpid->lost_cnt > 254)
     {
-        hpid->Output = 0.0f;
+        hpid->output = 0.0f;
     }
 
-    hpid->Err_pre = hpid->Err_last;
-    hpid->Err_last = hpid->Err_now;
+    hpid->err_pre = hpid->err_last;
+    hpid->err_last = hpid->err_now;
 
-    hpid->Output_last = hpid->Output;
+    hpid->output_last = hpid->output;
 
-    return hpid->Output;
+    return hpid->output;
 }
 
 /*
@@ -247,9 +247,9 @@ float Digital_PID_Incrment(digital_PID_t *hpid, float val_now, float target_now)
  */
 void Digital_PID_Clear(digital_PID_t *hpid)
 {
-    hpid->Err_pre = 0;
-    hpid->Err_last = 0;
-    hpid->Err_now = 0;
+    hpid->err_pre = 0;
+    hpid->err_last = 0;
+    hpid->err_now = 0;
     hpid->target = 0;
     hpid->measure = 0;
     hpid->last_target = 0;
@@ -259,20 +259,20 @@ void Digital_PID_Clear(digital_PID_t *hpid)
     hpid->d_out = 0;
     hpid->d_out_last = 0;
     hpid->i_term = 0;
-    hpid->Output = 0;
-    hpid->Output_last = 0;
+    hpid->output = 0;
+    hpid->output_last = 0;
 }
 
 // 输出限幅
 static void F_Output_Limit(digital_PID_t *hpid)
 {
-    if (hpid->Output > hpid->Output_Max)
+    if (hpid->output > hpid->output_max)
     {
-        hpid->Output = hpid->Output_Max;
+        hpid->output = hpid->output_max;
     }
-    if (hpid->Output < -(hpid->Output_Max))
+    if (hpid->output < -(hpid->output_max))
     {
-        hpid->Output = -(hpid->Output_Max);
+        hpid->output = -(hpid->output_max);
     }
 }
 
@@ -280,23 +280,23 @@ static void F_Output_Limit(digital_PID_t *hpid)
 static void F_Trapezoid_Intergral(digital_PID_t *hpid)
 {
     // 计算梯形的面积,(上底+下底)*高/2
-    hpid->i_term = hpid->Ki * ((hpid->Err_now + hpid->Err_last) / 2);
+    hpid->i_term = hpid->Ki * ((hpid->err_now + hpid->err_last) / 2);
 }
 
 // 变速积分
 static void F_Changing_Integral_Rate(digital_PID_t *hpid)
 {
-    if (hpid->Err_now * hpid->i_out > 0)
+    if (hpid->err_now * hpid->i_out > 0)
     {
         // 积分呈累积趋势(误差小时直接返回即Full integral)
-        if (user_abs(hpid->Err_now) <= hpid->ci_coefB)
+        if (user_abs(hpid->err_now) <= hpid->ci_coefB)
         {
             return;
         }
         // 本次误差处于一定范围内，积分变速即*（0~1）的值
-        if (user_abs(hpid->Err_now) <= (hpid->ci_coefA + hpid->ci_coefB))
+        if (user_abs(hpid->err_now) <= (hpid->ci_coefA + hpid->ci_coefB))
         {
-            hpid->i_term *= (hpid->ci_coefA - user_abs(hpid->Err_now) + hpid->ci_coefB) / hpid->ci_coefA;
+            hpid->i_term *= (hpid->ci_coefA - user_abs(hpid->err_now) + hpid->ci_coefB) / hpid->ci_coefA;
         }
         // 误差大时直接清零本次积分
         else
@@ -315,13 +315,13 @@ static void F_Integral_Limit(digital_PID_t *hpid)
     temp_output = hpid->p_out + hpid->i_out + hpid->d_out;
 
     // 输出已经大于输出上下限限幅，清零本次积分
-    if (user_abs(temp_output) > hpid->Output_Max)
+    if (user_abs(temp_output) > hpid->output_max)
     {
-        if (temp_output > 0 && (hpid->Err_now * hpid->i_out > 0)) // 积分却还在累积
+        if (temp_output > 0 && (hpid->err_now * hpid->i_out > 0)) // 积分却还在累积
         {
             hpid->i_term = 0; // 当前积分项置零
         }
-        if (temp_output < 0 && (hpid->Err_now * hpid->i_out < 0)) // 积分却还在累积
+        if (temp_output < 0 && (hpid->err_now * hpid->i_out < 0)) // 积分却还在累积
         {
             hpid->i_term = 0; // 当前积分项置零
         }
@@ -370,13 +370,13 @@ static void F_Derivative_Filter(digital_PID_t *hpid)
 static void F_Feedforward_Out(digital_PID_t *hpid)
 {
     hpid->f_out = 0.0f;
-    if (hpid->p_out > hpid->Output_Max)
+    if (hpid->p_out > hpid->output_max)
     {
-        hpid->p_out = hpid->Output_Max;
+        hpid->p_out = hpid->output_max;
     }
-    if (hpid->p_out < -(hpid->Output_Max))
+    if (hpid->p_out < -(hpid->output_max))
     {
-        hpid->p_out = -(hpid->Output_Max);
+        hpid->p_out = -(hpid->output_max);
     }
 }
 
@@ -390,12 +390,12 @@ static void F_Smooth_Target(digital_PID_t *hpid)
 // 输出滤波
 static void F_Output_Filter(digital_PID_t *hpid)
 {
-    hpid->Output = hpid->Output * (1 - hpid->output_LPF_RC) + hpid->Output_last * hpid->output_LPF_RC;
+    hpid->output = hpid->output * (1 - hpid->output_LPF_RC) + hpid->output_last * hpid->output_LPF_RC;
 }
 
 static void F_Error_Handler(digital_PID_t *hpid)
 {
-    if (hpid->Output < hpid->Output_Max * 0.001f || fabsf(hpid->target) < 0.0001f)
+    if (hpid->output < hpid->output_max * 0.001f || fabsf(hpid->target) < 0.0001f)
     {
         return;
     }

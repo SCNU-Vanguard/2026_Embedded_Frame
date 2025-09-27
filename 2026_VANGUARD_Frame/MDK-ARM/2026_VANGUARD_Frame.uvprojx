@@ -2577,6 +2577,21 @@
           </Files>
         </Group>
         <Group>
+          <GroupName>balance_chassis</GroupName>
+          <Files>
+            <File>
+              <FileName>balance_chassis.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\application\chassis\balance_chassis.c</FilePath>
+            </File>
+            <File>
+              <FileName>balance_chassis.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\application\chassis\balance_chassis.h</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
           <GroupName>::CMSIS</GroupName>
         </Group>
       </Groups>

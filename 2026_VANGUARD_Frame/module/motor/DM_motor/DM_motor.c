@@ -276,7 +276,7 @@ static void DM_Motor_Decode(CAN_instance_t *motor_can)
 
 	uint16_t tmp; // 用于暂存解析值,稍后转换成float数据,避免多次创建临时变量
 	uint8_t *rxbuff                   = motor_can->rx_buff;
-	DM_motor_instance_t *motor                 = (DM_motor_instance_t *) motor_can->id;
+	DM_motor_instance_t *motor        = (DM_motor_instance_t *) motor_can->id;
 	DM_motor_callback_t *receive_data = &(motor->receive_data); // 将can实例中保存的id转换成电机实例的指针
 
 	velocity = receive_data->velocity;
@@ -328,16 +328,16 @@ DM_motor_instance_t *DM_Motor_Init(motor_init_config_t *config)
 	DM_motor_instance_t *instance = (DM_motor_instance_t *) malloc(sizeof(DM_motor_instance_t));
 	memset(instance, 0, sizeof(DM_motor_instance_t));
 
-	if(instance == NULL)
+	if (instance == NULL)
 	{
 		return NULL;
 	}
-	
+
 	instance->motor_type     = config->motor_type;
 	instance->motor_settings = config->controller_setting_init_config;
 
 	instance->motor_controller.torque_PID = PID_Init(
-	                                                  config->controller_param_init_config.torque_PID);
+	                                                 config->controller_param_init_config.torque_PID);
 	instance->motor_controller.speed_PID = PID_Init(
 	                                                config->controller_param_init_config.speed_PID);
 	instance->motor_controller.angle_PID = PID_Init(
@@ -345,7 +345,7 @@ DM_motor_instance_t *DM_Motor_Init(motor_init_config_t *config)
 
 	instance->motor_controller.other_angle_feedback_ptr = config->controller_param_init_config.other_angle_feedback_ptr;
 	instance->motor_controller.other_speed_feedback_ptr = config->controller_param_init_config.other_speed_feedback_ptr;
-	instance->motor_controller.torque_feedforward_ptr  = config->controller_param_init_config.torque_feedforward_ptr;
+	instance->motor_controller.torque_feedforward_ptr   = config->controller_param_init_config.torque_feedforward_ptr;
 	instance->motor_controller.speed_feedforward_ptr    = config->controller_param_init_config.speed_feedforward_ptr;
 
 	instance->dm_tx_id = config->can_init_config.tx_id;
@@ -366,7 +366,7 @@ DM_motor_instance_t *DM_Motor_Init(motor_init_config_t *config)
 	instance->error_code = DM_ERROR_NONE;
 
 	DWT_GetDeltaT(&instance->feed_cnt);
-	
+
 	DM_Motor_Stop(instance);
 	DWT_Delay(0.1);
 	dm_motor_instances[idx++] = instance;
@@ -425,7 +425,7 @@ uint8_t DM_Motor_Error_Judge(DM_motor_instance_t *motor)
  * @brief 该函数被motor_task调用运行在rtos上,motor_stask内通过osDelay()确定控制频率
  */
 // 为所有电机实例计算三环PID,发送控制报文
-void DM_Motor_Control(void)
+void DM_Motor_Control(DM_motor_instance_t *motor_s)
 {
 	// 直接保存一次指针引用从而减小访存的开销,同样可以提高可读性
 	DM_motor_instance_t *motor;
@@ -434,10 +434,26 @@ void DM_Motor_Control(void)
 	DM_motor_callback_t *receive_data;     // 电机测量值
 	float pid_fab, pid_ref;		  // 电机PID测量值和设定值
 
+	uint8_t j = 0;
+	if (motor == NULL)
+	{
+		j = idx;
+	}
+	else
+	{
+		j = 1;
+	}
 	// 遍历所有电机实例,进行串级PID的计算并设置发送报文的值
 	for (size_t i = 0 ; i < idx ; ++i)
 	{ // 减小访存开销,先保存指针引用
-		motor            = dm_motor_instances[i];
+		if (motor == NULL)
+		{
+			motor = dm_motor_instances[i];
+		}
+		else
+		{
+			motor = motor_s;
+		}
 		motor_setting    = &motor->motor_settings;
 		motor_controller = &motor->motor_controller;
 		receive_data     = &motor->receive_data;

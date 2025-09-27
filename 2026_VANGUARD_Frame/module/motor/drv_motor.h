@@ -140,8 +140,8 @@ typedef enum
 /* 电机控制方式枚举 */
 typedef enum
 {
-	TORQUE_LOOP_CONTRO = 0, //扭矩开环控制
-	ANGLE_LOOP_CONTRO  = 1,  //位置闭环控制(由电机支持)
+	TORQUE_LOOP_CONTROL = 0, //扭矩开环控制
+	ANGLE_LOOP_CONTROL  = 1,  //位置闭环控制
 } motor_control_type_e;
 
 /* 电机控制设置,包括闭环类型,反转标志和反馈来源 */
