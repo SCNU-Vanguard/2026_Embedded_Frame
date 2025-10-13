@@ -90,9 +90,9 @@ void INS_Init(void)
 	float init_quaternion[4] = {1, 0, 0, 0};
 	EKF_Quaternion_Init(init_quaternion);
 	// IMU_QuaternionEKF_Init(init_quaternion, 12, 0.005f, 1000000 * 15, 0.9998f, 0.005f);
-	IMU_QuaternionEKF_Init(init_quaternion, 12, 0.005f, 1000000 * 20, 0.9998f, 0.005f);
+	IMU_QuaternionEKF_Init(init_quaternion, 10, 0.001f, 10000000, 1.0f, 0.0f);
 
-	INS.AccelLPF = 0.01f; // 加速度低通滤波系数
+	INS.AccelLPF = 0.0085f; // 加速度低通滤波系数
 }
 
 const float gravity[3] = {0, 0, 9.81f};
@@ -132,11 +132,6 @@ void INS_Calculate(float dt)
 	BodyFrameToEarthFrame(yb, INS.yn, INS.q);
 	BodyFrameToEarthFrame(zb, INS.zn, INS.q);
 
-	// INS.q[0] = mahony.q0 * QEKF_INS.accLPFcoef + QEKF_INS.q[0] * (1 - QEKF_INS.accLPFcoef);
-	// INS.q[1] = mahony.q1 * QEKF_INS.accLPFcoef + QEKF_INS.q[1] * (1 - QEKF_INS.accLPFcoef);
-	// INS.q[2] = mahony.q2 * QEKF_INS.accLPFcoef + QEKF_INS.q[2] * (1 - QEKF_INS.accLPFcoef);
-	// INS.q[3] = mahony.q3 * QEKF_INS.accLPFcoef + QEKF_INS.q[3] * (1 - QEKF_INS.accLPFcoef);  
-
 	float gravity_b[3];
 	EarthFrameToBodyFrame(gravity, gravity_b, INS.q);
 	for (uint8_t i = 0 ; i < 3 ; i++) // 同样过一个低通滤波
@@ -171,14 +166,10 @@ void INS_Calculate(float dt)
 		INS.x_n      = INS.x_n + INS.v_n * 0.001f;
 		INS.ins_flag = 1; // 四元数基本收敛，加速度也基本收敛，可以开始底盘任务
 		// 获取最终数据
-		//      INS.Pitch = mahony.roll;
-		//      INS.Roll = mahony.pitch;
-		//      INS.Yaw = mahony.yaw;
 		INS.Yaw           = QEKF_INS.Yaw;
 		INS.Pitch         = QEKF_INS.Pitch;
 		INS.Roll          = QEKF_INS.Roll;
 		INS.YawTotalAngle = QEKF_INS.YawTotalAngle;
-		// INS.YawTotalAngle=INS.YawTotalAngle+INS.Gyro[2]*0.001f;
 
 		if (INS.Yaw - INS.YawAngleLast > 3.1415926f)
 		{
