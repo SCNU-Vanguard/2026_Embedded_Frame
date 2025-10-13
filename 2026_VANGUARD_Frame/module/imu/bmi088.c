@@ -17,7 +17,7 @@
 #define BMI088_AUTO_CS 1
 #define BMI088_EXTI 0
 
-#define BMI088_Cali 0
+#define BMI088_Cali 1
 
 bmi088_init_config_t bmi088_init_h7 = {
 	.heat_pid_config = {
@@ -131,6 +131,7 @@ static void BMI088_Accel_Read(bmi088_instance_t *bmi088, uint8_t reg, uint8_t *d
 	{
 
 
+
 #if BMI088_AUTO_CS
 #else
 	HAL_GPIO_WritePin(bmi088->spi_acc->GPIOx, bmi088->spi_acc->cs_pin, GPIO_PIN_RESET);
@@ -147,6 +148,7 @@ static void BMI088_Accel_Read(bmi088_instance_t *bmi088, uint8_t reg, uint8_t *d
 	}
 	else
 	{
+
 
 
 #if BMI088_AUTO_CS
@@ -210,6 +212,7 @@ static void BMI088_Gyro_Read(bmi088_instance_t *bmi088, uint8_t reg, uint8_t *da
 	{
 
 
+
 #if BMI088_AUTO_CS
 #else
 	HAL_GPIO_WritePin(bmi088->spi_gyro->GPIOx, bmi088->spi_gyro->cs_pin, GPIO_PIN_RESET);
@@ -225,6 +228,7 @@ static void BMI088_Gyro_Read(bmi088_instance_t *bmi088, uint8_t reg, uint8_t *da
 	}
 	else
 	{
+
 
 
 #if BMI088_AUTO_CS
@@ -629,13 +633,27 @@ uint8_t BMI088_Read_All(bmi088_instance_t *bmi088, bmi088_data_t *data_store)
 		{
 			raw_temp = (float) (int16_t) (((buf[2 * i + 1]) << 8) | buf[2 * i]);
 
-			data_store->acc[i] = bmi088->BMI088_ACCEL_SEN * raw_temp * bmi088->accel_scale - bmi088->acc_offset[i];
+			if (bmi088->cali_mode == BMI088_CALIBRATE_ONLINE_MODE)
+			{
+				data_store->acc[i] = bmi088->BMI088_ACCEL_SEN * raw_temp;
+			}
+			else
+			{
+				data_store->acc[i] = (bmi088->BMI088_ACCEL_SEN * raw_temp * bmi088->accel_scale - bmi088->acc_offset[i]) * 0.75f + bmi088->acc[i] * 0.25f;
+			}
 		}
 
 		BMI088_Gyro_Read(bmi088, BMI088_GYRO_X_L, buf, 6); // 连续读取3个(3*2=6)轴的角速度
 		for (uint8_t i = 0 ; i < 3 ; i++)
 		{
-			data_store->gyro[i] = bmi088->BMI088_GYRO_SEN * (float) (int16_t) (((buf[2 * i + 1]) << 8) | buf[2 * i]) * bmi088->accel_scale - bmi088->gyro_offset[i];
+			if (bmi088->cali_mode == BMI088_CALIBRATE_ONLINE_MODE)
+			{
+				data_store->gyro[i] = (bmi088->BMI088_GYRO_SEN * (float) (int16_t) (((buf[2 * i + 1]) << 8) | buf[2 * i]));
+			}
+			else
+			{
+				data_store->gyro[i] = (bmi088->BMI088_GYRO_SEN * (float) (int16_t) (((buf[2 * i + 1]) << 8) | buf[2 * i])) - bmi088->gyro_offset[i];
+			}
 		}
 
 		BMI088_Accel_Read(bmi088, BMI088_TEMP_M, buf, 2); // 读温度,温度传感器在accel上
@@ -690,19 +708,21 @@ uint8_t BMI088_Acquire_IT_Status(bmi088_instance_t *bmi088)
 		return 0;
 }
 
-// #pragma message ("REMEMBER TO CHANGE CALI PARAMETERS IF YOU CHOOSE NOT TO CALIBRATE ONLINE(parameters in robot_def.h)")
-#define GYRO_CALIBRATE_TIME 20000 // 20s
 /**
  * @brief BMI088 gyro 标定
  * @attention 不管工作模式是blocking还是IT,标定时都是blocking模式,所以不用担心中断关闭后无法标定(RobotInit关闭了全局中断)
  * @param _bmi088 待标定的BMI088实例
  */
-float gyro_diff[3], g_norm_diff;
 
 void BMI088_Calibrate_IMU(bmi088_instance_t *_bmi088)
 {
+//	bmi088_work_mode_e mode = _bmi088->work_mode;
+//	BMI088_Set_Mode(_bmi088, BMI088_BLOCK_PERIODIC_MODE);
+	
 	if (_bmi088->cali_mode == BMI088_CALIBRATE_ONLINE_MODE) // 性感bmi088在线标定
 	{
+		static float gyro_diff[3], g_norm_diff;
+		
 		static float start_time       = 0.0f;
 		static uint16_t cail_time     = 6000;
 		static uint16_t acc_cali_time = 6000;
@@ -711,6 +731,29 @@ void BMI088_Calibrate_IMU(bmi088_instance_t *_bmi088)
 		float g_norm_temp, g_norm_max, g_norm_min;
 
 		static uint16_t cali_time_count = 0;
+
+				uint8_t WhoAmI_check = 0;		
+
+				BMI088_Accel_Read(_bmi088, BMI088_ACC_CHIP_ID, &WhoAmI_check, 1); // dummy read,
+				// HAL_Delay(1);
+				DWT_Delay(0.001f);
+				BMI088_Accel_Read(_bmi088, BMI088_ACC_CHIP_ID, &WhoAmI_check, 1); // dummy read,
+				// HAL_Delay(1);
+				DWT_Delay(0.001f);
+
+				if (WhoAmI_check != BMI088_ACC_CHIP_ID_VALUE)
+					while(1){;}
+				
+				BMI088_Gyro_Read(_bmi088, BMI088_GYRO_CHIP_ID, &WhoAmI_check, 1); // dummy read,
+				// HAL_Delay(1);
+				DWT_Delay(0.001f);
+				BMI088_Gyro_Read(_bmi088, BMI088_GYRO_CHIP_ID, &WhoAmI_check, 1); // dummy read,
+				// HAL_Delay(1);
+				DWT_Delay(0.001f);
+				
+				//	BMI088_Gyro_Read(bmi088, BMI088_GYRO_CHIP_ID, &WhoAmI_check, 1);
+				if (WhoAmI_check != BMI088_GYRO_CHIP_ID_VALUE)
+					while(1){;}
 
 		start_time = DWT_GetTimeline_s( );
 		do
@@ -736,9 +779,9 @@ void BMI088_Calibrate_IMU(bmi088_instance_t *_bmi088)
 				_bmi088->gyro_offset[i] = 0.0f;
 			}
 
+			bmi088_data_t bmi088_data = {0};
 			for (uint16_t i = 0 ; i < cail_time ; i++)
 			{
-				bmi088_data_t bmi088_data = {0};
 				//读imu数据(转化后)
 				BMI088_Read_All(_bmi088, &bmi088_data);
 
@@ -790,7 +833,7 @@ void BMI088_Calibrate_IMU(bmi088_instance_t *_bmi088)
 				g_norm_diff = g_norm_max - g_norm_min;
 				for (uint8_t j = 0 ; j < 3 ; j++)
 				{
-					gyro_diff[j] = gyro_max[j] + gyro_min[j];
+					gyro_diff[j] = gyro_max[j] - gyro_min[j];
 				}
 				if (g_norm_diff > 0.5f || gyro_diff[0] > 0.15f || gyro_diff[1] > 0.15f || gyro_diff[2] > 0.15f)
 				{
@@ -810,11 +853,10 @@ void BMI088_Calibrate_IMU(bmi088_instance_t *_bmi088)
 
 			for (uint8_t i = 0 ; i < 3 ; i++)
 			{
-				_bmi088->gyro_offset[i] /= cail_time; // 计算偏移量
+				_bmi088->gyro_offset[i] /= (float) cail_time; // 计算偏移量
 			}
 
 			_bmi088->cali_temperature = _bmi088->temperature;
-
 		} while (g_norm_diff > 0.5f ||
 		         fabsf(_bmi088->g_norm - 9.8f) > 0.5f ||
 		         gyro_diff[0] > 0.15f ||
@@ -832,7 +874,14 @@ void BMI088_Calibrate_IMU(bmi088_instance_t *_bmi088)
 			BMI088_Read_All(_bmi088, &bmi088_data);
 			for (uint8_t j = 0 ; j < 3 ; j++)
 			{
-				_bmi088->acc_offset[j] = bmi088_data.acc[j] * _bmi088->accel_scale * 0.25f + _bmi088->acc_offset[j] * 0.75f; // 逐渐减小偏移量
+				if (j == 2)
+				{
+					_bmi088->acc_offset[j] = bmi088_data.acc[j] * _bmi088->accel_scale; // 逐渐减小偏移量
+				}
+				else
+				{
+					_bmi088->acc_offset[j] = bmi088_data.acc[j] * _bmi088->accel_scale * 0.25f + _bmi088->acc_offset[j] * 0.75f; // 逐渐减小偏移量
+				}
 			}
 
 			DWT_Delay(0.0005f);
@@ -847,16 +896,19 @@ void BMI088_Calibrate_IMU(bmi088_instance_t *_bmi088)
 	// 导入数据
 	else if (_bmi088->cali_mode == BMI088_LOAD_PRE_CALI_MODE)
 	{
-		_bmi088->gyro_offset[0] = GYRO_X_OFFSET;
-		_bmi088->gyro_offset[1] = GYRO_Y_OFFSET;
-		_bmi088->gyro_offset[2] = GYRO_Z_OFFSET;
-		_bmi088->acc_offset[0]  = ACCEL_X_OFFSET;
-		_bmi088->acc_offset[1]  = ACCEL_Y_OFFSET;
-		_bmi088->acc_offset[2]  = ACCEL_Z_OFFSET;
-		_bmi088->g_norm         = G_NORM;
+		_bmi088->gyro_offset[0]   = GYRO_X_OFFSET;
+		_bmi088->gyro_offset[1]   = GYRO_Y_OFFSET;
+		_bmi088->gyro_offset[2]   = GYRO_Z_OFFSET;
+		_bmi088->acc_offset[0]    = ACCEL_X_OFFSET;
+		_bmi088->acc_offset[1]    = ACCEL_Y_OFFSET;
+		_bmi088->acc_offset[2]    = ACCEL_Z_OFFSET;
+		_bmi088->g_norm           = G_NORM;
 		_bmi088->cali_temperature = 40.0F; // 40度
 		_bmi088->accel_scale      = 9.81f / _bmi088->g_norm;
 	}
+
+//	_bmi088->cali_mode = BMI088_LOAD_PRE_CALI_MODE;
+//	BMI088_Set_Mode(_bmi088, mode); // 恢复工作模式
 }
 
 bmi088_instance_t *BMI088_Register(bmi088_init_config_t *config)
@@ -916,6 +968,8 @@ bmi088_instance_t *BMI088_Register(bmi088_init_config_t *config)
 			break;
 		}
 	} while (error != 0);
+//	bmi088_instance->cali_mode = BMI088_LOAD_PRE_CALI_MODE;
+//	BMI088_Calibrate_IMU(bmi088_instance);               // 标定acc和gyro
 	bmi088_instance->cali_mode = config->cali_mode;
 	BMI088_Calibrate_IMU(bmi088_instance);               // 标定acc和gyro
 	BMI088_Set_Mode(bmi088_instance, config->work_mode); // 恢复工作模式

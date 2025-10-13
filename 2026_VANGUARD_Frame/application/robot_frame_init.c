@@ -64,8 +64,10 @@ static void Frame_Device_Init(void)
 	
 	ws2812_instance = WS2812_Register(&ws2812_config);
 
-	bmi088_h7 = BMI088_Register(&bmi088_init_h7);
+	HAL_Delay(200);
+	
 	// BMI088_Init(&hspi2,0);
+	bmi088_h7 = BMI088_Register(&bmi088_init_h7);
 
 	rc_data = WFLY_SBUS_Register( );
 	

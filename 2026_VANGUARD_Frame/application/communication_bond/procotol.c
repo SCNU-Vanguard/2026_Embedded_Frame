@@ -13,6 +13,7 @@
 #include <stdlib.h>
 
 #include "procotol.h"
+#include "INS.h"
 
 #include "vofa.h"
 #include "bmi088.h"
@@ -20,6 +21,7 @@
 
 extern bmi088_data_t imu_data;
 extern wfly_t *rc_data;
+extern INS_behaviour_t INS;
 
 void VOFA_Display_IMU(void)
 {
@@ -32,8 +34,13 @@ void VOFA_Display_IMU(void)
 	vofa_data_view[5] = imu_data.gyro[2];
 
 	vofa_data_view[6] = imu_data.temperature;
+	
+	vofa_data_view[7] = INS.Pitch;
+	vofa_data_view[8] = INS.Roll;
+	vofa_data_view[9] = INS.Yaw;
+	
 
-	VOFA_Send_Data(vofa_data_view, 7);
+	VOFA_Send_Data(vofa_data_view, 10);
 	// VOFA_JustFloat(vofa_data_view, 7);
 }
 
