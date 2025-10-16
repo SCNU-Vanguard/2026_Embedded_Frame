@@ -17,7 +17,7 @@
 
 #include "user_lib.h"
 
-#define Matrix             arm_matrix_instance_f32
+#define mat             arm_matrix_instance_f32
 #define Matrix_64          arm_matrix_instance_f64
 #define Matrix_Init        arm_mat_init_f32
 #define Matrix_Add         arm_mat_add_f32
@@ -38,21 +38,21 @@ typedef struct
 
 	struct
 	{
-		Matrix X;
-		Matrix XT;
-		Matrix Lamda;
-		Matrix E;
-		Matrix Z;
-		Matrix K;
-		Matrix W;
-		Matrix P;
-		Matrix Y;
-		Matrix U;
-		Matrix K_Numerator;
-		Matrix K_Denominator;
-		Matrix Cache_Matrix[2];
-		Matrix Cache_Vector[2];
-		Matrix Output;
+		mat X;
+		mat XT;
+		mat Lamda;
+		mat E;
+		mat Z;
+		mat K;
+		mat W;
+		mat P;
+		mat Y;
+		mat U;
+		mat K_Numerator;
+		mat K_Denominator;
+		mat Cache_Matrix[2];
+		mat Cache_Vector[2];
+		mat Output;
 	} Mat;
 
 	arm_status MatStatus;
@@ -80,6 +80,5 @@ typedef struct
 extern void RLS_Update(recursive_least_squares_t *RLS);
 
 extern void RLS_Init(recursive_least_squares_t *RLS, uint8_t X_Size, uint8_t P_Size, uint8_t Y_Size);
-
 
 #endif /* __RLS_H__ */

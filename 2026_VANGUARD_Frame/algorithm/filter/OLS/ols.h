@@ -19,8 +19,8 @@
 
 typedef struct
 {
-	uint16_t Order;
-	uint32_t Count;
+	uint16_t order;
+	uint32_t count;
 
 	float *x;
 	float *y;
@@ -28,21 +28,21 @@ typedef struct
 	float k;
 	float b;
 
-	float StandardDeviation;
+	float standard_deviation;
 
 	float t[4];
-} __attribute__((__packed__)) Ordinary_Least_Squares_t;
+} __attribute__((__packed__)) ordinary_least_squares_t;
 
-void OLS_Init(Ordinary_Least_Squares_t *OLS, uint16_t order);
+void OLS_Init(ordinary_least_squares_t *OLS, uint16_t order);
 
-void OLS_Update(Ordinary_Least_Squares_t *OLS, float deltax, float y);
+void OLS_Update(ordinary_least_squares_t *OLS, float deltax, float y);
 
-float OLS_Derivative(Ordinary_Least_Squares_t *OLS, float deltax, float y);
+float OLS_Derivative(ordinary_least_squares_t *OLS, float deltax, float y);
 
-float OLS_Smooth(Ordinary_Least_Squares_t *OLS, float deltax, float y);
+float OLS_Smooth(ordinary_least_squares_t *OLS, float deltax, float y);
 
-float Get_OLS_Derivative(Ordinary_Least_Squares_t *OLS);
+float Get_OLS_Derivative(ordinary_least_squares_t *OLS);
 
-float Get_OLS_Smooth(Ordinary_Least_Squares_t *OLS);
+float Get_OLS_Smooth(ordinary_least_squares_t *OLS);
 
 #endif /* __OLS_H__ */

@@ -56,7 +56,7 @@ GPIO_instance_t *GPIO_Register(gpio_init_config_t *GPIO_config)
 // ----------------- GPIO API -----------------
 // 都是对HAL的形式上的封装,后续考虑增加GPIO state变量,可以直接读取state
 
-void GPIOToggle(GPIO_instance_t *_instance)
+void GPIO_Toggle(GPIO_instance_t *_instance)
 {
 	HAL_GPIO_TogglePin(_instance->GPIOx, _instance->GPIO_Pin);
 }

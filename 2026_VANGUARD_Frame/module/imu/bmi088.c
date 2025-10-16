@@ -17,7 +17,7 @@
 #define BMI088_AUTO_CS 1
 #define BMI088_EXTI 0
 
-#define BMI088_Cali 1
+#define BMI088_Cali 0
 
 bmi088_init_config_t bmi088_init_h7 = {
 	.heat_pid_config = {
@@ -84,13 +84,17 @@ bmi088_instance_t *bmi088_h7  = NULL;
 SPI_HandleTypeDef *BMI088_SPI = &hspi2;
 
 // ---------------------------原始数据滤波选择--------------------------------//
-#define BMI088_USE_KALMAN_FILTER 1
 
-#if BMI088_USE_KALMAN_FILTER
+// 0:不使用滤波器
+// 1:使用卡尔曼滤波器
+// 2:使用自参考NLMS滞后滤波器
+
+#define BMI088_USE_FILTER 2
+
+#if BMI088_USE_FILTER == 1
 
 #include "kalman_one_filter.h"
-float test_data_acc[3]  = {0};
-float test_data_gyro[3] = {0};
+
 kalman_one_filter_t acc_kf[3];
 kalman_one_filter_t gyro_kf[3];
 
@@ -101,6 +105,38 @@ static void BMI088_Kalman_Filter_Init(void)
 		Kalman_One_Init(&acc_kf[i], 0.01f, 200.0f);  // 加速度卡尔曼滤波器初始化
 		Kalman_One_Init(&gyro_kf[i], 0.01f, 20.0f); // 陀螺仪卡尔曼滤波器初始化
 	}
+}
+#elif BMI088_USE_FILTER == 2
+
+//自适应有💩，可以关了自适应，当定参动态 滑动平均滤波器用
+#include "lms.h"
+
+nlms_t acc_nlms[3];
+nlms_t gyro_nlms[3];
+
+static void BMI088_NLMS_Filter_Init(void)
+{
+	for(uint8_t i = 0 ; i < 3 ; i++)
+	{
+		Nlms_Init(&acc_nlms[i]);  // 加速度NLMS滤波器初始化
+		Nlms_Init(&gyro_nlms[i]); // 陀螺仪NLMS滤波器初始化
+	}
+}
+
+#endif
+
+#if BMI088_USE_FILTER
+
+float test_data_acc[3]  = {0};
+float test_data_gyro[3] = {0};
+
+static void BMI088_Filter_Init(void)
+{
+#if BMI088_USE_FILTER == 1
+	BMI088_Kalman_Filter_Init();
+#elif BMI088_USE_FILTER == 2
+	BMI088_NLMS_Filter_Init();
+#endif
 }
 
 #endif
@@ -642,6 +678,8 @@ static void BMI088_Set_Mode(bmi088_instance_t *bmi088Instance, bmi088_work_mode_
 
 // -------------------------以下为公有函数,用于注册BMI088,标定和数据读取--------------------------------//
 
+#define TEST_FILTER 1
+
 /**
  * @brief
  * @param bmi088
@@ -659,7 +697,7 @@ uint8_t BMI088_Read_All(bmi088_instance_t *bmi088, bmi088_data_t *data_store)
 		for (uint8_t i = 0 ; i < 3 ; i++)
 		{
 			raw_temp = (float) (int16_t) (((buf[2 * i + 1]) << 8) | buf[2 * i]);
-#if BMI088_USE_KALMAN_FILTER				
+#if BMI088_USE_FILTER				
 				data_store->acc[i] = raw_temp;
 #else
 			if (bmi088->cali_mode == BMI088_CALIBRATE_ONLINE_MODE)
@@ -677,7 +715,7 @@ uint8_t BMI088_Read_All(bmi088_instance_t *bmi088, bmi088_data_t *data_store)
 		for (uint8_t i = 0 ; i < 3 ; i++)
 		{
 			raw_temp = (float) (int16_t) (((buf[2 * i + 1]) << 8) | buf[2 * i]);
-#if BMI088_USE_KALMAN_FILTER				
+#if BMI088_USE_FILTER				
 			data_store->gyro[i] = raw_temp;
 #else
 			if (bmi088->cali_mode == BMI088_CALIBRATE_ONLINE_MODE)
@@ -697,13 +735,18 @@ uint8_t BMI088_Read_All(bmi088_instance_t *bmi088, bmi088_data_t *data_store)
 		// 更新BMI088自身结构体数据
 		for (uint8_t i = 0 ; i < 3 ; i++)
 		{
-#if BMI088_USE_KALMAN_FILTER
-//			bmi088->acc[i] = data_store->acc[i];
-//			bmi088->gyro[i] = data_store->gyro[i];
-//			test_data_acc[i]  = Kalman_One_Filter(&acc_kf[i], data_store->acc[i]);
-//			test_data_gyro[i] = Kalman_One_Filter(&gyro_kf[i], data_store->gyro[i]);
+#if BMI088_USE_FILTER
+
+#if BMI088_USE_FILTER == 1
+
+#if TEST_FILTER
+			bmi088->acc[i] = data_store->acc[i];
+			bmi088->gyro[i] = data_store->gyro[i];
+			test_data_acc[i]  = Kalman_One_Filter(&acc_kf[i], data_store->acc[i]);
+			test_data_gyro[i] = Kalman_One_Filter(&gyro_kf[i], data_store->gyro[i]);
+#else			
 			bmi088->acc[i]  = Kalman_One_Filter(&acc_kf[i], data_store->acc[i]);
-			bmi088->gyro[i] = Kalman_One_Filter(&gyro_kf[i], data_store->gyro[i]);
+			bmi088->gyro[i] = Kalman_One_Filter(&gyro_kf[i], data_store->gyro[i]);			
 			if (bmi088->cali_mode == BMI088_CALIBRATE_ONLINE_MODE)
 			{
 				bmi088->acc[i] = bmi088->BMI088_ACCEL_SEN * bmi088->acc[i];
@@ -716,6 +759,34 @@ uint8_t BMI088_Read_All(bmi088_instance_t *bmi088, bmi088_data_t *data_store)
 			}				
 			data_store->acc[i] = bmi088->acc[i];
 			data_store->gyro[i] = bmi088->gyro[i];
+#endif			
+			
+#elif BMI088_USE_FILTER == 2
+
+#if TEST_FILTER
+			bmi088->acc[i] = data_store->acc[i];
+			bmi088->gyro[i] = data_store->gyro[i];
+			test_data_acc[i]  = Nlms_Filter_Sensor(&acc_nlms[i], data_store->acc[i]);
+			test_data_gyro[i] = Nlms_Filter_Sensor(&gyro_nlms[i], data_store->gyro[i]);
+#else			
+			bmi088->acc[i]  = Nlms_Filter(&acc_nlms[i], data_store->acc[i]);
+			bmi088->gyro[i] = Nlms_Filter(&gyro_nlms[i], data_store->gyro[i]);			
+			if (bmi088->cali_mode == BMI088_CALIBRATE_ONLINE_MODE)
+			{
+				bmi088->acc[i] = bmi088->BMI088_ACCEL_SEN * bmi088->acc[i];
+				bmi088->gyro[i] = bmi088->BMI088_GYRO_SEN * bmi088->gyro[i];
+			}
+			else
+			{
+				bmi088->acc[i] = bmi088->BMI088_ACCEL_SEN * bmi088->acc[i] * bmi088->accel_scale - bmi088->acc_offset[i];
+				bmi088->gyro[i] = bmi088->BMI088_GYRO_SEN * bmi088->gyro[i] - bmi088->gyro_offset[i];
+			}				
+			data_store->acc[i] = bmi088->acc[i];
+			data_store->gyro[i] = bmi088->gyro[i];
+#endif
+
+#endif
+
 #else
 			bmi088->acc[i]  = data_store->acc[i];
 			bmi088->gyro[i] = data_store->gyro[i];
@@ -1025,8 +1096,8 @@ bmi088_instance_t *BMI088_Register(bmi088_init_config_t *config)
 			break;
 		}
 	} while (error != 0);
-#if BMI088_USE_KALMAN_FILTER
-	BMI088_Kalman_Filter_Init();
+#if BMI088_USE_FILTER
+	BMI088_Filter_Init();
 #endif
 //	bmi088_instance->cali_mode = BMI088_LOAD_PRE_CALI_MODE;
 //	BMI088_Calibrate_IMU(bmi088_instance);               // 标定acc和gyro

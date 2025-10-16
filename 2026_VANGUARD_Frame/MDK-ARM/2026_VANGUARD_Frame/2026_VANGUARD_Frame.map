@@ -2585,8 +2585,8 @@ Section Cross References
     bsp_gpio.o(.text.GPIO_Register) refers to calloc.o(.text) for calloc
     bsp_gpio.o(.text.GPIO_Register) refers to bsp_gpio.o(.bss..L_MergedGlobals) for .L_MergedGlobals
     bsp_gpio.o(.ARM.exidx.text.GPIO_Register) refers to bsp_gpio.o(.text.GPIO_Register) for [Anonymous Symbol]
-    bsp_gpio.o(.text.GPIOToggle) refers to stm32h7xx_hal_gpio.o(.text.HAL_GPIO_TogglePin) for HAL_GPIO_TogglePin
-    bsp_gpio.o(.ARM.exidx.text.GPIOToggle) refers to bsp_gpio.o(.text.GPIOToggle) for [Anonymous Symbol]
+    bsp_gpio.o(.text.GPIO_Toggle) refers to stm32h7xx_hal_gpio.o(.text.HAL_GPIO_TogglePin) for HAL_GPIO_TogglePin
+    bsp_gpio.o(.ARM.exidx.text.GPIO_Toggle) refers to bsp_gpio.o(.text.GPIO_Toggle) for [Anonymous Symbol]
     bsp_gpio.o(.text.GPIO_Set) refers to stm32h7xx_hal_gpio.o(.text.HAL_GPIO_WritePin) for HAL_GPIO_WritePin
     bsp_gpio.o(.ARM.exidx.text.GPIO_Set) refers to bsp_gpio.o(.text.GPIO_Set) for [Anonymous Symbol]
     bsp_gpio.o(.text.GPIO_Reset) refers to stm32h7xx_hal_gpio.o(.text.HAL_GPIO_WritePin) for HAL_GPIO_WritePin
@@ -4996,8 +4996,8 @@ Removing Unused input sections from the image.
     Removing bsp_gpio.o(.ARM.exidx.text.HAL_GPIO_EXTI_Callback), (8 bytes).
     Removing bsp_gpio.o(.text.GPIO_Register), (50 bytes).
     Removing bsp_gpio.o(.ARM.exidx.text.GPIO_Register), (8 bytes).
-    Removing bsp_gpio.o(.text.GPIOToggle), (8 bytes).
-    Removing bsp_gpio.o(.ARM.exidx.text.GPIOToggle), (8 bytes).
+    Removing bsp_gpio.o(.text.GPIO_Toggle), (8 bytes).
+    Removing bsp_gpio.o(.ARM.exidx.text.GPIO_Toggle), (8 bytes).
     Removing bsp_gpio.o(.text.GPIO_Set), (10 bytes).
     Removing bsp_gpio.o(.ARM.exidx.text.GPIO_Set), (8 bytes).
     Removing bsp_gpio.o(.text.GPIO_Reset), (10 bytes).

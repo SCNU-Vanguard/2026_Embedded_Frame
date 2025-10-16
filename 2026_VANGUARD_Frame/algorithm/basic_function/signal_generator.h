@@ -34,15 +34,15 @@
 #include <stdint.h>
 #include <stdlib.h>
 
-extern float GenerateSinWave(float amplitude, float offset, float period);
+extern float Generate_SinWave(float amplitude, float offset, float period);
 
-extern float GenerateStepWave(float a0, float a1, float t0);
+extern float Generate_StepWave(float a0, float a1, float t0);
 
-extern float GenerateRampWave(float a0, float a1, float t0, float t1);
+extern float Generate_RampWave(float a0, float a1, float t0, float t1);
 
-extern float GeneratePulseWave(float a1, float a2, float t1, float t2);
+extern float Generate_PulseWave(float a1, float a2, float t1, float t2);
 
-extern float GenerateSawtoothWave(float a0, float a1, float T);
+extern float Generate_SawtoothWave(float a0, float a1, float T);
 
 #endif  // __SIGNAL_GENERATOR_H
         /************************ END OF FILE ************************/

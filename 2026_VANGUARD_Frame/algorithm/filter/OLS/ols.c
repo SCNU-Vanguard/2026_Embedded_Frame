@@ -13,17 +13,16 @@
 
 #include "ols.h"
 
-#include "user_lib.h"
 /**
  * @brief          普通最小二乘法初始化
  * @param[in]      普通最小二乘法结构体
  * @param[in]      样本数
  * @retval         返回空
  */
-void OLS_Init(Ordinary_Least_Squares_t *OLS, uint16_t order)
+void OLS_Init(ordinary_least_squares_t *OLS, uint16_t order)
 {
-	OLS->Order = order;
-	OLS->Count = 0;
+	OLS->order = order;
+	OLS->count = 0;
 	OLS->x     = (float *) user_malloc(sizeof(float) * order);
 	OLS->y     = (float *) user_malloc(sizeof(float) * order);
 	OLS->k     = 0;
@@ -39,24 +38,24 @@ void OLS_Init(Ordinary_Least_Squares_t *OLS, uint16_t order)
  * @param[in]      信号新样本距上一个样本时间间隔
  * @param[in]      信号值
  */
-void OLS_Update(Ordinary_Least_Squares_t *OLS, float deltax, float y)
+void OLS_Update(ordinary_least_squares_t *OLS, float deltax, float y)
 {
 	static float temp = 0;
 	temp              = OLS->x[1];
-	for (uint16_t i = 0 ; i < OLS->Order - 1 ; ++i)
+	for (uint16_t i = 0 ; i < OLS->order - 1 ; ++i)
 	{
 		OLS->x[i] = OLS->x[i + 1] - temp;
 		OLS->y[i] = OLS->y[i + 1];
 	}
-	OLS->x[OLS->Order - 1] = OLS->x[OLS->Order - 2] + deltax;
-	OLS->y[OLS->Order - 1] = y;
+	OLS->x[OLS->order - 1] = OLS->x[OLS->order - 2] + deltax;
+	OLS->y[OLS->order - 1] = y;
 
-	if (OLS->Count < OLS->Order)
+	if (OLS->count < OLS->order)
 	{
-		OLS->Count++;
+		OLS->count++;
 	}
 	memset((void *) OLS->t, 0, sizeof(float) * 4);
-	for (uint16_t i = OLS->Order - OLS->Count ; i < OLS->Order ; ++i)
+	for (uint16_t i = OLS->order - OLS->count ; i < OLS->order ; ++i)
 	{
 		OLS->t[0] += OLS->x[i] * OLS->x[i];
 		OLS->t[1] += OLS->x[i];
@@ -64,15 +63,15 @@ void OLS_Update(Ordinary_Least_Squares_t *OLS, float deltax, float y)
 		OLS->t[3] += OLS->y[i];
 	}
 
-	OLS->k = (OLS->t[2] * OLS->Order - OLS->t[1] * OLS->t[3]) / (OLS->t[0] * OLS->Order - OLS->t[1] * OLS->t[1]);
-	OLS->b = (OLS->t[0] * OLS->t[3] - OLS->t[1] * OLS->t[2]) / (OLS->t[0] * OLS->Order - OLS->t[1] * OLS->t[1]);
+	OLS->k = (OLS->t[2] * OLS->order - OLS->t[1] * OLS->t[3]) / (OLS->t[0] * OLS->order - OLS->t[1] * OLS->t[1]);
+	OLS->b = (OLS->t[0] * OLS->t[3] - OLS->t[1] * OLS->t[2]) / (OLS->t[0] * OLS->order - OLS->t[1] * OLS->t[1]);
 
-	OLS->StandardDeviation = 0;
-	for (uint16_t i = OLS->Order - OLS->Count ; i < OLS->Order ; ++i)
+	OLS->standard_deviation = 0;
+	for (uint16_t i = OLS->order - OLS->count ; i < OLS->order ; ++i)
 	{
-		OLS->StandardDeviation += fabsf(OLS->k * OLS->x[i] + OLS->b - OLS->y[i]);
+		OLS->standard_deviation += fabsf(OLS->k * OLS->x[i] + OLS->b - OLS->y[i]);
 	}
-	OLS->StandardDeviation /= OLS->Order;
+	OLS->standard_deviation /= OLS->order;
 }
 
 /**
@@ -82,25 +81,25 @@ void OLS_Update(Ordinary_Least_Squares_t *OLS, float deltax, float y)
  * @param[in]      信号值
  * @retval         返回斜率k
  */
-float OLS_Derivative(Ordinary_Least_Squares_t *OLS, float deltax, float y)
+float OLS_Derivative(ordinary_least_squares_t *OLS, float deltax, float y)
 {
 	static float temp = 0;
 	temp              = OLS->x[1];
-	for (uint16_t i = 0 ; i < OLS->Order - 1 ; ++i)
+	for (uint16_t i = 0 ; i < OLS->order - 1 ; ++i)
 	{
 		OLS->x[i] = OLS->x[i + 1] - temp;
 		OLS->y[i] = OLS->y[i + 1];
 	}
-	OLS->x[OLS->Order - 1] = OLS->x[OLS->Order - 2] + deltax;
-	OLS->y[OLS->Order - 1] = y;
+	OLS->x[OLS->order - 1] = OLS->x[OLS->order - 2] + deltax;
+	OLS->y[OLS->order - 1] = y;
 
-	if (OLS->Count < OLS->Order)
+	if (OLS->count < OLS->order)
 	{
-		OLS->Count++;
+		OLS->count++;
 	}
 
 	memset((void *) OLS->t, 0, sizeof(float) * 4);
-	for (uint16_t i = OLS->Order - OLS->Count ; i < OLS->Order ; ++i)
+	for (uint16_t i = OLS->order - OLS->count ; i < OLS->order ; ++i)
 	{
 		OLS->t[0] += OLS->x[i] * OLS->x[i];
 		OLS->t[1] += OLS->x[i];
@@ -108,14 +107,14 @@ float OLS_Derivative(Ordinary_Least_Squares_t *OLS, float deltax, float y)
 		OLS->t[3] += OLS->y[i];
 	}
 
-	OLS->k = (OLS->t[2] * OLS->Order - OLS->t[1] * OLS->t[3]) / (OLS->t[0] * OLS->Order - OLS->t[1] * OLS->t[1]);
+	OLS->k = (OLS->t[2] * OLS->order - OLS->t[1] * OLS->t[3]) / (OLS->t[0] * OLS->order - OLS->t[1] * OLS->t[1]);
 
-	OLS->StandardDeviation = 0;
-	for (uint16_t i = OLS->Order - OLS->Count ; i < OLS->Order ; ++i)
+	OLS->standard_deviation = 0;
+	for (uint16_t i = OLS->order - OLS->count ; i < OLS->order ; ++i)
 	{
-		OLS->StandardDeviation += fabsf(OLS->k * OLS->x[i] + OLS->b - OLS->y[i]);
+		OLS->standard_deviation += fabsf(OLS->k * OLS->x[i] + OLS->b - OLS->y[i]);
 	}
-	OLS->StandardDeviation /= OLS->Order;
+	OLS->standard_deviation /= OLS->order;
 
 	return OLS->k;
 }
@@ -125,7 +124,7 @@ float OLS_Derivative(Ordinary_Least_Squares_t *OLS, float deltax, float y)
  * @param[in]      普通最小二乘法结构体
  * @retval         返回斜率k
  */
-float Get_OLS_Derivative(Ordinary_Least_Squares_t *OLS)
+float Get_OLS_Derivative(ordinary_least_squares_t *OLS)
 {
 	return OLS->k;
 }
@@ -137,25 +136,25 @@ float Get_OLS_Derivative(Ordinary_Least_Squares_t *OLS)
  * @param[in]      信号值
  * @retval         返回平滑输出
  */
-float OLS_Smooth(Ordinary_Least_Squares_t *OLS, float deltax, float y)
+float OLS_Smooth(ordinary_least_squares_t *OLS, float deltax, float y)
 {
 	static float temp = 0;
 	temp              = OLS->x[1];
-	for (uint16_t i = 0 ; i < OLS->Order - 1 ; ++i)
+	for (uint16_t i = 0 ; i < OLS->order - 1 ; ++i)
 	{
 		OLS->x[i] = OLS->x[i + 1] - temp;
 		OLS->y[i] = OLS->y[i + 1];
 	}
-	OLS->x[OLS->Order - 1] = OLS->x[OLS->Order - 2] + deltax;
-	OLS->y[OLS->Order - 1] = y;
+	OLS->x[OLS->order - 1] = OLS->x[OLS->order - 2] + deltax;
+	OLS->y[OLS->order - 1] = y;
 
-	if (OLS->Count < OLS->Order)
+	if (OLS->count < OLS->order)
 	{
-		OLS->Count++;
+		OLS->count++;
 	}
 
 	memset((void *) OLS->t, 0, sizeof(float) * 4);
-	for (uint16_t i = OLS->Order - OLS->Count ; i < OLS->Order ; ++i)
+	for (uint16_t i = OLS->order - OLS->count ; i < OLS->order ; ++i)
 	{
 		OLS->t[0] += OLS->x[i] * OLS->x[i];
 		OLS->t[1] += OLS->x[i];
@@ -163,17 +162,17 @@ float OLS_Smooth(Ordinary_Least_Squares_t *OLS, float deltax, float y)
 		OLS->t[3] += OLS->y[i];
 	}
 
-	OLS->k = (OLS->t[2] * OLS->Order - OLS->t[1] * OLS->t[3]) / (OLS->t[0] * OLS->Order - OLS->t[1] * OLS->t[1]);
-	OLS->b = (OLS->t[0] * OLS->t[3] - OLS->t[1] * OLS->t[2]) / (OLS->t[0] * OLS->Order - OLS->t[1] * OLS->t[1]);
+	OLS->k = (OLS->t[2] * OLS->order - OLS->t[1] * OLS->t[3]) / (OLS->t[0] * OLS->order - OLS->t[1] * OLS->t[1]);
+	OLS->b = (OLS->t[0] * OLS->t[3] - OLS->t[1] * OLS->t[2]) / (OLS->t[0] * OLS->order - OLS->t[1] * OLS->t[1]);
 
-	OLS->StandardDeviation = 0;
-	for (uint16_t i = OLS->Order - OLS->Count ; i < OLS->Order ; ++i)
+	OLS->standard_deviation = 0;
+	for (uint16_t i = OLS->order - OLS->count ; i < OLS->order ; ++i)
 	{
-		OLS->StandardDeviation += fabsf(OLS->k * OLS->x[i] + OLS->b - OLS->y[i]);
+		OLS->standard_deviation += fabsf(OLS->k * OLS->x[i] + OLS->b - OLS->y[i]);
 	}
-	OLS->StandardDeviation /= OLS->Order;
+	OLS->standard_deviation /= OLS->order;
 
-	return OLS->k * OLS->x[OLS->Order - 1] + OLS->b;
+	return OLS->k * OLS->x[OLS->order - 1] + OLS->b;
 }
 
 /**
@@ -181,7 +180,7 @@ float OLS_Smooth(Ordinary_Least_Squares_t *OLS, float deltax, float y)
  * @param[in]      普通最小二乘法结构体
  * @retval         返回平滑输出
  */
-float Get_OLS_Smooth(Ordinary_Least_Squares_t *OLS)
+float Get_OLS_Smooth(ordinary_least_squares_t *OLS)
 {
-	return OLS->k * OLS->x[OLS->Order - 1] + OLS->b;
+	return OLS->k * OLS->x[OLS->order - 1] + OLS->b;
 }
