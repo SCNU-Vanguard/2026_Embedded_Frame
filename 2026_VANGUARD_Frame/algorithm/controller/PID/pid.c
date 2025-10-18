@@ -18,11 +18,11 @@
  */
 PID_t *PID_Init(PID_t *config)
 {
-	if(config == NULL)
+	if (config == NULL)
 	{
 		return NULL;
 	}
-	
+
 	PID_t *pid = (PID_t *) malloc(sizeof(PID_t));
 	memset(pid, 0, sizeof(PID_t));
 
@@ -59,7 +59,7 @@ static float Value_Limit(float value, float min, float max)
  * @param[in]      期望值
  * @retval         返回空
  */
-float PID_Position(PID_t *pid, float measure,float target)
+float PID_Position(PID_t *pid, float measure, float target)
 {
 	// 保存上次的测量值和误差,计算当前error
 	pid->measure = measure;
@@ -126,7 +126,7 @@ float PID_Increment(PID_t *pid, float measure, float target)
 
 		pid->output = Value_Limit(pid->output, -pid->output_limit, pid->output_limit); // 输出限幅
 	}
-	else // 进入死区, 则清空积分和输出
+	else // 进入死区, 则清空积分和输出，若使用此来控制速度时请设置死区为0
 	{
 		pid->output = 0;
 		pid->i_term = 0;
@@ -141,4 +141,112 @@ float PID_Increment(PID_t *pid, float measure, float target)
 	pid->last_error   = pid->error;
 
 	return pid->output;
+}
+
+/**
+  * @brief          专家PID 改进
+  * @param[out]		pid : PID结构数据指针
+  * @param[in]		ref : 当前值
+  * @param[in]		set : 期望值
+  */
+void PID_Professional(PID_t *pid, PID_professional_t *pp, float measure, float target)
+{
+	if (pid == NULL || pp == NULL)
+	{
+		return;
+	}
+
+	float kiIndex = 1.000f;
+
+	// 递推旧值
+	pid->pre_error    = pid->last_error;
+	pid->last_error   = pid->error;
+	pid->abs_error    = (fabsf)(pid->error);
+	pid->last_measure = pid->measure;
+	pid->last_target  = pid->target;
+	pid->last_output  = pid->output;
+	pid->last_d_out   = pid->d_out;
+
+	pid->measure = measure;
+	// 输出微分先行
+	pid->measure = pid->measure * 0.950f + pid->last_measure * (1.000f - 0.950f);
+	pid->target  = target;
+	pid->error   = pid->target - pid->measure;
+	// 偏差微分先行
+	pid->error = pid->error * 0.850f + pid->last_error * (1.000f - 0.850f);
+	pid->sum_error += pid->error;
+	// 位置式 PID 计算
+	pid->p_out = pid->kp * pid->error;
+	pid->i_out = kiIndex * (pid->ki * pid->sum_error);
+	pid->d_out = pid->kd * (pid->error - pid->last_error);
+	// 微分项不完全微分
+	pid->d_out = pid->d_out * 0.850f + pid->last_d_out * (1.000f - 0.850f);
+	Value_Limit(pid->sum_error, -pid->max_limit_error, pid->max_limit_error);
+	Value_Limit(pid->i_out, -pid->integral_limit, pid->integral_limit);
+	// 遇限削弱积分
+	if (fabsf(pid->last_output) > pp->outPutLimit)
+	{
+		if ((pid->sum_error > 0.0f && pid->error < 0.0f) || (pid->sum_error < 0.0f && pid->error > 0.0f))
+		{
+			pid->sum_error += pid->error;
+		}
+	}
+	else
+	{
+		pid->sum_error += pid->error;
+	}
+	// 变速积分（线性积分分离
+	if (pid->abs_error > pp->ILErr)
+	{
+		kiIndex = 0.000f;
+	}
+	else if (pid->abs_error < pp->ISErr)
+	{
+		kiIndex = 1.000f;
+	}
+	else
+	{
+		kiIndex = (pp->ILErr - pid->abs_error) / (pp->ILErr - pp->ISErr);
+	}
+	// 位置式 PID 计算
+	pid->output = pid->p_out + pid->i_out + pid->d_out;
+	// 有效偏差
+	// 专家PID规则
+	if (pid->abs_error > pp->ISErr && pid->abs_error < pp->ILErr)
+	{
+		// 误差不大不小 在正常范围内
+		if ((pid->error * (pid->error - pid->last_error) > 0 && pid->last_error * (pid->last_error - pid->pre_error) > 0) || (pid->error - pid->last_error) == 0)
+		{
+			// 偏差在朝向偏差绝对值增大的方向变化(偏差越来越大), 或者偏差一直为某一固定值
+			if (pid->abs_error > (pp->ILErr + pp->ISErr) / 2.0f)
+			{
+				// 控制器实施较强的控制作用
+				pid->output = pp->onlineK * pid->output;
+			}
+			else
+			{
+				// 但是偏差绝对值本身并不是很大
+				pid->output = pid->output + 0.0f;
+			}
+			//		} else if ((pid->error * (pid->error - pid->last_error) < 0 && (pid->error - pid->last_error) * (pid->last_error - pid->pre_error) > 0) || (pid->error == 0 && pid->last_error == 0)) {
+			// 偏差的绝对值向减小的方向变化，或者已经达到平衡状态
+			// 此时可以保持控制器输出不变
+		}
+		else if (pid->error * (pid->error - pid->last_error) < 0 && ((pid->error - pid->last_error) * (pid->last_error - pid->pre_error) < 0))
+		{
+			// 偏差处于极值极限状态
+			if (pid->abs_error > (pp->ILErr + pp->ISErr) / 2.0f)
+			{
+				pid->output = pp->onlineK * pid->output;
+			}
+			else
+			{
+				// 但是偏差绝对值本身并不是很大
+				pid->output = pid->output + 0;
+			}
+		}
+	}
+	// 输出不完全微分
+	pid->output = pid->output * 0.850f + pid->last_output * (1.000f - 0.850f);
+	Value_Limit(pid->output, -pid->output_limit, pid->output_limit);
 }

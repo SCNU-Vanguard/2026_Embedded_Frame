@@ -1,5 +1,5 @@
 /**
- * @file pid.h
+* @file pid.h
  * @author guatai (2508588132@qq.com)
  * @brief 
  * @version 0.1
@@ -45,6 +45,10 @@ typedef struct
 	float last_error;
 	float pre_error;
 
+	float abs_error;
+	float sum_error;
+	float max_limit_error;
+
 	float p_out;
 	float i_term;
 	float i_out;
@@ -67,6 +71,15 @@ typedef struct // config parameter
 
 	float integral_limit; // 积分限幅
 } pid_init_config_t;
+
+typedef struct
+{
+	PID_t *BaseStructInstance;	// 定义PID基类指针
+	float ILErr;				// 积分项误差死区范围上限
+	float ISErr;				// 积分项误差死区范围下限
+	float outPutLimit;			// 输出项死区
+	float onlineK;				// 强作用比率
+} PID_professional_t;			// 专家PID规则设置
 
 /**
  * @brief 初始化PID实例
@@ -97,5 +110,13 @@ float PID_Position(PID_t *pid, float measure, float target);
  */
 
 float PID_Increment(PID_t *pid, float measure, float target);
+
+/**
+  * @brief          专家PID 改进
+  * @param[out]		pid : PID结构数据指针
+  * @param[in]		ref : 当前值
+  * @param[in]		set : 期望值
+  */
+void PID_Professional(PID_t *pid, PID_professional_t *pp, float measure, float target);
 
 #endif /* __PID_H__ */
