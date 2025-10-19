@@ -15,9 +15,11 @@
 
 #define BMI088_BSP_COM 1
 #define BMI088_AUTO_CS 1
-#define BMI088_EXTI 0
+#define BMI088_EXTI 1
 
 #define BMI088_Cali 0
+
+#define TEST_FILTER 0
 
 bmi088_init_config_t bmi088_init_h7 = {
 	.heat_pid_config = {
@@ -58,13 +60,13 @@ bmi088_init_config_t bmi088_init_h7 = {
 	.acc_int_config = {
 		.GPIOx = GPIOE,
 		.GPIO_Pin = GPIO_PIN_10,
-		.exti_mode = GPIO_EXTI_MODE_RISING,
+		.exti_mode = GPIO_EXTI_MODE_FALLING,
 		.gpio_model_callback = NULL,
 	},
 	.gyro_int_config = {
 		.GPIOx = GPIOE,
 		.GPIO_Pin = GPIO_PIN_12,
-		.exti_mode = GPIO_EXTI_MODE_RISING,
+		.exti_mode = GPIO_EXTI_MODE_FALLING,
 		.gpio_model_callback = NULL,
 	},
 
@@ -89,7 +91,7 @@ SPI_HandleTypeDef *BMI088_SPI = &hspi2;
 // 1:使用卡尔曼滤波器
 // 2:使用自参考NLMS滞后滤波器
 
-#define BMI088_USE_FILTER 2
+#define BMI088_USE_FILTER 1
 
 #if BMI088_USE_FILTER == 1
 
@@ -678,8 +680,6 @@ static void BMI088_Set_Mode(bmi088_instance_t *bmi088Instance, bmi088_work_mode_
 
 // -------------------------以下为公有函数,用于注册BMI088,标定和数据读取--------------------------------//
 
-#define TEST_FILTER 1
-
 /**
  * @brief
  * @param bmi088
@@ -1047,6 +1047,7 @@ void BMI088_Calibrate_IMU(bmi088_instance_t *_bmi088)
 
 bmi088_instance_t *BMI088_Register(bmi088_init_config_t *config)
 {
+	__disable_irq( ); // 关闭全局中断,防止注册过程中被打断
 	// 申请内存
 	bmi088_instance_t *bmi088_instance = (bmi088_instance_t *) malloc(sizeof(bmi088_instance_t));
 	memset(bmi088_instance, 0, sizeof(bmi088_instance_t)); // 清零
@@ -1111,5 +1112,6 @@ bmi088_instance_t *BMI088_Register(bmi088_init_config_t *config)
 	BMI088_Calibrate_IMU(bmi088_instance);               // 标定acc和gyro
 	BMI088_Set_Mode(bmi088_instance, config->work_mode); // 恢复工作模式
 
+	__enable_irq( ); // 开启全局中断
 	return bmi088_instance;
 }

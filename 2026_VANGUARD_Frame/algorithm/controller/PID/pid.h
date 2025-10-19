@@ -74,11 +74,13 @@ typedef struct // config parameter
 
 typedef struct
 {
-	PID_t *BaseStructInstance;	// 定义PID基类指针
-	float ILErr;				// 积分项误差死区范围上限
-	float ISErr;				// 积分项误差死区范围下限
-	float outPutLimit;			// 输出项死区
-	float onlineK;				// 强作用比率
+	uint8_t pid_mode;
+	float integral_max_error;				// 积分项误差死区范围上限
+	float integral_min_error;				// 积分项误差死区范围下限
+	float ki_index;				// 积分缩放系数
+	float output_deadband;			// 输出项死区
+	float online_k1;				// 强作用比率
+	float online_k2;				// 弱作用比率
 } PID_professional_t;			// 专家PID规则设置
 
 /**
@@ -97,7 +99,6 @@ PID_t *PID_Init(PID_t *config);
  * @param target     设定值
  * @return float  PID计算输出
  */
-
 float PID_Position(PID_t *pid, float measure, float target);
 
 /**
@@ -108,7 +109,6 @@ float PID_Position(PID_t *pid, float measure, float target);
  * @param target     设定值
  * @return float  PID计算输出
  */
-
 float PID_Increment(PID_t *pid, float measure, float target);
 
 /**

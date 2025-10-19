@@ -144,7 +144,7 @@ float PID_Increment(PID_t *pid, float measure, float target)
 }
 
 /**
-  * @brief          专家PID 改进
+  * @brief          专家PID(模糊pid簡化版)
   * @param[out]		pid : PID结构数据指针
   * @param[in]		ref : 当前值
   * @param[in]		set : 期望值
@@ -155,8 +155,6 @@ void PID_Professional(PID_t *pid, PID_professional_t *pp, float measure, float t
 	{
 		return;
 	}
-
-	float kiIndex = 1.000f;
 
 	// 递推旧值
 	pid->pre_error    = pid->last_error;
@@ -175,75 +173,138 @@ void PID_Professional(PID_t *pid, PID_professional_t *pp, float measure, float t
 	// 偏差微分先行
 	pid->error = pid->error * 0.850f + pid->last_error * (1.000f - 0.850f);
 	pid->sum_error += pid->error;
-	// 位置式 PID 计算
-	pid->p_out = pid->kp * pid->error;
-	pid->i_out = kiIndex * (pid->ki * pid->sum_error);
-	pid->d_out = pid->kd * (pid->error - pid->last_error);
-	// 微分项不完全微分
-	pid->d_out = pid->d_out * 0.850f + pid->last_d_out * (1.000f - 0.850f);
-	Value_Limit(pid->sum_error, -pid->max_limit_error, pid->max_limit_error);
-	Value_Limit(pid->i_out, -pid->integral_limit, pid->integral_limit);
-	// 遇限削弱积分
-	if (fabsf(pid->last_output) > pp->outPutLimit)
+
+	if (pp->pid_mode == 0)
 	{
-		if ((pid->sum_error > 0.0f && pid->error < 0.0f) || (pid->sum_error < 0.0f && pid->error > 0.0f))
+		// 位置式 PID 计算
+		// 变速积分（线性积分分离)
+		if (pid->abs_error > pp->integral_max_error)
+		{
+			pp->ki_index = 0.000f;
+		}
+		else if (pid->abs_error < pp->integral_min_error)
+		{
+			pp->ki_index = 1.000f;
+		}
+		else
+		{
+			pp->ki_index = (pp->integral_max_error - pid->abs_error) / (pp->integral_max_error - pp->integral_min_error);
+		}
+		pid->p_out = pid->kp * pid->error;
+		pid->i_out = pp->ki_index * (pid->ki * pid->sum_error);
+		pid->d_out = pid->kd * (pid->error - pid->last_error);
+		// 微分项不完全微分
+		pid->d_out = pid->d_out * 0.850f + pid->last_d_out * (1.000f - 0.850f);
+		Value_Limit(pid->sum_error, -pid->max_limit_error, pid->max_limit_error);
+		Value_Limit(pid->i_out, -pid->integral_limit, pid->integral_limit);
+		// 遇限削弱积分
+		if (fabsf(pid->last_output) > pp->output_deadband)
+		{
+			if ((pid->sum_error > 0.0f && pid->error < 0.0f) || (pid->sum_error < 0.0f && pid->error > 0.0f))
+			{
+				pid->sum_error += pid->error;
+			}
+		}
+		else
 		{
 			pid->sum_error += pid->error;
 		}
-	}
-	else
-	{
-		pid->sum_error += pid->error;
-	}
-	// 变速积分（线性积分分离
-	if (pid->abs_error > pp->ILErr)
-	{
-		kiIndex = 0.000f;
-	}
-	else if (pid->abs_error < pp->ISErr)
-	{
-		kiIndex = 1.000f;
-	}
-	else
-	{
-		kiIndex = (pp->ILErr - pid->abs_error) / (pp->ILErr - pp->ISErr);
-	}
-	// 位置式 PID 计算
-	pid->output = pid->p_out + pid->i_out + pid->d_out;
-	// 有效偏差
-	// 专家PID规则
-	if (pid->abs_error > pp->ISErr && pid->abs_error < pp->ILErr)
-	{
-		// 误差不大不小 在正常范围内
-		if ((pid->error * (pid->error - pid->last_error) > 0 && pid->last_error * (pid->last_error - pid->pre_error) > 0) || (pid->error - pid->last_error) == 0)
+		// 位置式 PID 计算
+		pid->output = pid->p_out + pid->i_out + pid->d_out;
+		// 有效偏差
+		// 专家PID规则
+		if (pid->abs_error > pp->integral_min_error && pid->abs_error < pp->integral_max_error)
 		{
-			// 偏差在朝向偏差绝对值增大的方向变化(偏差越来越大), 或者偏差一直为某一固定值
-			if (pid->abs_error > (pp->ILErr + pp->ISErr) / 2.0f)
+			// 误差不大不小 在正常范围内
+			if ((pid->error * (pid->error - pid->last_error) > 0 && pid->last_error * (pid->last_error - pid->pre_error) > 0) || (pid->error - pid->last_error) == 0)
 			{
-				// 控制器实施较强的控制作用
-				pid->output = pp->onlineK * pid->output;
+				// 偏差在朝向偏差绝对值增大的方向变化(偏差越来越大), 或者偏差一直为某一固定值
+				if (pid->abs_error > (pp->integral_max_error + pp->integral_min_error) / 2.0f)
+				{
+					// 控制器实施较强的控制作用
+					pid->output = pp->online_k1 * pid->output;
+				}
+				else
+				{
+					// 但是偏差绝对值本身并不是很大
+					pid->output = pid->output + 0.0f;
+				}
+				//		} else if ((pid->error * (pid->error - pid->last_error) < 0 && (pid->error - pid->last_error) * (pid->last_error - pid->pre_error) > 0) || (pid->error == 0 && pid->last_error == 0)) {
+				// 偏差的绝对值向减小的方向变化，或者已经达到平衡状态
+				// 此时可以保持控制器输出不变
 			}
-			else
+			else if (pid->error * (pid->error - pid->last_error) < 0 && ((pid->error - pid->last_error) * (pid->last_error - pid->pre_error) < 0))
 			{
-				// 但是偏差绝对值本身并不是很大
-				pid->output = pid->output + 0.0f;
+				// 偏差处于极值极限状态
+				if (pid->abs_error > (pp->integral_max_error + pp->integral_min_error) / 2.0f)
+				{
+					pid->output = pp->online_k1 * pid->output;
+				}
+				else
+				{
+					// 但是偏差绝对值本身并不是很大
+					pid->output = pid->output + 0;
+				}
 			}
-			//		} else if ((pid->error * (pid->error - pid->last_error) < 0 && (pid->error - pid->last_error) * (pid->last_error - pid->pre_error) > 0) || (pid->error == 0 && pid->last_error == 0)) {
-			// 偏差的绝对值向减小的方向变化，或者已经达到平衡状态
-			// 此时可以保持控制器输出不变
 		}
-		else if (pid->error * (pid->error - pid->last_error) < 0 && ((pid->error - pid->last_error) * (pid->last_error - pid->pre_error) < 0))
+	}
+	else if (pp->pid_mode == 1)
+	{
+		if (pid->abs_error > pp->integral_max_error)
 		{
-			// 偏差处于极值极限状态
-			if (pid->abs_error > (pp->ILErr + pp->ISErr) / 2.0f)
+			pid->output += pp->output_deadband;
+		}
+		else if ((pid->abs_error < pp->integral_max_error) && (pid->abs_error > pp->integral_min_error))
+		{
+			// 增量式 PID 计算
+			pid->p_out  = pid->kp * (pid->error - pid->last_error);
+			pid->i_term = pid->ki * pid->error;
+			pid->i_out  = pid->i_term;
+			pid->d_out  = pid->kd * (pid->error - 2.0f * pid->last_error + pid->pre_error);
+			// 微分项不完全微分
+			pid->d_out = pid->d_out * 0.850f + pid->last_d_out * (1.000f - 0.850f);
+			Value_Limit(pid->i_out, -pid->integral_limit, pid->integral_limit);
+			//偏差在朝向偏差绝对值增大的方向变化，或者偏差为某一固定值
+			if ((pid->error * (pid->error - pid->last_error) < 0) || ((pid->error - pid->last_error) == 0))
 			{
-				pid->output = pp->onlineK * pid->output;
+				//|e(k)|>Mmid，说明偏差也较大，可考虑由控制器实施较强的控制作用，以达到扭转偏差绝对值向减小的方向变化，并迅速减小偏差的绝对值
+				if (pid->abs_error > (pp->integral_max_error + pp->integral_min_error) / 2.0f)
+				{
+					pid->output += pp->online_k1 * pid->p_out + pid->i_out + pid->d_out;
+				}
+				//|e(k)|≤Mmid，说明尽管偏差是向绝对值增大的方向变化，但是偏差绝对值本身并不是很大，可以考虑控制器实施一般的控制作用，只需要扭转偏差的变化趋势，使其向偏差绝对值减小的方向变化即可
+				else
+				{
+					pid->output += pid->p_out + pid->i_out + pid->d_out;
+				}
 			}
-			else
+			else if (((pid->error * (pid->error - pid->last_error) < 0) && ((pid->error - pid->last_error) * (pid->last_error - pid->pre_error) > 0)) || (pid->error == 0))
 			{
-				// 但是偏差绝对值本身并不是很大
-				pid->output = pid->output + 0;
+				//偏差的绝对值向减小的方向变化，或者已经达到平衡状态
+				//此时可以保持控制器输出不变
+				pid->output = pid->last_output;
 			}
+			else if ((pid->error * (pid->error - pid->last_error) < 0) && (pid->last_error * (pid->last_error - pid->pre_error) < 0))
+			{
+				//偏差处于极值极限状态
+				if (pid->abs_error > (pp->integral_max_error + pp->integral_min_error) / 2.0f)
+				{
+					pid->output += pp->online_k1 * pid->p_out;
+				}
+				else
+				{
+					// 但是偏差绝对值本身并不是很大
+					pid->output += pp->online_k2 * pid->p_out;
+				}
+			}
+		}
+		else if (pid->abs_error < pp->integral_min_error)
+		{
+			pid->p_out  = pid->kp * (pid->error - pid->last_error);
+			pid->i_term = pid->ki * pid->error;
+			pid->i_out  = pid->i_term;
+			Value_Limit(pid->i_out, -pid->integral_limit, pid->integral_limit);
+			pid->output += pid->p_out + pid->i_out;
 		}
 	}
 	// 输出不完全微分
