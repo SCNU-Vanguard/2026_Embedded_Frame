@@ -441,6 +441,7 @@ void DM_Motor_Control(DM_motor_instance_t *motor_s)
 	float pid_fab, pid_ref;		  // 电机PID测量值和设定值
 
 	uint8_t j = 0;
+
 	if (motor_s == NULL)
 	{
 		j = idx;
@@ -450,7 +451,7 @@ void DM_Motor_Control(DM_motor_instance_t *motor_s)
 		j = 1;
 	}
 	// 遍历所有电机实例,进行串级PID的计算并设置发送报文的值
-	for (size_t i = 0 ; i < idx ; ++i)
+	for (size_t i = 0 ; i < j ; ++i)
 	{ // 减小访存开销,先保存指针引用
 		if (motor_s == NULL)
 		{

@@ -70,9 +70,9 @@ typedef enum
 	CURRENT_LOOP = 0b1000,
 
 	// only for checking 本框架电流环一般不考虑
-	SPEED_AND_TORQUE_LOOP  = 0b0011,
-	ANGLE_AND_SPEED_LOOP   = 0b0110,
-	ALL_THREE_LOOP         = 0b0111,
+	SPEED_AND_TORQUE_LOOP = 0b0011,
+	ANGLE_AND_SPEED_LOOP  = 0b0110,
+	ALL_THREE_LOOP        = 0b0111,
 } closeloop_type_e;
 
 typedef enum
@@ -130,19 +130,19 @@ typedef enum
 /* 异常检测 */
 typedef enum
 {
-	MOTOR_ERROR_NONE            = 0x00U,
+	MOTOR_ERROR_NONE      = 0x00U,
 	MOTOR_BLOCKED_ERROR   = 0x01U,
 	MOTOR_LOST_ERROR      = 0x02U,
 	MOTOR_SUPERLOAD_ERROR = 0x03U,
-	MOTOR_CRASH_ERROR   = 0x04U,
+	MOTOR_CRASH_ERROR     = 0x04U,
 	MOTOR_ERROR_PROTECTED = 0x05U,
 } motor_error_e;
 
 /* 电机控制方式枚举 */
 typedef enum
 {
-	TORQUE_DIRECT_CONTROL = 0, //扭矩直接开环控制
-	POLYCYCLIC_LOOP_CONTROL  = 1,  //多环嵌套闭合控制
+	TORQUE_DIRECT_CONTROL   = 0, //扭矩直接开环控制
+	POLYCYCLIC_LOOP_CONTROL = 1,  //多环嵌套闭合控制
 } motor_control_button_e;
 
 /* 电机控制设置,包括闭环类型,反转标志和反馈来源 */

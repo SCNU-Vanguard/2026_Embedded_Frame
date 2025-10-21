@@ -447,7 +447,7 @@ void DJI_Motor_Control(DJI_motor_instance_t *motor_s)
 		j = 1;
 	}
 	// 遍历所有电机实例,进行串级PID的计算并设置发送报文的值
-	for (size_t i = 0 ; i < idx ; ++i)
+	for (size_t i = 0 ; i < j ; ++i)
 	{ // 减小访存开销,先保存指针引用
 		if (motor_s == NULL)
 		{
