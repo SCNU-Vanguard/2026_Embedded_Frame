@@ -17,7 +17,9 @@
 #define BMI088_AUTO_CS 1
 #define BMI088_EXTI 1
 
-#define BMI088_Cali 0
+#define BMI088_CALI 0
+
+#define BMI088_TEMP_CONTROL 0
 
 #define TEST_FILTER 0
 
@@ -70,7 +72,7 @@ bmi088_init_config_t bmi088_init_h7 = {
 		.gpio_model_callback = NULL,
 	},
 
-#if BMI088_Cali
+#if BMI088_CALI
 	.cali_mode = BMI088_CALIBRATE_ONLINE_MODE,
 #else
 	.cali_mode = BMI088_LOAD_PRE_CALI_MODE,
@@ -534,6 +536,7 @@ static uint8_t BMI088_Gyro_Init(bmi088_instance_t *bmi088)
  */
 void BMI088_Temp_Control(bmi088_instance_t *bmi088)
 {
+#if BMI088_TEMP_CONTROL	
 	static uint8_t temp_constant_time = 0;
 	static uint8_t first_temperate    = 0; // 第一次达到设定温度
 	static float target_temp          = 0;
@@ -570,6 +573,10 @@ void BMI088_Temp_Control(bmi088_instance_t *bmi088)
 			}
 		}
 	}
+#else 
+	// 不进行温度控制，直接关闭加热
+	PWM_Set_DutyRatio(bmi088->heat_pwm, 0.0f);
+#endif	
 }
 
 // -------------------------以下为私有函数,private用于IT模式下的中断处理---------------------------------//
@@ -1083,7 +1090,7 @@ bmi088_instance_t *BMI088_Register(bmi088_init_config_t *config)
 	bmi088_instance->heat_pwm = PWM_Register(&config->heat_pwm_config);
 
 	bmi088_instance->heat_pid = PID_Init(&config->heat_pid_config);
-
+	PWM_Set_DutyRatio(bmi088_instance->heat_pwm, 0.0f);
 	bmi088_instance->ambient_temperature = -273; // 环境温度初值
 	DWT_GetDeltaT(&bmi088_instance->bias_dwt_cnt);
 	// 初始化时使用阻塞模式

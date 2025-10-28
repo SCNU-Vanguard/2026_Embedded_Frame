@@ -511,7 +511,10 @@ void Chassis_Reference(void)
 			switch (rc_data->toggle.SC)
 			{
 				case WFLY_SW_UP:
-
+					DM_Motor_Enable(balance_chassis.joint_motor[0]);
+					DM_Motor_Enable(balance_chassis.joint_motor[1]);
+					DM_Motor_Enable(balance_chassis.joint_motor[2]);
+					DM_Motor_Enable(balance_chassis.joint_motor[3]);
 					break;
 				case WFLY_SW_MID:
 					DM_Motor_Disable(balance_chassis.joint_motor[0]);
@@ -520,10 +523,10 @@ void Chassis_Reference(void)
 					DM_Motor_Disable(balance_chassis.joint_motor[3]);
 					break;
 				case WFLY_SW_DOWN:
-					DM_Motor_Enable(balance_chassis.joint_motor[0]);
-					DM_Motor_Enable(balance_chassis.joint_motor[1]);
-					DM_Motor_Enable(balance_chassis.joint_motor[2]);
-					DM_Motor_Enable(balance_chassis.joint_motor[3]);
+					DM_Motor_Set_Zeropoint(balance_chassis.joint_motor[0]);
+					DM_Motor_Set_Zeropoint(balance_chassis.joint_motor[1]);
+					DM_Motor_Set_Zeropoint(balance_chassis.joint_motor[2]);
+					DM_Motor_Set_Zeropoint(balance_chassis.joint_motor[3]);
 					break;
 				default:
 					break;
@@ -777,6 +780,7 @@ void Chassis_Console(void)
 
 void Chassis_Send_Cmd(void)
 {
+
 	//	static uint32_t chassis_cnt = 0;
 	//	chassis_cnt++;
 	//	if ((chassis_cnt % 1500) == 0) // 100Hz
