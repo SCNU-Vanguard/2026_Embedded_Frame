@@ -80,6 +80,7 @@ typedef struct
     float d_out_last;
     float derivative_LPF_RC; // 微分滤波器系数
     float derivative_gama;   // 微分先行系数
+    uint16_t lost_integral_cnt;    // 丢失积分
 
     float err_pre;
     float err_last;

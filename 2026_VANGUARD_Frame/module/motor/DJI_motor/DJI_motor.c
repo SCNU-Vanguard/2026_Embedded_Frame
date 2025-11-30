@@ -163,8 +163,10 @@ static void Decode_DJI_Motor(CAN_instance_t *motor_can)
 	receive_data->ecd      = ((receive_data->ecd >= receive_data->offset_ecd) ? (receive_data->ecd - receive_data->offset_ecd) : (receive_data->ecd + 8191 - receive_data->offset_ecd));
 
 	receive_data->angle_single_round = ECD_ANGLE_COEF_DJI * (float) receive_data->ecd;
-	receive_data->speed_aps          = (1.0f - SPEED_SMOOTH_COEF) * receive_data->speed_aps +
-	                                   RPM_2_ANGLE_PER_SEC * SPEED_SMOOTH_COEF * (float) ((int16_t)(rxbuff[2] << 8 | rxbuff[3]));
+	receive_data->speed = (1.0f - SPEED_SMOOTH_COEF) * receive_data->speed + SPEED_SMOOTH_COEF * (float) ((int16_t)(rxbuff[2] << 8 | rxbuff[3]));
+	receive_data->speed_aps          = RPM_2_ANGLE_PER_SEC * receive_data->speed;//(1.0f - SPEED_SMOOTH_COEF) * receive_data->speed_aps +
+	                                   //RPM_2_ANGLE_PER_SEC * SPEED_SMOOTH_COEF * receive_data->speed;
+	receive_data->speed_rps = receive_data->speed / 60 / M3508_REDUCTION_RATIO;//(1.0f - SPEED_SMOOTH_COEF) * receive_data->speed_rps + receive_data->speed / 60 / M3508_REDUCTION_RATIO * SPEED_SMOOTH_COEF;//还未实例化
 	receive_data->real_current = (1.0f - CURRENT_SMOOTH_COEF) * receive_data->real_current +
 	                             CURRENT_SMOOTH_COEF * (float) ((int16_t)(rxbuff[4] << 8 | rxbuff[5]));
 	receive_data->temperature = rxbuff[6];
@@ -469,6 +471,10 @@ void DJI_Motor_Control(DJI_motor_instance_t *motor_s)
 		}
 		if (motor->motor_settings.control_button == TORQUE_DIRECT_CONTROL)
 		{
+			// 直接力矩控制模式,不经过闭环计算,直接将参考值作为输出
+			pid_ref = pid_ref / TORQUE_CONSTANT_M3508; //M3508_REDUCTION_RATIO
+			pid_ref = pid_ref / M3508_CURRENT_TORQUE_THRESHOLDS * M3508_CURRENT_CONTROL_THRESHOLDS;
+
 			motor->transmit_data.current = (int16_t) pid_ref;
 		}
 		else

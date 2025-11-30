@@ -24,6 +24,8 @@
 
 #include "BMI088driver.h"
 
+#include "ws2812.h"
+
 INS_behaviour_t INS;
 
 const float xb[3] = {1, 0, 0};
@@ -45,6 +47,22 @@ void INS_Data_Update(void)
 	// BMI088_Read(&BMI088);
 	BMI088_Read_All(bmi088_h7, &imu_data);
 
+	if(imu_data.temperature > 80.0f)
+	{
+		WS2812_Control(ws2812_instance, RED_WS2812_COLOR);
+	}
+	else if(imu_data.temperature > 60.0f)
+	{
+		WS2812_Control(ws2812_instance, ORANGE_WS2812_COLOR);
+	}
+	else if(imu_data.temperature > 40.0f)
+	{
+		WS2812_Control(ws2812_instance, YELLOW_WS2812_COLOR);
+	}
+	else
+	{
+		WS2812_Control(ws2812_instance, GREEN_WS2812_COLOR);
+	}
 	/******************************测试获取时间*****************************/
 
 	// TIME_ELAPSE(imu_time, BMI088_Read_All(bmi088_h7, &imu_data););
@@ -90,7 +108,9 @@ void INS_Init(void)
 	float init_quaternion[4] = {1, 0, 0, 0};
 	EKF_Quaternion_Init(init_quaternion);
 	// IMU_QuaternionEKF_Init(init_quaternion, 12, 0.005f, 1000000 * 15, 0.9998f, 0.005f);
-	IMU_QuaternionEKF_Init(init_quaternion, 10, 0.001f, 10000000, 1.0f, 0.0f);
+	IMU_QuaternionEKF_Init(init_quaternion, 10.5f, 0.00015f, 10000000, 0.9998f, 0.0005f);
+	// IMU_QuaternionEKF_Init(init_quaternion, 10.0f, 0.001f, 500000.0f, 0.9996f, 0.01f);
+	// IMU_QuaternionEKF_Init(init_quaternion, 20.0f, 0.0001f, 30000.0f, 0.999f, 0.01f);
 
 	INS.AccelLPF = 0.0085f; // 加速度低通滤波系数
 }
@@ -101,6 +121,17 @@ float ins_time = 0.0f;
 
 void INS_Calculate(float dt)
 {
+	if(dt == 0.0f)
+	{
+		dt = 1.0f;
+	}
+	else if(dt < 0.0f)
+	{
+		return;
+	}
+
+	BMI088_Temp_Control( bmi088_h7 );
+
 	INS_Data_Update( );
 
 	INS.Gyro[IMU_X] = imu_data.gyro[IMU_X];
@@ -162,8 +193,8 @@ void INS_Calculate(float dt)
 
 	if (ins_time > 3000.0f)
 	{
-		INS.v_n      = INS.v_n + INS.MotionAccel_n[1] * 0.001f;
-		INS.x_n      = INS.x_n + INS.v_n * 0.001f;
+		INS.v_n      = INS.v_n + INS.MotionAccel_n[1] * dt;
+		INS.x_n      = INS.x_n + INS.v_n * dt;
 		INS.ins_flag = 1; // 四元数基本收敛，加速度也基本收敛，可以开始底盘任务
 		// 获取最终数据
 		INS.Yaw           = QEKF_INS.Yaw;

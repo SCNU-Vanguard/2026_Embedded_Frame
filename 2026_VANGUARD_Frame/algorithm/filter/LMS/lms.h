@@ -33,10 +33,12 @@ typedef struct
 
 	float d;								/* 虚拟滞后参考 */
 
-    uint8_t adapt_flag;
+	uint8_t num;
+
+  uint8_t adapt_flag;
 } nlms_t;
 
-void Nlms_Init(nlms_t *afd, uint8_t flag);
+void Nlms_Init(nlms_t *afd, uint8_t num , uint8_t flag);
 
 void Nlms_Filter(nlms_t *afd, float new_x);
 

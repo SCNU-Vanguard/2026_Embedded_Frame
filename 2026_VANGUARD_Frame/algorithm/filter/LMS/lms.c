@@ -22,7 +22,7 @@
  * @param afd 指向滤波器结构体的指针（需确保非NULL）
  * @note 权重分配策略：距离当前时刻越近的样本权重越大
  */
-void Nlms_Init(nlms_t *afd, uint8_t flag)
+void Nlms_Init(nlms_t *afd, uint8_t num , uint8_t flag)
 {
 	/* 参数有效性检查（硬件开发必备） */
 	if (afd == NULL)
@@ -34,7 +34,8 @@ void Nlms_Init(nlms_t *afd, uint8_t flag)
 
 	/* 初始化计数器 */
 	afd->cnt = 0;
-    afd->adapt_flag = flag;
+	afd->num = num;
+  	afd->adapt_flag = flag;
 
 	/* 计算线性权重（使用float累加以避免double精度浪费） */
 	float w_sum = 0.0f;
@@ -53,7 +54,7 @@ void Nlms_Init(nlms_t *afd, uint8_t flag)
 	}
 
 	/* 硬件寄存器保护（防止初始化被中断打断） */
-	__disable_irq( );
+	__disable_irq();
 	memset(afd->x, 0, sizeof(afd->x));  /* 清空输入队列 */
 	__enable_irq();
 }
@@ -85,26 +86,26 @@ void Nlms_Filter(nlms_t *afd, float new_x)
 	}
 
 	/* 样本队列维护（环形缓冲区优化） */
-	if (afd->cnt < MAX_LMS_FILTER_NUM)
+	if (afd->cnt < afd->num)
 	{
 		afd->x[afd->cnt++] = (float) new_x;  // 启动阶段填充缓冲区
 	}
 	else
 	{
 		/* 使用memmove实现高效数据移位（比逐元素拷贝更快） */
-		memmove(&afd->x[0], &afd->x[1], (MAX_LMS_FILTER_NUM - 1) * sizeof(float));
-		afd->x[MAX_LMS_FILTER_NUM - 1] = (float) new_x;
+		memmove(&afd->x[0], &afd->x[1], (afd->num - 1) * sizeof(float));
+		afd->x[afd->num - 1] = (float) new_x;
 	}
 
 	/* 动态滤波处理 */
-	if ((afd->cnt == MAX_LMS_FILTER_NUM) && (afd->adapt_flag == 1))
+	if ((afd->cnt == afd->num) && (afd->adapt_flag == 1))
 	{
 		/* NLMS滤波核心计算 */
 		float x_norm = afd->mu;  // 初始化正则化项
 		afd->y        = 0.0;
 
 		/* 第一遍循环：计算能量项和预测输出 */
-		for (int i = 0 ; i < MAX_LMS_FILTER_NUM ; i++)
+		for (int i = 0 ; i < afd->num ; i++)
 		{
 			afd->y += afd->w[i] * afd->x[i];       // 计算预测输出 y = w'*x
 			x_norm += afd->x[i] * afd->x[i];              // 计算输入能量 x'*x
@@ -115,7 +116,7 @@ void Nlms_Filter(nlms_t *afd, float new_x)
 		float step_size = afd->a / fmax(x_norm, afd->mu);  // 防止除以零
 
 		/* 第二遍循环：并行更新权重（考虑定点数优化潜力） */
-		for (int i = 0 ; i < MAX_LMS_FILTER_NUM ; i++)
+		for (int i = 0 ; i < afd->num ; i++)
 		{
 			afd->w[i] += step_size * error * afd->x[i];
 		}

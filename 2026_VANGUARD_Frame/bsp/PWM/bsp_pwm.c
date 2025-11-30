@@ -88,6 +88,7 @@ void PWM_Set_Period(PWM_instance_t *pwm, float period)
 */
 void PWM_Set_DutyRatio(PWM_instance_t *pwm, float dutyratio)
 {
+	pwm->dutyratio = dutyratio;
 	__HAL_TIM_SetCompare(pwm->htim, pwm->channel, dutyratio * (pwm->htim->Instance->ARR));
 }
 

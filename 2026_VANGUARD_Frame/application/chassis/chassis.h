@@ -14,6 +14,12 @@
 
 #include <stdint.h>
 
+#include "robot_frame_config.h"
+
+#if (CHASSIS_TYPE == CHASSIS_BALANCE)
+#include "balance_chassis.h"
+#endif
+
 typedef struct
 {
 	/* data */
@@ -22,6 +28,7 @@ typedef struct
 typedef struct
 {
 	/* data */
+	
 }__attribute__((packed)) chassis_cmd_t;
 
 extern void Chassis_Init(void);

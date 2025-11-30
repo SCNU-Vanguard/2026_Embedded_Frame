@@ -114,11 +114,20 @@ float Digital_PID_Position(digital_PID_t *hpid, float val_now, float target_now)
         hpid->i_out += hpid->i_term;
 
         hpid->output = hpid->p_out + hpid->i_out + hpid->d_out;
+        hpid->lost_integral_cnt = 0;
     }
     else
     {
         hpid->output = 0;
         hpid->i_term = 0;
+        if(hpid->lost_integral_cnt < 1000)
+        {
+            hpid->lost_integral_cnt++;
+        }
+        else
+        {
+            hpid->i_out = 0;
+        }
     }
 
     F_Output_Limit(hpid);

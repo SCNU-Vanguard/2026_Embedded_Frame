@@ -23,6 +23,11 @@
 #define CURRENT_SMOOTH_COEF 0.9f     // 必须大于0.9
 #define ECD_ANGLE_COEF_DJI 0.043945f // (360/8192),将编码器值转化为角度制
 
+#define M3508_REDUCTION_RATIO 15.76471f //减速比 268/17 hexroll减速箱
+#define TORQUE_CONSTANT_M3508 0.24628f     // Nm/A 268/17
+#define M3508_CURRENT_TORQUE_THRESHOLDS 20.0f
+#define M3508_CURRENT_CONTROL_THRESHOLDS 16384.0f
+
 typedef enum
 {
 	ORIGIN = 0,
@@ -35,10 +40,11 @@ typedef struct
 {
 	uint16_t last_ecd;        // 上一次读取的编码器值
 	uint16_t ecd;             // 0-8191,刻度总共有8192格
-	uint16_t offset_ecd;
-	int16_t speed;	    // 转子转速RPM
+	uint16_t offset_ecd;	  // 转化虚拟机械零点
 	float angle_single_round; // 单圈角度
+	int16_t speed;	    	  // 转子转速RPM
 	float speed_aps;          // 角速度,单位为:度/秒
+	float speed_rps;		  // 减速箱后转速rps 
 	int16_t real_current;     // 实际电流
 	uint8_t temperature;      // 温度 Celsius
 

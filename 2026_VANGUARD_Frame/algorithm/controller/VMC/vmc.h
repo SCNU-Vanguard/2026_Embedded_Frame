@@ -44,7 +44,7 @@ typedef struct
 	float phi1, phi4;
 
 	float j11, j12, j21, j22; // 笛卡尔空间力到关节空间的力的雅可比矩阵系数
-	float torque_set[2];
+	float front_joint_torque, back_joint_torque;
 
 	float inv_j11, inv_j12, inv_j21, inv_j22; // 关节空间力到笛卡尔空间的力的雅可比矩阵系数
 	float mea_F, mea_Tp, p;                   // 逆解算用到的参数
@@ -79,6 +79,7 @@ typedef struct
 	float F_N; // 支持力
 
 	float wheel_m;
+	float wheel_torque;
 
 	float F_0_forward;
 	float roll_f0_forward;

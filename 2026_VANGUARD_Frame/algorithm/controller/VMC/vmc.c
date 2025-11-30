@@ -9,7 +9,7 @@ void VMC_Init(vmc_leg_t *vmc) // 给杆长赋值
 	vmc->l2      = 0.27f; // 单位为m
 	vmc->l3      = 0.27f; // 单位为m
 	vmc->l4      = 0.15f; // 单位为m
-	vmc->wheel_m = 0.068f;
+	vmc->wheel_m = 0.65f;
 }
 
 void VMC_Calc_Base_Data(vmc_leg_t *vmc, INS_behaviour_t *ins, float dt) // 计算theta和d_theta给lqr用，同时也计算腿长L0
@@ -89,8 +89,8 @@ void VMC_Calc_T_Joint(vmc_leg_t *vmc) // 计算期望的关节输出力矩
 	vmc->j22 = (vmc->l4 * arm_cos_f32(vmc->phi0 - vmc->phi2) * arm_sin_f32(vmc->phi3 - vmc->phi4)) /
 	           (vmc->L0 * arm_sin_f32(vmc->phi3 - vmc->phi2));
 
-	vmc->torque_set[0] = vmc->j11 * vmc->F0 + vmc->j12 * vmc->Tp; // 得到RightFront的输出轴期望力矩，F0为五连杆机构末端沿腿的推力
-	vmc->torque_set[1] = vmc->j21 * vmc->F0 + vmc->j22 * vmc->Tp; // 得到RightBack的输出轴期望力矩，Tp为沿中心轴的力矩
+	vmc->back_joint_torque  = vmc->j11 * vmc->F0 + vmc->j12 * vmc->Tp; // F0为五连杆机构末端沿腿的推力
+	vmc->front_joint_torque = vmc->j21 * vmc->F0 + vmc->j22 * vmc->Tp; // Tp为沿中心轴的力矩
 }
 
 uint8_t VMC_FN_Ground_Detection_R(vmc_leg_t *vmc, moving_average_filter_t *filter, float dead_line)
@@ -152,13 +152,17 @@ void Leg_Force_Calc(vmc_leg_t *vmc)
 	}
 
 	vmc->inv_j11 = vmc->j22 / det;
-	vmc->inv_j12 = -vmc->j21 / det;
-	vmc->inv_j21 = -vmc->j12 / det;
+	vmc->inv_j12 = -vmc->j12 / det;
+	vmc->inv_j21 = -vmc->j21 / det;
 	vmc->inv_j22 = vmc->j11 / det;
 
 	vmc->mea_F  = vmc->inv_j11 * vmc->T1 + vmc->inv_j12 * vmc->T2;
 	vmc->mea_Tp = vmc->inv_j21 * vmc->T1 + vmc->inv_j22 * vmc->T2;
-	vmc->p      = vmc->mea_F * arm_cos_f32(vmc->theta)
+
+	// vmc->mea_F = (vmc->T2 * arm_cos_f32(vmc->phi0 - vmc->phi3) / vmc->l4 * arm_sin_f32(vmc->phi3 - vmc->phi4)) - (vmc->T1 * arm_cos_f32(vmc->phi0 - vmc->phi2 / vmc->l1 * arm_sin_f32(vmc->phi1 - vmc->phi2))); 
+	// vmc->mea_Tp = vmc->L0 * ((vmc->T1 * arm_sin_f32(vmc->phi0 - vmc->phi2) / vmc->l1 * arm_sin_f32(vmc->phi1 - vmc->phi2)) - (vmc->T2 * arm_sin_f32(vmc->phi0 - vmc->phi3) / vmc->l4 * arm_sin_f32(vmc->phi3 - vmc->phi4)));
+
+	vmc->p = vmc->mea_F * arm_cos_f32(vmc->theta)
 	         + vmc->mea_Tp * arm_sin_f32(vmc->theta) / vmc->L0;
 	vmc->F_N = (vmc->p + vmc->wheel_m * (9.8f + vmc->dd_z_wheel)) * 0.8f + vmc->F_N * 0.2f;
 }

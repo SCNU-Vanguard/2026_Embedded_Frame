@@ -22,15 +22,25 @@
 #include "dji_motor.h"
 #include "vmc.h"
 
-#define WHEEL_RADIUS (0.20f / 2)               // 轮子半径
+#define WHEEL_RADIUS (0.116f / 2)               // 轮子半径
 
-#define MAX_F0 64.0f           // 最大前馈力
-#define MAX_TORQUE_DM8009P 15.0f // 最大扭矩
-#define MAX_TORQUE_DJI3508 5.8f // 最大扭矩
+#define MAX_F0 17.7576f           // 最大前馈力
+#define MAX_TORQUE_DM8009P 3.0f // 最大扭矩
+#define MAX_TORQUE_DJI3508 4.9256f // 最大扭矩
 
-#define LEG_LENGTH_INIT  0.162f
-#define LEG_LENGTH_MAX  0.333f
-#define LEG_LENGTH_MIN  0.139f
+#define MIN_JOINT0_POS_LIMIT -1.7209f   // 最小关节位置限制
+#define MAX_JOINT0_POS_LIMIT 0.0f       // 最大关节位置限制
+#define MIN_JOINT1_POS_LIMIT 0.0f       // 最小关节位置限制
+#define MAX_JOINT1_POS_LIMIT 1.7259f    // 最大关节位置限制
+
+#define MIN_JOINT2_POS_LIMIT -1.7233f   // 最小关节位置限制
+#define MAX_JOINT2_POS_LIMIT 0.0f       // 最大关节位置限制
+#define MIN_JOINT3_POS_LIMIT 0.0f       // 最小关节位置限制
+#define MAX_JOINT3_POS_LIMIT 1.7317f    // 最大关节位置限制
+
+#define LEG_LENGTH_INIT  0.170f
+#define LEG_LENGTH_MAX  0.380f
+#define LEG_LENGTH_MIN  0.140f
 
 typedef enum 
 {
@@ -123,6 +133,11 @@ extern float leg_length_pid_kd;
 extern float leg_length_pid_max_out;
 
 extern const uint8_t ps_flag;
+
+extern float F_0_forward_test;
+extern float F_N_forward_test;
+extern float chassis_err_left_test[6];
+extern float chassis_err_right_test[6];
 
 extern void Leg_Pensation_Init(void);
 

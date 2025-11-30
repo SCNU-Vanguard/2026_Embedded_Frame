@@ -55,7 +55,7 @@ void wfly_to_rc(const uint8_t *buf)
 	wfly_instance.rc.ch[0] = ((buf[1] | buf[2] << 8) & 0x07FF) - WFLY_RC_OFFSET;
 	wfly_instance.rc.ch[1] = ((buf[2] >> 3 | buf[3] << 5) & 0x07FF) - WFLY_RC_OFFSET;
 	wfly_instance.rc.ch[2] = ((buf[3] >> 6 | buf[4] << 2 | buf[5] << 10) & 0x07FF) - WFLY_RC_OFFSET;
-	wfly_instance.rc.ch[3] = ((buf[5] >> 1 | buf[6] << 7) & 0x07FF) - WFLY_RC_OFFSET;
+	wfly_instance.rc.ch[3] = ((buf[5] >> 1 | buf[6] << 7) & 0x07FF) - WFLY_RC_OFFSET - 23;
 	wfly_instance.rc.ch[4] = ((buf[6] >> 4 | buf[7] << 4) & 0x07FF);
 	wfly_instance.rc.ch[5] = ((buf[7] >> 7 | buf[8] << 1 | buf[9] << 9) & 0x07FF);
 	wfly_instance.rc.ch[6] = ((buf[9] >> 2 | buf[10] << 6) & 0x07FF);
